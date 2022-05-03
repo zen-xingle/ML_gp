@@ -1,0 +1,38 @@
+---> module config
+  dataset: {'name': 'poisson_v4_02', 'fidelity': ['low'], 'type': 'x_2_y', 'train_start_index': 0, 'train_sample': 64, 'eval_start_index': 0, 'eval_sample': 128}
+  lr: {'kernel': 0.1, 'optional_param': 0.1, 'noise': 0.1}
+  kernel: {'K1': {'SE': {'exp_restrict': False, 'length_scale': 1.0, 'scale': 1.0}}}
+  evaluate_method: ['mae', 'rmse', 'r2']
+  optimizer: adam
+  exp_restrict: False
+  input_normalzie: True
+  output_normalize: True
+  noise_init: 1.0
+  res_cigp: None
+---> training record
+  {'mae': 96.772446, 'rmse': 132.14104, 'r2': 0.14567448617574108, 'epoch': 1, 'time': 0}
+  {'mae': 59.269436, 'rmse': 83.11142, 'r2': 0.7952509683757518, 'epoch': 10, 'time': 0}
+  {'mae': 9.625612, 'rmse': 13.719967, 'r2': 0.9968788250057852, 'epoch': 100, 'time': 0}
+  {'mae': 4.203719, 'rmse': 5.9827633, 'r2': 0.999433490900188, 'epoch': 300, 'time': 0}
+  {'mae': 2.7952232, 'rmse': 3.9791384, 'r2': 0.9997526455744467, 'epoch': 500, 'time': 0}
+  {'mae': 1.5765084, 'rmse': 2.243586, 'r2': 0.999922322884754, 'epoch': 1000, 'time': 1}
+---> Finsh the first module
+
+---> module config
+  dataset: {'name': 'poisson_v4_02', 'fidelity': ['low', 'high'], 'type': 'x_yl_2_yh', 'train_start_index': 0, 'train_sample': 16, 'eval_start_index': 0, 'eval_sample': 128}
+  lr: {'kernel': 0.1, 'optional_param': 0.1, 'noise': 0.1}
+  kernel: {'K1': {'SE': {'exp_restrict': False, 'length_scale': 1.0, 'scale': 1.0}}}
+  evaluate_method: ['mae', 'rmse', 'r2']
+  optimizer: adam
+  exp_restrict: False
+  input_normalzie: True
+  output_normalize: True
+  noise_init: 1.0
+  res_cigp: None
+---> training record
+  {'mae': 199.96063, 'rmse': 240.42204, 'r2': -10687.796780576711, 'epoch': 1, 'time': 0}
+  {'mae': 197.14139, 'rmse': 237.58334, 'r2': -1082.7449018452808, 'epoch': 10, 'time': 0}
+  {'mae': 43.73416, 'rmse': 65.29449, 'r2': 0.8595665145207478, 'epoch': 100, 'time': 0}
+  {'mae': 18.875355, 'rmse': 28.620735, 'r2': 0.9792750968089359, 'epoch': 300, 'time': 0}
+  {'mae': 12.686804, 'rmse': 19.165888, 'r2': 0.9913046387310596, 'epoch': 500, 'time': 0}
+  {'mae': 7.352481, 'rmse': 10.971422, 'r2': 0.997333656740898, 'epoch': 1000, 'time': 1}

@@ -25,6 +25,8 @@ if __name__ == '__main__':
     } # only change dataset config, others use default config
     ct = controller(CIGP_MODULE, controller_config, module_config)
     ct.start_train()
+    ct.rc_file.write('---> Finsh the first module\n\n')
+    ct.rc_file.flush()
 
     second_controller_config = {
         'max_epoch': 3000,

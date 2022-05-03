@@ -14,6 +14,12 @@ in all the demo, controller got three inputs.
 
 
 
+After running the demo, there should be a record.txt file generate. Like [this](../record.txt)
+
+
+
+
+
 ### 1.Cigp
 
 demo_cigp (run with testdata/burger/poisson)

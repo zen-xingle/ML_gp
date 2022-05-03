@@ -20,7 +20,7 @@ def print_result(result):
 
 default_controller_config = {
     'batch_size': 1, # not implement
-    'check_point': [0, 100, 300, 500, 1000, 2500, 5000, 7500, 10000],
+    'check_point': [1, 10, 100, 300, 500, 1000, 2500, 5000, 7500, 10000],
     'eval_batch_size': 1, # not implement
     'record_step': 50,
     'max_epoch': 1000,
@@ -153,9 +153,10 @@ class controller(object):
             self.rc_file = open('record.txt', 'a')
             # self.rc_file.write('---> {}\n'.format(self.module_config))
             self.rc_file.write('---> module config\n')
-            for key, _value in self.module_config.items():
+            for key, _value in self.module.module_config.items():
                 self.rc_file.write('  {}: {}\n'.format(key, _value))
             self.rc_file.write('---> training record\n')
+
         self.rc_file.write('  {}\n'.format(line))
         self.rc_file.flush()
 

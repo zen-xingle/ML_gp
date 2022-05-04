@@ -33,11 +33,22 @@ fidelity_map = {
     'high': 2
 }
 
-# name: test_v1, poisson_v4_02, burger_v4_02
+# other name: test_v1, 
+mat_dataset_paths = {
+                'poisson_v4_02': 'data/MultiFidelity_ReadyData/poisson_v4_02.mat',
+                'burger_v4_02': 'data/MultiFidelity_ReadyData/burger_v4_02.mat',
+                'Burget_mfGent_v5': 'data/MultiFidelity_ReadyData/Burget_mfGent_v5.mat',
+                'Burget_mfGent_v5_02': 'data/MultiFidelity_ReadyData/Burget_mfGent_v5_02.mat',
+                'Heat_mfGent_v5': 'data/MultiFidelity_ReadyData/Heat_mfGent_v5.mat',
+                'Piosson_mfGent_v5': 'data/MultiFidelity_ReadyData/Piosson_mfGent_v5.mat',
+                'Schroed2D_mfGent_v1': 'data/MultiFidelity_ReadyData/Schroed2D_mfGent_v1.mat',
+                'TopOP_mfGent_v5': 'data/MultiFidelity_ReadyData/TopOP_mfGent_v5.mat',
+            } # they got the same data format
+
 default_module_config = {
-    'dataset' : {'name': 'test_v1',
-                 'fidelity': ['low', 'high'],
-                 'type':'x_yl_2_yh',    # x_yl_2_yh, x_2_y
+    'dataset' : {'name': 'Burget_mfGent_v5',
+                 'fidelity': ['low'],
+                 'type':'x_2_y',    # x_yl_2_yh, x_2_y
                  'train_start_index': 0, 
                  'train_sample': 32, 
                  'eval_start_index': 0, 
@@ -109,13 +120,9 @@ class CIGP_MODULE:
             y_eval = torch.sin(x_eval) + 10
             x_tr = torch.rand(32, 1) * 6
             y_tr = torch.sin(x_tr) + torch.rand(32, 1) * 0.5 + 10
-        elif dataset_config['name'] in ['poisson_v4_02', 'burger_v4_02']:
+        elif dataset_config['name'] in mat_dataset_paths:
             # they got the same data format
-            dataset_paths = {
-                'poisson_v4_02': 'data/MultiFidelity_ReadyData/poisson_v4_02.mat',
-                'burger_v4_02': 'data/MultiFidelity_ReadyData/burger_v4_02.mat'
-            }
-            data = loadmat(dataset_paths[dataset_config['name']])
+            data = loadmat(mat_dataset_paths[dataset_config['name']])
 
             if dataset_config['type'] == 'x_2_y':
                 assert len(dataset_config['fidelity']) == 1, 'for x_2_y, fidelity length must be 1'

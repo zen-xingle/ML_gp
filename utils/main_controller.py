@@ -62,7 +62,7 @@ class controller(object):
                 # restore_epoch = str((i+1)// self.controller_config['record_step'] *self.controller_config['record_step'])
                 # _result = self.start_eval({'epoch':'{}+nan'.format(restore_epoch)})
                 # self.result_list['checkpoint' + str(restore_epoch)] = _result
-                # self.result_list['quite_reason'] = 'nan'
+                self.result_list['quite_reason'] = 'nan'
                 break
 
             print('train {}/{}'.format(i, self.controller_config['max_epoch']), end='\r')

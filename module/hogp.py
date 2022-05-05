@@ -76,7 +76,7 @@ default_module_config = {
     'noise_init' : 0.005,
     'grid_config': {'grid_size': [-1, -1], 
                     'type': 'fixed', # learnable, fixed
-                    'dimension_map': 'identity', # latent space, identity, learnable_identity, learnable_map
+                    'dimension_map': 'identity', # latent space: identity, learnable_identity, learnable_map
                     },
 }
 
@@ -484,9 +484,9 @@ class HOGP_MODULE:
                 index += len(self.grid)
 
             if self.module_config['grid_config']['dimension_map'] not in ['identity']:
-                self.mapping_vector.copy_(params_list[index + i])
+                for i in range(len(self.mapping_vector)):
+                    self.mapping_vector[i].copy_(params_list[index + i])
                 index += len(self.mapping_vector)
-
 
     def eval(self):
         print('---> start eval')

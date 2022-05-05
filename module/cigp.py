@@ -64,7 +64,7 @@ default_module_config = {
     'evaluate_method': ['mae', 'rmse', 'r2'],
     'optimizer': 'adam',
     'exp_restrict': False,
-    'input_normalzie': True,
+    'input_normalize': True,
     'output_normalize': True,
     'noise_init' : 1.,
     'res_cigp': None,
@@ -87,7 +87,7 @@ class CIGP_MODULE:
             self._select_connection_kernel(module_config['res_cigp']['type_name'])
 
         # X - normalize
-        if module_config['input_normalzie'] is True:
+        if module_config['input_normalize'] is True:
             self.X_normalizer = Normalizer(self.inputs_tr[0])
             self.inputs_tr[0] = self.X_normalizer.normalize(self.inputs_tr[0])
         else:
@@ -255,7 +255,7 @@ class CIGP_MODULE:
         input_param = deepcopy(input_param)
     
         with torch.no_grad():
-            if self.module_config['input_normalzie'] is True:
+            if self.module_config['input_normalize'] is True:
                 input_param[0] = self.X_normalizer.normalize(input_param[0])
 
             Sigma = self.kernel_list[0](self.inputs_tr[0], self.inputs_tr[0]) + JITTER * torch.eye(self.inputs_tr[0].size(0))

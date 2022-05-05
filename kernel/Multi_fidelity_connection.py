@@ -60,7 +60,7 @@ class rho_connection(torch.nn.Module):
 
 class mapping_connection(torch.nn.Module):
     # mapping connection between yl/yh
-    def __init__(self, yl_shape, yh_shape, distribution_name):
+    def __init__(self, yl_shape, yh_shape, distribution_name='smooth_mapping_matrix'):
         # assume 10,20 -> 35, 50
         super().__init__()
         assert len(yl_shape) == len(yh_shape), "yl and yh should have same dims, but got {} and {}".format(yl_shape, yh_shape)

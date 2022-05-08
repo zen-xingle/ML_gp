@@ -491,11 +491,11 @@ class HOGP_MODULE:
     def eval(self):
         print('---> start eval')
         predict_y, predict_var = self.predict(self.inputs_eval)
+        self.predict_y = deepcopy(predict_y)
         # result = performance_evaluator(predict_y, self.outputs_eval[0], self.module_config['evaluate_method'])
         predict_y = _last_dim_to_fist(predict_y)
         predict_var = _last_dim_to_fist(predict_var)
         target = _last_dim_to_fist(self.outputs_eval[0])
         result = high_level_evaluator([predict_y, predict_var], target, self.module_config['evaluate_method'])
-        self.predict_y = predict_y
         print(result)
         return result

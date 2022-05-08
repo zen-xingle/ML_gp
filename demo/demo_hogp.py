@@ -34,7 +34,7 @@ if __name__ == '__main__':
     ct = controller(HOGP_MODULE, {}, module_config)
     ct.start_train()
     ct.smart_restore_state(-1)
-    ct.rc_file.write('---> final result')
+    ct.rc_file.write('---> final result\n')
     ct.rc_file.flush()
     ct.start_eval({'eval state':'final'})
     ct.rc_file.write('---> end\n\n')

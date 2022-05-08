@@ -74,7 +74,7 @@ if __name__ == '__main__':
 
             mfct.start_train()
             mfct.smart_restore_state(-1)
-            mfct.rc_file.write('---> final result')
+            mfct.rc_file.write('---> final result\n')
             mfct.rc_file.flush()
             mfct.start_eval({'eval state':'final'})
             mfct.rc_file.write('---> end\n\n')

@@ -17,6 +17,37 @@ def print_result(result):
         else:
             print('{}: {}'.format(key, _value))
 
+class result_discriptor:
+    def __init__(self, indict, decimal_reserve=5):
+        self.interval_space = 6
+        self.decimal_reserve = decimal_reserve
+        _len_list = []
+        self._keys = []
+        for key, _value in indict.items():
+            self._keys.append(key)
+            _len_list.append(max(len(key)+ self.interval_space, 12))
+        self.fmt = ['{:'+str(_len)+'}' for _len in _len_list]
+        self.fmt = '\t'.join(self.fmt)
+        self.first_time = True
+
+    def discript(self, _dict):
+        _value_list = ['' for _ in range(len(self._keys))]
+        others = ''
+        for key, _value in _dict.items():
+            if key not in self._keys:
+                others = others + '{} : {};'.format(key,_value)
+            elif isinstance(_value, int):
+                _value_list[self._keys.index(key)] = str(_value)
+            else:
+                _value_list[self._keys.index(key)] = '%.{}f'.format(self.decimal_reserve) % _value
+
+        word = self.fmt.format(*_value_list)
+        if others != '':
+            word = word + ' '*5 + others
+        if self.first_time:
+            self.first_time = False
+            word = self.fmt.format(*self._keys) + '\n' + word
+        return word
 
 default_controller_config = {
     'batch_size': 1, # not implement
@@ -41,6 +72,7 @@ class controller(object):
         self.rc_file = None
 
         self.init_time = time.time()
+        self.discriptor = None
         pass
 
     def _get_time(self):
@@ -88,9 +120,14 @@ class controller(object):
     def start_eval(self, additional_dict=None):
         result = self.module.eval()
         if additional_dict is not None:
-            result.update(additional_dict)
+            additional_dict.update(result)
+            result = deepcopy(additional_dict)
+
         result['time'] = int(time.time() - self.init_time)
-        self.record_to_file(result)
+        if self.discriptor is None:
+            self.discriptor = result_discriptor(result)
+        _word = self.discriptor.discript(result)
+        self.record_to_file(_word)
         return result
 
     def _train(self):
@@ -157,7 +194,7 @@ class controller(object):
                 self.rc_file.write('  {}: {}\n'.format(key, _value))
             self.rc_file.write('---> training record\n')
 
-        self.rc_file.write('  {}\n'.format(line))
+        self.rc_file.write('  {}\n'.format(line.replace('\n', '\n  ')))
         self.rc_file.flush()
 
     def save_state(self):

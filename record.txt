@@ -1,38 +1,401 @@
+----------------------------------------
+
+  Demo SGAR 
+  seed: None 
+
+----------------------------------------
 ---> module config
-  dataset: {'name': 'poisson_v4_02', 'fidelity': ['low'], 'type': 'x_2_y', 'train_start_index': 0, 'train_sample': 64, 'eval_start_index': 0, 'eval_sample': 128}
+  dataset: {'name': 'TopOP_mfGent_v5', 'fidelity': ['low'], 'type': 'x_2_y', 'train_start_index': 0, 'train_sample': 32, 'eval_start_index': 0, 'eval_sample': 128, 'seed': None}
   lr: {'kernel': 0.1, 'optional_param': 0.1, 'noise': 0.1}
-  kernel: {'K1': {'SE': {'exp_restrict': False, 'length_scale': 1.0, 'scale': 1.0}}}
-  evaluate_method: ['mae', 'rmse', 'r2']
+  kernel: {'K1': {'SE': {'exp_restrict': True, 'length_scale': 1.0, 'scale': 1.0}}, 'K2': {'SE': {'exp_restrict': True, 'length_scale': 1.0, 'scale': 1.0}}, 'K3': {'SE': {'exp_restrict': True, 'length_scale': 1.0, 'scale': 1.0}}}
+  evaluate_method: ['mae', 'rmse', 'r2', 'gaussian_loss']
   optimizer: adam
   exp_restrict: False
   input_normalzie: True
   output_normalize: True
-  noise_init: 1.0
-  res_cigp: None
+  noise_init: 100.0
+  grid_config: {'grid_size': [-1, -1], 'type': 'fixed', 'dimension_map': 'identity'}
 ---> training record
-  {'mae': 96.772446, 'rmse': 132.14104, 'r2': 0.14567448617574108, 'epoch': 1, 'time': 0}
-  {'mae': 59.269436, 'rmse': 83.11142, 'r2': 0.7952509683757518, 'epoch': 10, 'time': 0}
-  {'mae': 9.625612, 'rmse': 13.719967, 'r2': 0.9968788250057852, 'epoch': 100, 'time': 0}
-  {'mae': 4.203719, 'rmse': 5.9827633, 'r2': 0.999433490900188, 'epoch': 300, 'time': 0}
-  {'mae': 2.7952232, 'rmse': 3.9791384, 'r2': 0.9997526455744467, 'epoch': 500, 'time': 0}
-  {'mae': 1.5765084, 'rmse': 2.243586, 'r2': 0.999922322884754, 'epoch': 1000, 'time': 1}
----> Finsh the first module
+  {'mae': 0.048472684, 'r2': 0.7570937491483222, 'rmse': 0.07714711, 'gaussian_loss': 18.74459457397461, 'epoch': 1, 'time': 0}
+  {'mae': 0.039164223, 'r2': 0.6823282150226495, 'rmse': 0.06687845, 'gaussian_loss': -17.803932189941406, 'epoch': 10, 'time': 0}
+  {'mae': 0.03652124, 'r2': 0.7628322960055338, 'rmse': 0.06638766, 'gaussian_loss': 14.009875297546387, 'epoch': 100, 'time': 0}
+  {'mae': 0.036721617, 'r2': 0.764313405849449, 'rmse': 0.06667195, 'gaussian_loss': 17.16116714477539, 'epoch': 300, 'time': 1}
+  {'mae': 0.036780372, 'r2': 0.7663266088928857, 'rmse': 0.06680196, 'gaussian_loss': 18.29553985595703, 'epoch': 500, 'time': 2}
+  {'mae': 0.037050784, 'r2': 0.7722556880062921, 'rmse': 0.06715023, 'gaussian_loss': 22.689294815063477, 'epoch': 1000, 'time': 4}
+  {'mae': 0.037050784, 'r2': 0.7722556880062921, 'rmse': 0.06715023, 'gaussian_loss': 22.689294815063477, 'eval state': 'test_on_restore', 'time': 4}
+  {'mae': 0.037050784, 'r2': 0.7722556880062921, 'rmse': 0.06715023, 'gaussian_loss': 22.689294815063477, 'eval state': 'test_on_last_epoch', 'time': 4}
+---> final result  {'mae': 0.037050784, 'r2': 0.7722556880062921, 'rmse': 0.06715023, 'gaussian_loss': 22.689294815063477, 'eval state': 'final', 'time': 4}
+----------> finish x-yl training
+
+
+---------->
+SGAR for 4 samples
 
 ---> module config
-  dataset: {'name': 'poisson_v4_02', 'fidelity': ['low', 'high'], 'type': 'x_yl_2_yh', 'train_start_index': 0, 'train_sample': 16, 'eval_start_index': 0, 'eval_sample': 128}
+  dataset: {'name': 'TopOP_mfGent_v5', 'fidelity': ['low', 'high'], 'type': 'x_yl_2_yh', 'connection_method': 'res_mapping', 'train_start_index': 0, 'train_sample': 4, 'eval_start_index': 0, 'eval_sample': 128, 'seed': None}
+  lr: {'kernel': 0.01, 'optional_param': 0.01, 'noise': 0.01}
+  kernel: {'K1': {'SE': {'exp_restrict': True, 'length_scale': 1.0, 'scale': 1.0}}, 'K2': {'SE': {'exp_restrict': True, 'length_scale': 1.0, 'scale': 1.0}}, 'K3': {'SE': {'exp_restrict': True, 'length_scale': 1.0, 'scale': 1.0}}}
+  evaluate_method: ['mae', 'rmse', 'r2', 'gaussian_loss']
+  optimizer: adam
+  exp_restrict: False
+  input_normalize: True
+  output_normalize: True
+  noise_init: 100.0
+  grid_config: {'grid_size': [-1, -1], 'type': 'fixed', 'dimension_map': 'identity'}
+---> training record
+  {'mae': 0.19480509, 'r2': -0.3675751344100068, 'rmse': 0.26488358, 'gaussian_loss': 9.249059677124023, 'epoch': 1, 'time': 0}
+  {'mae': 0.19330123, 'r2': -0.19010680253988316, 'rmse': 0.2639017, 'gaussian_loss': 3.969168186187744, 'epoch': 10, 'time': 0}
+  {'mae': 0.20532694, 'r2': -0.1386001198343575, 'rmse': 0.27911532, 'gaussian_loss': -38.42396545410156, 'epoch': 100, 'time': 1}
+  {'mae': 0.21854632, 'r2': -0.22697662965250395, 'rmse': 0.29408148, 'gaussian_loss': -37.536903381347656, 'epoch': 300, 'time': 2}
+  epoch 328 reach nan state
+  {'mae': 0.2185818, 'r2': -0.22687720113726184, 'rmse': 0.2941232, 'gaussian_loss': -37.51961898803711, 'eval state': 'test_on_restore', 'time': 2}
+  {'mae': 0.21854632, 'r2': -0.22697662965250395, 'rmse': 0.29408148, 'gaussian_loss': -37.536903381347656, 'eval state': 'test_on_last_epoch', 'time': 2}
+---> final result  {'mae': 0.21854632, 'r2': -0.22697662965250395, 'rmse': 0.29408148, 'gaussian_loss': -37.536903381347656, 'eval state': 'final', 'time': 2}
+---> end
+
+
+---------->
+SGAR for 8 samples
+
+---> module config
+  dataset: {'name': 'TopOP_mfGent_v5', 'fidelity': ['low', 'high'], 'type': 'x_yl_2_yh', 'connection_method': 'res_mapping', 'train_start_index': 0, 'train_sample': 8, 'eval_start_index': 0, 'eval_sample': 128, 'seed': None}
+  lr: {'kernel': 0.01, 'optional_param': 0.01, 'noise': 0.01}
+  kernel: {'K1': {'SE': {'exp_restrict': True, 'length_scale': 1.0, 'scale': 1.0}}, 'K2': {'SE': {'exp_restrict': True, 'length_scale': 1.0, 'scale': 1.0}}, 'K3': {'SE': {'exp_restrict': True, 'length_scale': 1.0, 'scale': 1.0}}}
+  evaluate_method: ['mae', 'rmse', 'r2', 'gaussian_loss']
+  optimizer: adam
+  exp_restrict: False
+  input_normalize: True
+  output_normalize: True
+  noise_init: 100.0
+  grid_config: {'grid_size': [-1, -1], 'type': 'fixed', 'dimension_map': 'identity'}
+---> training record
+  {'mae': 0.17607918, 'r2': -0.14755243151706746, 'rmse': 0.25339308, 'gaussian_loss': 13.26594352722168, 'epoch': 1, 'time': 0}
+  {'mae': 0.17634404, 'r2': -0.14270928070830602, 'rmse': 0.25657827, 'gaussian_loss': 8.009692192077637, 'epoch': 10, 'time': 0}
+  {'mae': 0.17266923, 'r2': -0.1275668378121868, 'rmse': 0.25100622, 'gaussian_loss': -34.05851364135742, 'epoch': 100, 'time': 0}
+  {'mae': 0.17465197, 'r2': -0.08612717592976782, 'rmse': 0.24522835, 'gaussian_loss': -38.04676055908203, 'epoch': 300, 'time': 2}
+  epoch 399 reach nan state
+  {'mae': 0.1762695, 'r2': -0.10129865025475587, 'rmse': 0.24604319, 'gaussian_loss': -37.31532669067383, 'eval state': 'test_on_restore', 'time': 3}
+  {'mae': 0.17465197, 'r2': -0.08612717592976782, 'rmse': 0.24522835, 'gaussian_loss': -38.04676055908203, 'eval state': 'test_on_last_epoch', 'time': 3}
+---> final result  {'mae': 0.17465197, 'r2': -0.08612717592976782, 'rmse': 0.24522835, 'gaussian_loss': -38.04676055908203, 'eval state': 'final', 'time': 3}
+---> end
+
+
+---------->
+SGAR for 16 samples
+
+---> module config
+  dataset: {'name': 'TopOP_mfGent_v5', 'fidelity': ['low', 'high'], 'type': 'x_yl_2_yh', 'connection_method': 'res_mapping', 'train_start_index': 0, 'train_sample': 16, 'eval_start_index': 0, 'eval_sample': 128, 'seed': None}
+  lr: {'kernel': 0.01, 'optional_param': 0.01, 'noise': 0.01}
+  kernel: {'K1': {'SE': {'exp_restrict': True, 'length_scale': 1.0, 'scale': 1.0}}, 'K2': {'SE': {'exp_restrict': True, 'length_scale': 1.0, 'scale': 1.0}}, 'K3': {'SE': {'exp_restrict': True, 'length_scale': 1.0, 'scale': 1.0}}}
+  evaluate_method: ['mae', 'rmse', 'r2', 'gaussian_loss']
+  optimizer: adam
+  exp_restrict: False
+  input_normalize: True
+  output_normalize: True
+  noise_init: 100.0
+  grid_config: {'grid_size': [-1, -1], 'type': 'fixed', 'dimension_map': 'identity'}
+---> training record
+  {'mae': 0.15302995, 'r2': 0.02102265482417278, 'rmse': 0.23399104, 'gaussian_loss': 18.192121505737305, 'epoch': 1, 'time': 0}
+  {'mae': 0.15807435, 'r2': -0.07974157803885365, 'rmse': 0.24076284, 'gaussian_loss': 12.168922424316406, 'epoch': 10, 'time': 0}
+  {'mae': 0.14461039, 'r2': 0.08580668525692017, 'rmse': 0.21985024, 'gaussian_loss': -37.16084289550781, 'epoch': 100, 'time': 1}
+  {'mae': 0.14972179, 'r2': 0.06511232038479153, 'rmse': 0.21762106, 'gaussian_loss': -37.456974029541016, 'epoch': 300, 'time': 3}
+  {'mae': 0.15323144, 'r2': 0.03491237782463686, 'rmse': 0.21932445, 'gaussian_loss': -33.85653305053711, 'epoch': 500, 'time': 4}
+  {'mae': 0.15762821, 'r2': -0.009140715855735788, 'rmse': 0.22193582, 'gaussian_loss': -29.614011764526367, 'epoch': 1000, 'time': 9}
+  {'mae': 0.15762821, 'r2': -0.009140715855735788, 'rmse': 0.22193582, 'gaussian_loss': -29.614011764526367, 'eval state': 'test_on_restore', 'time': 9}
+  {'mae': 0.15762821, 'r2': -0.009140715855735788, 'rmse': 0.22193582, 'gaussian_loss': -29.614011764526367, 'eval state': 'test_on_last_epoch', 'time': 9}
+---> final result  {'mae': 0.15762821, 'r2': -0.009140715855735788, 'rmse': 0.22193582, 'gaussian_loss': -29.614011764526367, 'eval state': 'final', 'time': 9}
+---> end
+
+
+---------->
+SGAR for 32 samples
+
+---> module config
+  dataset: {'name': 'TopOP_mfGent_v5', 'fidelity': ['low', 'high'], 'type': 'x_yl_2_yh', 'connection_method': 'res_mapping', 'train_start_index': 0, 'train_sample': 32, 'eval_start_index': 0, 'eval_sample': 128, 'seed': None}
+  lr: {'kernel': 0.01, 'optional_param': 0.01, 'noise': 0.01}
+  kernel: {'K1': {'SE': {'exp_restrict': True, 'length_scale': 1.0, 'scale': 1.0}}, 'K2': {'SE': {'exp_restrict': True, 'length_scale': 1.0, 'scale': 1.0}}, 'K3': {'SE': {'exp_restrict': True, 'length_scale': 1.0, 'scale': 1.0}}}
+  evaluate_method: ['mae', 'rmse', 'r2', 'gaussian_loss']
+  optimizer: adam
+  exp_restrict: False
+  input_normalize: True
+  output_normalize: True
+  noise_init: 100.0
+  grid_config: {'grid_size': [-1, -1], 'type': 'fixed', 'dimension_map': 'identity'}
+---> training record
+  {'mae': 0.15004063, 'r2': 0.052463795354574225, 'rmse': 0.24398018, 'gaussian_loss': 21.305057525634766, 'epoch': 1, 'time': 0}
+  {'mae': 0.15447834, 'r2': -0.02344830563893257, 'rmse': 0.25117737, 'gaussian_loss': 14.741756439208984, 'epoch': 10, 'time': 0}
+  {'mae': 0.12824595, 'r2': 0.21067296446554334, 'rmse': 0.20180786, 'gaussian_loss': -39.777671813964844, 'epoch': 100, 'time': 1}
+  {'mae': 0.13087049, 'r2': 0.19891181804955538, 'rmse': 0.20019053, 'gaussian_loss': -36.881961822509766, 'epoch': 300, 'time': 3}
+  {'mae': 0.13254607, 'r2': 0.19220022992266836, 'rmse': 0.20052218, 'gaussian_loss': -34.636505126953125, 'epoch': 500, 'time': 6}
+  {'mae': 0.13374156, 'r2': 0.18488021969745458, 'rmse': 0.20094918, 'gaussian_loss': -31.13897705078125, 'epoch': 1000, 'time': 11}
+  {'mae': 0.13374156, 'r2': 0.18488021969745458, 'rmse': 0.20094918, 'gaussian_loss': -31.13897705078125, 'eval state': 'test_on_restore', 'time': 11}
+  {'mae': 0.13374156, 'r2': 0.18488021969745458, 'rmse': 0.20094918, 'gaussian_loss': -31.13897705078125, 'eval state': 'test_on_last_epoch', 'time': 11}
+---> final result  {'mae': 0.13374156, 'r2': 0.18488021969745458, 'rmse': 0.20094918, 'gaussian_loss': -31.13897705078125, 'eval state': 'final', 'time': 11}
+---> end
+
+----------------------------------------
+
+  Demo SGAR 
+  seed: 0 
+
+----------------------------------------
+---> module config
+  dataset: {'name': 'TopOP_mfGent_v5', 'fidelity': ['low'], 'type': 'x_2_y', 'train_start_index': 0, 'train_sample': 32, 'eval_start_index': 0, 'eval_sample': 128, 'seed': 0}
   lr: {'kernel': 0.1, 'optional_param': 0.1, 'noise': 0.1}
-  kernel: {'K1': {'SE': {'exp_restrict': False, 'length_scale': 1.0, 'scale': 1.0}}}
-  evaluate_method: ['mae', 'rmse', 'r2']
+  kernel: {'K1': {'SE': {'exp_restrict': True, 'length_scale': 1.0, 'scale': 1.0}}, 'K2': {'SE': {'exp_restrict': True, 'length_scale': 1.0, 'scale': 1.0}}, 'K3': {'SE': {'exp_restrict': True, 'length_scale': 1.0, 'scale': 1.0}}}
+  evaluate_method: ['mae', 'rmse', 'r2', 'gaussian_loss']
   optimizer: adam
   exp_restrict: False
   input_normalzie: True
   output_normalize: True
-  noise_init: 1.0
-  res_cigp: None
+  noise_init: 100.0
+  grid_config: {'grid_size': [-1, -1], 'type': 'fixed', 'dimension_map': 'identity'}
 ---> training record
-  {'mae': 199.96063, 'rmse': 240.42204, 'r2': -10687.796780576711, 'epoch': 1, 'time': 0}
-  {'mae': 197.14139, 'rmse': 237.58334, 'r2': -1082.7449018452808, 'epoch': 10, 'time': 0}
-  {'mae': 43.73416, 'rmse': 65.29449, 'r2': 0.8595665145207478, 'epoch': 100, 'time': 0}
-  {'mae': 18.875355, 'rmse': 28.620735, 'r2': 0.9792750968089359, 'epoch': 300, 'time': 0}
-  {'mae': 12.686804, 'rmse': 19.165888, 'r2': 0.9913046387310596, 'epoch': 500, 'time': 0}
-  {'mae': 7.352481, 'rmse': 10.971422, 'r2': 0.997333656740898, 'epoch': 1000, 'time': 1}
+  {'mae': 0.05767547, 'r2': 0.8114236138105759, 'rmse': 0.085391805, 'gaussian_loss': 18.1562557220459, 'epoch': 1, 'time': 0}
+  {'mae': 0.04765536, 'r2': 0.8825468714141285, 'rmse': 0.07139498, 'gaussian_loss': -4.961920261383057, 'epoch': 10, 'time': 0}
+  {'mae': 0.047801718, 'r2': 0.844054306450037, 'rmse': 0.07640883, 'gaussian_loss': 14.72624683380127, 'epoch': 100, 'time': 0}
+  {'mae': 0.047830015, 'r2': 0.843661859817608, 'rmse': 0.07670018, 'gaussian_loss': 9.817666053771973, 'epoch': 300, 'time': 1}
+  {'mae': 0.04855123, 'r2': 0.8399934749906622, 'rmse': 0.077988476, 'gaussian_loss': 3.968040943145752, 'epoch': 500, 'time': 2}
+  {'mae': 0.049265884, 'r2': 0.8290579918946865, 'rmse': 0.07763374, 'gaussian_loss': 12.688557624816895, 'epoch': 1000, 'time': 4}
+  {'mae': 0.049265884, 'r2': 0.8290579918946865, 'rmse': 0.07763374, 'gaussian_loss': 12.688557624816895, 'eval state': 'test_on_restore', 'time': 4}
+  {'mae': 0.049265884, 'r2': 0.8290579918946865, 'rmse': 0.07763374, 'gaussian_loss': 12.688557624816895, 'eval state': 'test_on_last_epoch', 'time': 4}
+---> final result  {'mae': 0.049265884, 'r2': 0.8290579918946865, 'rmse': 0.07763374, 'gaussian_loss': 12.688557624816895, 'eval state': 'final', 'time': 4}
+----------> finish x-yl training
+
+
+---------->
+SGAR for 4 samples
+
+---> module config
+  dataset: {'name': 'TopOP_mfGent_v5', 'fidelity': ['low', 'high'], 'type': 'x_yl_2_yh', 'connection_method': 'res_mapping', 'train_start_index': 0, 'train_sample': 4, 'eval_start_index': 0, 'eval_sample': 128, 'seed': 0}
+  lr: {'kernel': 0.01, 'optional_param': 0.01, 'noise': 0.01}
+  kernel: {'K1': {'SE': {'exp_restrict': True, 'length_scale': 1.0, 'scale': 1.0}}, 'K2': {'SE': {'exp_restrict': True, 'length_scale': 1.0, 'scale': 1.0}}, 'K3': {'SE': {'exp_restrict': True, 'length_scale': 1.0, 'scale': 1.0}}}
+  evaluate_method: ['mae', 'rmse', 'r2', 'gaussian_loss']
+  optimizer: adam
+  exp_restrict: False
+  input_normalize: True
+  output_normalize: True
+  noise_init: 100.0
+  grid_config: {'grid_size': [-1, -1], 'type': 'fixed', 'dimension_map': 'identity'}
+---> training record
+  {'mae': 0.2016274, 'r2': -0.4291422494082404, 'rmse': 0.26854318, 'gaussian_loss': 7.395316123962402, 'epoch': 1, 'time': 0}
+  {'mae': 0.19241351, 'r2': -0.15455242262809465, 'rmse': 0.26103392, 'gaussian_loss': 2.028301954269409, 'epoch': 10, 'time': 0}
+  {'mae': 0.20411053, 'r2': -0.07095588036024426, 'rmse': 0.27844584, 'gaussian_loss': -38.8869514465332, 'epoch': 100, 'time': 0}
+  {'mae': 0.20385668, 'r2': -0.032534069255747755, 'rmse': 0.2755296, 'gaussian_loss': -37.81822967529297, 'epoch': 300, 'time': 2}
+  {'mae': 0.20370814, 'r2': -0.022339012890642496, 'rmse': 0.27469048, 'gaussian_loss': -34.51077651977539, 'epoch': 500, 'time': 3}
+  {'mae': 0.20478235, 'r2': -0.038633692832371, 'rmse': 0.2753082, 'gaussian_loss': -30.823244094848633, 'epoch': 1000, 'time': 7}
+  {'mae': 0.20478235, 'r2': -0.038633692832371, 'rmse': 0.2753082, 'gaussian_loss': -30.823244094848633, 'eval state': 'test_on_restore', 'time': 7}
+  {'mae': 0.20478235, 'r2': -0.038633692832371, 'rmse': 0.2753082, 'gaussian_loss': -30.823244094848633, 'eval state': 'test_on_last_epoch', 'time': 7}
+---> final result  {'mae': 0.20478235, 'r2': -0.038633692832371, 'rmse': 0.2753082, 'gaussian_loss': -30.823244094848633, 'eval state': 'final', 'time': 7}
+---> end
+
+
+---------->
+SGAR for 8 samples
+
+---> module config
+  dataset: {'name': 'TopOP_mfGent_v5', 'fidelity': ['low', 'high'], 'type': 'x_yl_2_yh', 'connection_method': 'res_mapping', 'train_start_index': 0, 'train_sample': 8, 'eval_start_index': 0, 'eval_sample': 128, 'seed': 0}
+  lr: {'kernel': 0.01, 'optional_param': 0.01, 'noise': 0.01}
+  kernel: {'K1': {'SE': {'exp_restrict': True, 'length_scale': 1.0, 'scale': 1.0}}, 'K2': {'SE': {'exp_restrict': True, 'length_scale': 1.0, 'scale': 1.0}}, 'K3': {'SE': {'exp_restrict': True, 'length_scale': 1.0, 'scale': 1.0}}}
+  evaluate_method: ['mae', 'rmse', 'r2', 'gaussian_loss']
+  optimizer: adam
+  exp_restrict: False
+  input_normalize: True
+  output_normalize: True
+  noise_init: 100.0
+  grid_config: {'grid_size': [-1, -1], 'type': 'fixed', 'dimension_map': 'identity'}
+---> training record
+  {'mae': 0.18404937, 'r2': -0.15850429685295297, 'rmse': 0.2571553, 'gaussian_loss': 11.599315643310547, 'epoch': 1, 'time': 0}
+  {'mae': 0.18187585, 'r2': -0.0683864373499801, 'rmse': 0.2554586, 'gaussian_loss': 6.348452568054199, 'epoch': 10, 'time': 0}
+  {'mae': 0.1810137, 'r2': 0.03477925999061527, 'rmse': 0.25196245, 'gaussian_loss': -36.980125427246094, 'epoch': 100, 'time': 0}
+  {'mae': 0.18480131, 'r2': 0.061271501976266886, 'rmse': 0.2521369, 'gaussian_loss': -38.50537109375, 'epoch': 300, 'time': 2}
+  {'mae': 0.18607813, 'r2': 0.06307170842447547, 'rmse': 0.25300008, 'gaussian_loss': -35.320858001708984, 'epoch': 500, 'time': 4}
+  {'mae': 0.18750528, 'r2': 0.05913931087636246, 'rmse': 0.25428572, 'gaussian_loss': -31.618844985961914, 'epoch': 1000, 'time': 8}
+  {'mae': 0.18750528, 'r2': 0.05913931087636246, 'rmse': 0.25428572, 'gaussian_loss': -31.618844985961914, 'eval state': 'test_on_restore', 'time': 8}
+  {'mae': 0.18750528, 'r2': 0.05913931087636246, 'rmse': 0.25428572, 'gaussian_loss': -31.618844985961914, 'eval state': 'test_on_last_epoch', 'time': 8}
+---> final result  {'mae': 0.18750528, 'r2': 0.05913931087636246, 'rmse': 0.25428572, 'gaussian_loss': -31.618844985961914, 'eval state': 'final', 'time': 8}
+---> end
+
+
+---------->
+SGAR for 16 samples
+
+---> module config
+  dataset: {'name': 'TopOP_mfGent_v5', 'fidelity': ['low', 'high'], 'type': 'x_yl_2_yh', 'connection_method': 'res_mapping', 'train_start_index': 0, 'train_sample': 16, 'eval_start_index': 0, 'eval_sample': 128, 'seed': 0}
+  lr: {'kernel': 0.01, 'optional_param': 0.01, 'noise': 0.01}
+  kernel: {'K1': {'SE': {'exp_restrict': True, 'length_scale': 1.0, 'scale': 1.0}}, 'K2': {'SE': {'exp_restrict': True, 'length_scale': 1.0, 'scale': 1.0}}, 'K3': {'SE': {'exp_restrict': True, 'length_scale': 1.0, 'scale': 1.0}}}
+  evaluate_method: ['mae', 'rmse', 'r2', 'gaussian_loss']
+  optimizer: adam
+  exp_restrict: False
+  input_normalize: True
+  output_normalize: True
+  noise_init: 100.0
+  grid_config: {'grid_size': [-1, -1], 'type': 'fixed', 'dimension_map': 'identity'}
+---> training record
+  {'mae': 0.1883401, 'r2': -0.014060451234101889, 'rmse': 0.2744585, 'gaussian_loss': 15.25543212890625, 'epoch': 1, 'time': 0}
+  {'mae': 0.19512637, 'r2': -0.021679521085994816, 'rmse': 0.2851681, 'gaussian_loss': 10.289955139160156, 'epoch': 10, 'time': 0}
+  {'mae': 0.18110234, 'r2': 0.04286115054847875, 'rmse': 0.25032216, 'gaussian_loss': -40.45015335083008, 'epoch': 100, 'time': 1}
+  {'mae': 0.18472451, 'r2': 0.04578873521707979, 'rmse': 0.2515296, 'gaussian_loss': -37.815879821777344, 'epoch': 300, 'time': 2}
+  {'mae': 0.18585831, 'r2': 0.04770085817176546, 'rmse': 0.25242943, 'gaussian_loss': -33.212684631347656, 'epoch': 500, 'time': 4}
+  {'mae': 0.18704686, 'r2': 0.051438814210677815, 'rmse': 0.2534122, 'gaussian_loss': -29.50056266784668, 'epoch': 1000, 'time': 9}
+  {'mae': 0.18704686, 'r2': 0.051438814210677815, 'rmse': 0.2534122, 'gaussian_loss': -29.50056266784668, 'eval state': 'test_on_restore', 'time': 9}
+  {'mae': 0.18704686, 'r2': 0.051438814210677815, 'rmse': 0.2534122, 'gaussian_loss': -29.50056266784668, 'eval state': 'test_on_last_epoch', 'time': 9}
+---> final result  {'mae': 0.18704686, 'r2': 0.051438814210677815, 'rmse': 0.2534122, 'gaussian_loss': -29.50056266784668, 'eval state': 'final', 'time': 9}
+---> end
+
+
+---------->
+SGAR for 32 samples
+
+---> module config
+  dataset: {'name': 'TopOP_mfGent_v5', 'fidelity': ['low', 'high'], 'type': 'x_yl_2_yh', 'connection_method': 'res_mapping', 'train_start_index': 0, 'train_sample': 32, 'eval_start_index': 0, 'eval_sample': 128, 'seed': 0}
+  lr: {'kernel': 0.01, 'optional_param': 0.01, 'noise': 0.01}
+  kernel: {'K1': {'SE': {'exp_restrict': True, 'length_scale': 1.0, 'scale': 1.0}}, 'K2': {'SE': {'exp_restrict': True, 'length_scale': 1.0, 'scale': 1.0}}, 'K3': {'SE': {'exp_restrict': True, 'length_scale': 1.0, 'scale': 1.0}}}
+  evaluate_method: ['mae', 'rmse', 'r2', 'gaussian_loss']
+  optimizer: adam
+  exp_restrict: False
+  input_normalize: True
+  output_normalize: True
+  noise_init: 100.0
+  grid_config: {'grid_size': [-1, -1], 'type': 'fixed', 'dimension_map': 'identity'}
+---> training record
+  {'mae': 0.1690957, 'r2': 0.08287500761818027, 'rmse': 0.262384, 'gaussian_loss': 20.67168426513672, 'epoch': 1, 'time': 0}
+  {'mae': 0.16889516, 'r2': 0.0691199364301252, 'rmse': 0.26200488, 'gaussian_loss': 13.832369804382324, 'epoch': 10, 'time': 0}
+  {'mae': 0.15062916, 'r2': 0.19711411923088612, 'rmse': 0.22010696, 'gaussian_loss': -40.3571891784668, 'epoch': 100, 'time': 1}
+  {'mae': 0.154732, 'r2': 0.18719971520579254, 'rmse': 0.22207293, 'gaussian_loss': -37.0549430847168, 'epoch': 300, 'time': 4}
+  {'mae': 0.15631089, 'r2': 0.18345103568806387, 'rmse': 0.22303934, 'gaussian_loss': -33.25961685180664, 'epoch': 500, 'time': 6}
+  {'mae': 0.15750818, 'r2': 0.18184854934983902, 'rmse': 0.22383821, 'gaussian_loss': -29.227474212646484, 'epoch': 1000, 'time': 11}
+  {'mae': 0.15750818, 'r2': 0.18184854934983902, 'rmse': 0.22383821, 'gaussian_loss': -29.227474212646484, 'eval state': 'test_on_restore', 'time': 11}
+  {'mae': 0.15750818, 'r2': 0.18184854934983902, 'rmse': 0.22383821, 'gaussian_loss': -29.227474212646484, 'eval state': 'test_on_last_epoch', 'time': 11}
+---> final result  {'mae': 0.15750818, 'r2': 0.18184854934983902, 'rmse': 0.22383821, 'gaussian_loss': -29.227474212646484, 'eval state': 'final', 'time': 11}
+---> end
+
+----------------------------------------
+
+  Demo SGAR 
+  seed: 1 
+
+----------------------------------------
+---> module config
+  dataset: {'name': 'TopOP_mfGent_v5', 'fidelity': ['low'], 'type': 'x_2_y', 'train_start_index': 0, 'train_sample': 32, 'eval_start_index': 0, 'eval_sample': 128, 'seed': 1}
+  lr: {'kernel': 0.1, 'optional_param': 0.1, 'noise': 0.1}
+  kernel: {'K1': {'SE': {'exp_restrict': True, 'length_scale': 1.0, 'scale': 1.0}}, 'K2': {'SE': {'exp_restrict': True, 'length_scale': 1.0, 'scale': 1.0}}, 'K3': {'SE': {'exp_restrict': True, 'length_scale': 1.0, 'scale': 1.0}}}
+  evaluate_method: ['mae', 'rmse', 'r2', 'gaussian_loss']
+  optimizer: adam
+  exp_restrict: False
+  input_normalzie: True
+  output_normalize: True
+  noise_init: 100.0
+  grid_config: {'grid_size': [-1, -1], 'type': 'fixed', 'dimension_map': 'identity'}
+---> training record
+  {'mae': 0.05578313, 'r2': 0.8086949198951552, 'rmse': 0.07879703, 'gaussian_loss': 18.132015228271484, 'epoch': 1, 'time': 0}
+  {'mae': 0.047368426, 'r2': 0.8569658066530275, 'rmse': 0.07078948, 'gaussian_loss': -8.347660064697266, 'epoch': 10, 'time': 0}
+  {'mae': 0.050854236, 'r2': 0.8070786059375873, 'rmse': 0.07591043, 'gaussian_loss': 15.215958595275879, 'epoch': 100, 'time': 0}
+  {'mae': 0.050826937, 'r2': 0.8081859247992822, 'rmse': 0.07587828, 'gaussian_loss': 11.933443069458008, 'epoch': 300, 'time': 1}
+  {'mae': 0.05176639, 'r2': 0.8005080249851576, 'rmse': 0.07736539, 'gaussian_loss': 7.621164321899414, 'epoch': 500, 'time': 2}
+  {'mae': 0.05152466, 'r2': 0.8039038455386658, 'rmse': 0.07705101, 'gaussian_loss': 6.034890651702881, 'epoch': 1000, 'time': 4}
+  {'mae': 0.05152466, 'r2': 0.8039038455386658, 'rmse': 0.07705101, 'gaussian_loss': 6.034890651702881, 'eval state': 'test_on_restore', 'time': 4}
+  {'mae': 0.05152466, 'r2': 0.8039038455386658, 'rmse': 0.07705101, 'gaussian_loss': 6.034890651702881, 'eval state': 'test_on_last_epoch', 'time': 4}
+---> final result  {'mae': 0.05152466, 'r2': 0.8039038455386658, 'rmse': 0.07705101, 'gaussian_loss': 6.034890651702881, 'eval state': 'final', 'time': 4}
+----------> finish x-yl training
+
+
+---------->
+SGAR for 4 samples
+
+---> module config
+  dataset: {'name': 'TopOP_mfGent_v5', 'fidelity': ['low', 'high'], 'type': 'x_yl_2_yh', 'connection_method': 'res_mapping', 'train_start_index': 0, 'train_sample': 4, 'eval_start_index': 0, 'eval_sample': 128, 'seed': 1}
+  lr: {'kernel': 0.01, 'optional_param': 0.01, 'noise': 0.01}
+  kernel: {'K1': {'SE': {'exp_restrict': True, 'length_scale': 1.0, 'scale': 1.0}}, 'K2': {'SE': {'exp_restrict': True, 'length_scale': 1.0, 'scale': 1.0}}, 'K3': {'SE': {'exp_restrict': True, 'length_scale': 1.0, 'scale': 1.0}}}
+  evaluate_method: ['mae', 'rmse', 'r2', 'gaussian_loss']
+  optimizer: adam
+  exp_restrict: False
+  input_normalize: True
+  output_normalize: True
+  noise_init: 100.0
+  grid_config: {'grid_size': [-1, -1], 'type': 'fixed', 'dimension_map': 'identity'}
+---> training record
+  {'mae': 0.19882238, 'r2': -0.43086034542487334, 'rmse': 0.26442656, 'gaussian_loss': 7.331238746643066, 'epoch': 1, 'time': 0}
+  {'mae': 0.19077322, 'r2': -0.18226616200428336, 'rmse': 0.25868794, 'gaussian_loss': 1.9899580478668213, 'epoch': 10, 'time': 0}
+  {'mae': 0.20094663, 'r2': -0.1038015283008656, 'rmse': 0.27385342, 'gaussian_loss': -39.27546310424805, 'epoch': 100, 'time': 0}
+  {'mae': 0.20045261, 'r2': -0.11143337680196207, 'rmse': 0.2707036, 'gaussian_loss': -38.21322250366211, 'epoch': 300, 'time': 2}
+  {'mae': 0.20046887, 'r2': -0.11553123661094494, 'rmse': 0.2701548, 'gaussian_loss': -34.827484130859375, 'epoch': 500, 'time': 3}
+  {'mae': 0.2013607, 'r2': -0.13506418607186488, 'rmse': 0.27058196, 'gaussian_loss': -31.107742309570312, 'epoch': 1000, 'time': 6}
+  {'mae': 0.2013607, 'r2': -0.13506418607186488, 'rmse': 0.27058196, 'gaussian_loss': -31.107742309570312, 'eval state': 'test_on_restore', 'time': 6}
+  {'mae': 0.2013607, 'r2': -0.13506418607186488, 'rmse': 0.27058196, 'gaussian_loss': -31.107742309570312, 'eval state': 'test_on_last_epoch', 'time': 6}
+---> final result  {'mae': 0.2013607, 'r2': -0.13506418607186488, 'rmse': 0.27058196, 'gaussian_loss': -31.107742309570312, 'eval state': 'final', 'time': 6}
+---> end
+
+
+---------->
+SGAR for 8 samples
+
+---> module config
+  dataset: {'name': 'TopOP_mfGent_v5', 'fidelity': ['low', 'high'], 'type': 'x_yl_2_yh', 'connection_method': 'res_mapping', 'train_start_index': 0, 'train_sample': 8, 'eval_start_index': 0, 'eval_sample': 128, 'seed': 1}
+  lr: {'kernel': 0.01, 'optional_param': 0.01, 'noise': 0.01}
+  kernel: {'K1': {'SE': {'exp_restrict': True, 'length_scale': 1.0, 'scale': 1.0}}, 'K2': {'SE': {'exp_restrict': True, 'length_scale': 1.0, 'scale': 1.0}}, 'K3': {'SE': {'exp_restrict': True, 'length_scale': 1.0, 'scale': 1.0}}}
+  evaluate_method: ['mae', 'rmse', 'r2', 'gaussian_loss']
+  optimizer: adam
+  exp_restrict: False
+  input_normalize: True
+  output_normalize: True
+  noise_init: 100.0
+  grid_config: {'grid_size': [-1, -1], 'type': 'fixed', 'dimension_map': 'identity'}
+---> training record
+  {'mae': 0.18185122, 'r2': -0.1704863943888519, 'rmse': 0.2528617, 'gaussian_loss': 11.538182258605957, 'epoch': 1, 'time': 0}
+  {'mae': 0.17968604, 'r2': -0.09629250633536855, 'rmse': 0.25200078, 'gaussian_loss': 6.290369987487793, 'epoch': 10, 'time': 0}
+  {'mae': 0.18016583, 'r2': -0.008875465981814254, 'rmse': 0.24963306, 'gaussian_loss': -37.15768814086914, 'epoch': 100, 'time': 0}
+  {'mae': 0.1843012, 'r2': 0.0009246125863734689, 'rmse': 0.24857202, 'gaussian_loss': -38.797855377197266, 'epoch': 300, 'time': 2}
+  {'mae': 0.18544883, 'r2': -0.005930322169599933, 'rmse': 0.24914311, 'gaussian_loss': -35.59831619262695, 'epoch': 500, 'time': 4}
+  {'mae': 0.18657616, 'r2': -0.017018397643604882, 'rmse': 0.24998939, 'gaussian_loss': -31.887493133544922, 'epoch': 1000, 'time': 8}
+  {'mae': 0.18657616, 'r2': -0.017018397643604882, 'rmse': 0.24998939, 'gaussian_loss': -31.887493133544922, 'eval state': 'test_on_restore', 'time': 8}
+  {'mae': 0.18657616, 'r2': -0.017018397643604882, 'rmse': 0.24998939, 'gaussian_loss': -31.887493133544922, 'eval state': 'test_on_last_epoch', 'time': 8}
+---> final result  {'mae': 0.18657616, 'r2': -0.017018397643604882, 'rmse': 0.24998939, 'gaussian_loss': -31.887493133544922, 'eval state': 'final', 'time': 8}
+---> end
+
+
+---------->
+SGAR for 16 samples
+
+---> module config
+  dataset: {'name': 'TopOP_mfGent_v5', 'fidelity': ['low', 'high'], 'type': 'x_yl_2_yh', 'connection_method': 'res_mapping', 'train_start_index': 0, 'train_sample': 16, 'eval_start_index': 0, 'eval_sample': 128, 'seed': 1}
+  lr: {'kernel': 0.01, 'optional_param': 0.01, 'noise': 0.01}
+  kernel: {'K1': {'SE': {'exp_restrict': True, 'length_scale': 1.0, 'scale': 1.0}}, 'K2': {'SE': {'exp_restrict': True, 'length_scale': 1.0, 'scale': 1.0}}, 'K3': {'SE': {'exp_restrict': True, 'length_scale': 1.0, 'scale': 1.0}}}
+  evaluate_method: ['mae', 'rmse', 'r2', 'gaussian_loss']
+  optimizer: adam
+  exp_restrict: False
+  input_normalize: True
+  output_normalize: True
+  noise_init: 100.0
+  grid_config: {'grid_size': [-1, -1], 'type': 'fixed', 'dimension_map': 'identity'}
+---> training record
+  {'mae': 0.18594977, 'r2': -0.016591295314260873, 'rmse': 0.26966316, 'gaussian_loss': 15.18209171295166, 'epoch': 1, 'time': 0}
+  {'mae': 0.19352883, 'r2': -0.03605863361751709, 'rmse': 0.2810414, 'gaussian_loss': 10.21555233001709, 'epoch': 10, 'time': 0}
+  {'mae': 0.18056718, 'r2': 0.015131190094478626, 'rmse': 0.24480589, 'gaussian_loss': -40.94269561767578, 'epoch': 100, 'time': 0}
+  {'mae': 0.18476418, 'r2': -0.006095411391858568, 'rmse': 0.24661292, 'gaussian_loss': -38.21036148071289, 'epoch': 300, 'time': 2}
+  {'mae': 0.1859122, 'r2': -0.012930493757112565, 'rmse': 0.2475022, 'gaussian_loss': -33.54090881347656, 'epoch': 500, 'time': 4}
+  {'mae': 0.1871667, 'r2': -0.01784641507532779, 'rmse': 0.24845247, 'gaussian_loss': -29.788814544677734, 'epoch': 1000, 'time': 8}
+  {'mae': 0.1871667, 'r2': -0.01784641507532779, 'rmse': 0.24845247, 'gaussian_loss': -29.788814544677734, 'eval state': 'test_on_restore', 'time': 8}
+  {'mae': 0.1871667, 'r2': -0.01784641507532779, 'rmse': 0.24845247, 'gaussian_loss': -29.788814544677734, 'eval state': 'test_on_last_epoch', 'time': 8}
+---> final result  {'mae': 0.1871667, 'r2': -0.01784641507532779, 'rmse': 0.24845247, 'gaussian_loss': -29.788814544677734, 'eval state': 'final', 'time': 8}
+---> end
+
+
+---------->
+SGAR for 32 samples
+
+---> module config
+  dataset: {'name': 'TopOP_mfGent_v5', 'fidelity': ['low', 'high'], 'type': 'x_yl_2_yh', 'connection_method': 'res_mapping', 'train_start_index': 0, 'train_sample': 32, 'eval_start_index': 0, 'eval_sample': 128, 'seed': 1}
+  lr: {'kernel': 0.01, 'optional_param': 0.01, 'noise': 0.01}
+  kernel: {'K1': {'SE': {'exp_restrict': True, 'length_scale': 1.0, 'scale': 1.0}}, 'K2': {'SE': {'exp_restrict': True, 'length_scale': 1.0, 'scale': 1.0}}, 'K3': {'SE': {'exp_restrict': True, 'length_scale': 1.0, 'scale': 1.0}}}
+  evaluate_method: ['mae', 'rmse', 'r2', 'gaussian_loss']
+  optimizer: adam
+  exp_restrict: False
+  input_normalize: True
+  output_normalize: True
+  noise_init: 100.0
+  grid_config: {'grid_size': [-1, -1], 'type': 'fixed', 'dimension_map': 'identity'}
+---> training record
+  {'mae': 0.17374626, 'r2': 0.18323010901819609, 'rmse': 0.26094943, 'gaussian_loss': 20.648880004882812, 'epoch': 1, 'time': 0}
+  {'mae': 0.17387728, 'r2': 0.17625238772628635, 'rmse': 0.25980285, 'gaussian_loss': 13.795586585998535, 'epoch': 10, 'time': 0}
+  {'mae': 0.15701026, 'r2': 0.22005723775949204, 'rmse': 0.21932048, 'gaussian_loss': -40.5216064453125, 'epoch': 100, 'time': 1}

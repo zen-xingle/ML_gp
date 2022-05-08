@@ -12,6 +12,14 @@ from module.cigp import CIGP_MODULE
 
 
 if __name__ == '__main__':
+    with open('record.txt', 'a') as _temp_file:
+        _temp_file.write('-'*40 + '\n')
+        _temp_file.write('\n')
+        _temp_file.write('  Demo cigp \n')
+        _temp_file.write('\n')
+        _temp_file.write('-'*40 + '\n')
+        _temp_file.flush()
+
     module_config = {
         'dataset': {'name': 'TopOP_mfGent_v5',
                     'fidelity': ['low'],

@@ -12,13 +12,20 @@ from module.hogp import HOGP_MODULE
 
 
 if __name__ == '__main__':
-    
+    with open('record.txt', 'a') as _temp_file:
+        _temp_file.write('-'*40 + '\n')
+        _temp_file.write('\n')
+        _temp_file.write('  Demo hogp \n')
+        _temp_file.write('\n')
+        _temp_file.write('-'*40 + '\n')
+        _temp_file.flush()
+
     module_config = {
         'dataset': {'name': 'TopOP_mfGent_v5',
                     'fidelity': ['low'],
                     'type':'x_2_y',    # x_yl_2_yh, x_2_y
                     'train_start_index': 0, 
-                    'train_sample': 256, 
+                    'train_sample': 32, 
                     'eval_start_index': 0,
                     'eval_sample': 128,
                     'seed': 0,

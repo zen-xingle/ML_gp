@@ -11,6 +11,31 @@ def _reshape_as_2D(A, sample_last_dim):
     return A
 
 
+def high_level_evaluator(predicts, target, method_list, sample_last_dim=False):
+    # simple evaluator
+    _method = []
+    for _m in ['mae', 'r2', 'rmse']:
+        if _m in method_list:
+            _method.append(_m)
+    result_dict = performance_evaluator(predicts[0], target, _method, sample_last_dim)
+
+    if 'gaussian_loss' in method_list:
+        result_dict['gaussian_loss'] = _gaussian_loss(predicts[0], target, predicts[1])
+    return result_dict
+
+
+def _gaussian_loss(inputs, target, var):
+    assert inputs.shape == target.shape
+    assert inputs.shape == var.shape
+    if len(inputs.shape) > 2:
+        sample = inputs.shape[0]
+        inputs = inputs.reshape(-1, sample)
+        target = target.reshape(-1, sample)
+        var = var.reshape(-1, sample)
+    with torch.no_grad():
+        return torch.nn.functional.gaussian_nll_loss(inputs, target, var).item()
+
+
 def performance_evaluator(A, B, method_list, sample_last_dim=False):
     if hasattr(A, 'numpy'):
         A = A.detach().numpy()

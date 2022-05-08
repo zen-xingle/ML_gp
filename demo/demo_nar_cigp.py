@@ -15,13 +15,14 @@ from module.cigp import CIGP_MODULE
 if __name__ == '__main__':
     controller_config = {} # use defualt config
     module_config = {
-        'dataset': {'name': 'poisson_v4_02',
+        'dataset': {'name': 'Burget_mfGent_v5',
                     'fidelity': ['low'],
                     'type':'x_2_y',    # x_yl_2_yh, x_2_y
                     'train_start_index': 0, 
                     'train_sample': 64, 
                     'eval_start_index': 0, 
-                    'eval_sample':128},
+                    'eval_sample':128,
+                    'seed': 0},
     } # only change dataset config, others use default config
     ct = controller(CIGP_MODULE, controller_config, module_config)
     ct.start_train()
@@ -32,13 +33,14 @@ if __name__ == '__main__':
         'max_epoch': 3000,
     }
     second_module_config = {
-        'dataset': {'name': 'poisson_v4_02',
+        'dataset': {'name': 'Burget_mfGent_v5',
                     'fidelity': ['low','high'],
                     'type':'x_yl_2_yh',    # x_yl_2_yh, x_2_y
                     'train_start_index': 0, 
                     'train_sample': 16,
                     'eval_start_index': 0, 
-                    'eval_sample':128},
+                    'eval_sample':128,
+                    'seed': 0},
     }
     second_ct = controller(CIGP_MODULE, controller_config, second_module_config)
     # replace ground truth eval data with low fidelity predict

@@ -12,14 +12,17 @@ from module.hogp import HOGP_MODULE
 
 
 if __name__ == '__main__':
+    
     module_config = {
-        'dataset': {'name': 'burger_v4_02',
+        'dataset': {'name': 'TopOP_mfGent_v5',
                     'fidelity': ['low'],
                     'type':'x_2_y',    # x_yl_2_yh, x_2_y
                     'train_start_index': 0, 
-                    'train_sample': 64, 
+                    'train_sample': 256, 
                     'eval_start_index': 0,
-                    'eval_sample':128},
+                    'eval_sample': 128,
+                    'seed': 0,
+                    },
     }
     ct = controller(HOGP_MODULE, {}, module_config)
     ct.start_train()

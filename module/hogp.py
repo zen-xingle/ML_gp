@@ -55,9 +55,10 @@ default_module_config = {
                  'type':'x_2_y',    # x_yl_2_yh, x_2_y
                  'connection_method': 'res_mapping',  # Only valid when x_yl_2_yh, identity, res_rho, res_mapping
                  'train_start_index': 0, 
-                 'train_sample': 32, 
+                 'train_sample': 8, 
                  'eval_start_index': 0, 
-                 'eval_sample':256},
+                 'eval_sample':256,
+                 'seed': 0},
 
     'lr': {'kernel':0.1, 
            'optional_param':0.1, 
@@ -73,7 +74,7 @@ default_module_config = {
     'exp_restrict': False,
     'input_normalzie': True,
     'output_normalize': True,
-    'noise_init' : 0.005,
+    'noise_init' : 100.,
     'grid_config': {'grid_size': [-1, -1], 
                     'type': 'fixed', # learnable, fixed
                     'dimension_map': 'identity', # latent space: identity, learnable_identity, learnable_map
@@ -153,7 +154,8 @@ class HOGP_MODULE:
                 x_eval = torch.tensor(data['xte'], dtype=torch.float32)
                 y_eval = torch.tensor(data['Yte'][0][_fidelity], dtype=torch.float32)
                 # shuffle
-                x_tr, y_tr = self._random_shuffle([[x_tr, 0], [y_tr, 0]])
+                if self.module_config['dataset']['seed'] is not None:
+                    x_tr, y_tr = self._random_shuffle([[x_tr, 0], [y_tr, 0]])
 
                 # gen vector, put num to the last dim
                 _index = dataset_config['train_start_index']
@@ -400,7 +402,7 @@ class HOGP_MODULE:
 
 
     def _random_shuffle(self, np_array_list):
-        random.seed(0)
+        random.seed(self.module_config['dataset']['seed'])
         # check dim shape
         # TODO support -1 dim
         dim_lenth = []

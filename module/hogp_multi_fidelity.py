@@ -57,7 +57,8 @@ default_module_config = {
                  'train_start_index': 0, 
                  'train_sample': 8, 
                  'eval_start_index': 0, 
-                 'eval_sample':256},
+                 'eval_sample':256,
+                 'seed': 0},
 
     'lr': {'kernel':0.01, 
            'optional_param':0.01, 
@@ -163,7 +164,8 @@ class HOGP_MF_MODULE:
                 y_eval_low = torch.tensor(data['Yte'][0][_first_fidelity], dtype=torch.float32)
                 y_eval = torch.tensor(data['Yte'][0][_second_fidelity], dtype=torch.float32)
                 # shuffle
-                x_tr, y_tr_low, y_tr = self._random_shuffle([[x_tr, 0], [y_tr_low, 0], [y_tr, 0]])
+                if self.module_config['dataset']['seed'] is not None:
+                    x_tr, y_tr_low, y_tr = self._random_shuffle([[x_tr, 0], [y_tr_low, 0], [y_tr, 0]])
 
                 # gen vector, put num to the last dim
                 # for train set

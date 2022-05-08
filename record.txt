@@ -22,6 +22,7 @@
   300         	0.08371     	0.13307     	-5.02526    	0           
   500         	0.08253     	0.13185     	-4.50828    	0           
   1000        	0.08161     	0.13088     	-4.02513    	1           
+---> try to load best state
               	0.08161     	0.13088     	-4.02513    	1                eval state : test_on_restore;
               	0.08161     	0.13088     	-4.02513    	1                eval state : test_on_last_epoch;
 ---> final result
@@ -52,6 +53,7 @@
   300         	0.04783     	0.84366     	0.07670     	9.81767            	1           
   500         	0.04855     	0.83999     	0.07799     	3.96804            	2           
   1000        	0.04927     	0.82906     	0.07763     	12.68856           	4           
+---> try to load best state
               	0.04927     	0.82906     	0.07763     	12.68856           	4                eval state : test_on_restore;
               	0.04927     	0.82906     	0.07763     	12.68856           	4                eval state : test_on_last_epoch;
 ---> final result

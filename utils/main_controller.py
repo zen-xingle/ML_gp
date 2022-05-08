@@ -166,6 +166,7 @@ class controller(object):
             self.module.load_state(self.param_record_list[index])
 
     def smart_restore_state(self, index):
+        self.rc_file.write('---> try to load best state\n')
         # 验证最后一个checkpoint, 及常规暂存的效果, 保留其中更优的一个
         if len(self.param_record_list) == 0:
             print('no record to load')

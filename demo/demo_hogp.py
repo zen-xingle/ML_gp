@@ -31,6 +31,7 @@ if __name__ == '__main__':
                         'eval_start_index': 0,
                         'eval_sample': 128,
                         'seed': 0,
+                        'interp_data': False,
                         },
         }
         ct = controller(HOGP_MODULE, {}, module_config)

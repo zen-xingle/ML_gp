@@ -27,10 +27,11 @@ if __name__ == '__main__':
                         'fidelity': ['low'],
                         'type':'x_2_y',    # x_yl_2_yh, x_2_y
                         'train_start_index': 0, 
-                        'train_sample': 8, 
+                        'train_sample': 256, 
                         'eval_start_index': 0,
                         'eval_sample':128,
-                        'seed': None},
+                        'seed': None,
+                        'interp_data': False},
         }
         ct = controller(CIGP_MODULE, {}, module_config)
         ct.start_train()

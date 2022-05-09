@@ -36,7 +36,8 @@ if __name__ == '__main__':
                         'train_sample': 32, 
                         'eval_start_index': 0,
                         'eval_sample':128,
-                        'seed': _seed},
+                        'seed': _seed,
+                        'interp_data': False},
         } # only change dataset config, others use default config
         ct = controller(HOGP_MODULE, controller_config, ct_module_config)
         ct.start_train()
@@ -62,7 +63,8 @@ if __name__ == '__main__':
                             'train_sample': _sample, 
                             'eval_start_index': 0,
                             'eval_sample':128,
-                            'seed': _seed},
+                            'seed': _seed,
+                            'interp_data': False},
             } # only change dataset config, others use default config
 
             mfct = controller(HOGP_MF_MODULE, controller_config, mfct_module_config)

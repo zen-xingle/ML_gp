@@ -32,7 +32,8 @@ if __name__ == '__main__':
                         'train_sample': 32, 
                         'eval_start_index': 0, 
                         'eval_sample':128,
-                        'seed': 0},
+                        'seed': 0,
+                        'interp_data': False},
         } # only change dataset config, others use default config
         ct = controller(CIGP_MODULE, controller_config, module_config)
         ct.start_train()
@@ -51,7 +52,7 @@ if __name__ == '__main__':
                 _temp_file.flush()
 
             second_controller_config = {
-                'max_epoch': 3000,
+                'max_epoch': 300,
             }
             second_module_config = {
                 'dataset': {'name': 'Burget_mfGent_v5',
@@ -61,7 +62,9 @@ if __name__ == '__main__':
                             'train_sample': _sample,
                             'eval_start_index': 0, 
                             'eval_sample':128,
-                            'seed': 0},
+                            'seed': 0,
+                            'interp_data': False},
+                'res_cigp': None,
             }
             second_ct = controller(CIGP_MODULE, controller_config, second_module_config)
             # replace ground truth eval data with low fidelity predict

@@ -20,7 +20,7 @@ from tensorly import tucker_to_tensor
 from utils.eigen import eigen_pairs
 from utils.normalizer import Normalizer
 # from module.gp_output_decorator import posterior_output_decorator
-from utils.performance_evaluator import performance_evaluator
+from utils.performance_evaluator import performance_evaluator, high_level_evaluator
 from scipy.io import loadmat
 
 # optimize for main_controller
@@ -57,7 +57,8 @@ default_module_config = {
                  'train_start_index': 0, 
                  'train_sample': 8, 
                  'eval_start_index': 0, 
-                 'eval_sample':256},
+                 'eval_sample':256,
+                 'seed': 0},
 
     'lr': {'kernel':0.01, 
            'optional_param':0.01, 
@@ -68,12 +69,12 @@ default_module_config = {
             'K2': {'SE': {'exp_restrict':True, 'length_scale':1., 'scale': 1.}},
             'K3': {'SE': {'exp_restrict':True, 'length_scale':1., 'scale': 1.}},
               },
-    'evaluate_method': ['mae', 'rmse', 'r2'],
+    'evaluate_method': ['mae', 'rmse', 'r2', 'gaussian_loss'],
     'optimizer': 'adam',
     'exp_restrict': False,
     'input_normalize': True,
     'output_normalize': True,
-    'noise_init' : 0.005,
+    'noise_init' : 100.,
     'grid_config': {'grid_size': [-1, -1], 
                     'type': 'fixed', # learnable, fixed
                     'dimension_map': 'identity', # latent space, identity, learnable_identity, learnable_map
@@ -163,7 +164,8 @@ class HOGP_MF_MODULE:
                 y_eval_low = torch.tensor(data['Yte'][0][_first_fidelity], dtype=torch.float32)
                 y_eval = torch.tensor(data['Yte'][0][_second_fidelity], dtype=torch.float32)
                 # shuffle
-                x_tr, y_tr_low, y_tr = self._random_shuffle([[x_tr, 0], [y_tr_low, 0], [y_tr, 0]])
+                if self.module_config['dataset']['seed'] is not None:
+                    x_tr, y_tr_low, y_tr = self._random_shuffle([[x_tr, 0], [y_tr_low, 0], [y_tr, 0]])
 
                 # gen vector, put num to the last dim
                 # for train set
@@ -353,21 +355,20 @@ class HOGP_MF_MODULE:
 
             # /*** Get predict var***/
             '''
+            '''
             # NOTE: now only work for the normal predict
             _init_value = torch.tensor([1.0]).reshape(*[1 for i in self.K])
             diag_K = tucker_to_tensor(( _init_value, [K.diag().reshape(-1,1) for K in self.K[:-1]]))
 
-            # var则为0, 怎么利用该信息更新输入？
             S = self.A * self.A.pow(-1/2)
             S_2 = S.pow(2)
             # S_product = tensorly.tenalg.multi_mode_dot(S_2, [eigen_vector_d1.pow(2), eigen_vector_d2.pow(2), (K_star@K_p.inverse()@eigen_vector_p).pow(2)])
             S_product = tensorly.tenalg.multi_mode_dot(S_2, [self.K_eigen[i].vector.pow(2) for i in range(len(self.K_eigen)-1)]+[(K_star@self.K[-1].inverse()@self.K_eigen[-1].vector).pow(2)])
             M = diag_K + S_product
-            if self.module_config['output_normalize'] is True:
-                M = M * self.Y_normalizer.std ** 2
-            '''
+            # if self.module_config['output_normalize'] is True:
+            #     M = M * self.Y_normalizer.std ** 2
 
-        return predict_u, None
+        return predict_u, M
 
     '''
     def predict_postprior(self, input_param, target_y, target_mask, method):
@@ -528,8 +529,13 @@ class HOGP_MF_MODULE:
 
     def eval(self):
         print('---> start eval')
-        predict_y = self.predict(self.inputs_eval)[0]
-        result = performance_evaluator(predict_y, self.outputs_eval[0], self.module_config['evaluate_method'])
-        self.predict_y = predict_y
+        predict_y, predict_var = self.predict(self.inputs_eval)
+        self.predict_y = deepcopy(predict_y)
+        # result = performance_evaluator(predict_y, self.outputs_eval[0], self.module_config['evaluate_method'])
+        predict_y = _last_dim_to_fist(predict_y)
+        predict_var = _last_dim_to_fist(predict_var)
+        target = _last_dim_to_fist(self.outputs_eval[0])
+        result = high_level_evaluator([predict_y, predict_var], target, self.module_config['evaluate_method'])
+        print(result)
         print(result)
         return result

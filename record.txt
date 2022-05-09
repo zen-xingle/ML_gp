@@ -1,38 +1,62 @@
----> module config
-  dataset: {'name': 'poisson_v4_02', 'fidelity': ['low'], 'type': 'x_2_y', 'train_start_index': 0, 'train_sample': 64, 'eval_start_index': 0, 'eval_sample': 128}
-  lr: {'kernel': 0.1, 'optional_param': 0.1, 'noise': 0.1}
-  kernel: {'K1': {'SE': {'exp_restrict': False, 'length_scale': 1.0, 'scale': 1.0}}}
-  evaluate_method: ['mae', 'rmse', 'r2']
-  optimizer: adam
-  exp_restrict: False
-  input_normalzie: True
-  output_normalize: True
-  noise_init: 1.0
-  res_cigp: None
----> training record
-  {'mae': 96.772446, 'rmse': 132.14104, 'r2': 0.14567448617574108, 'epoch': 1, 'time': 0}
-  {'mae': 59.269436, 'rmse': 83.11142, 'r2': 0.7952509683757518, 'epoch': 10, 'time': 0}
-  {'mae': 9.625612, 'rmse': 13.719967, 'r2': 0.9968788250057852, 'epoch': 100, 'time': 0}
-  {'mae': 4.203719, 'rmse': 5.9827633, 'r2': 0.999433490900188, 'epoch': 300, 'time': 0}
-  {'mae': 2.7952232, 'rmse': 3.9791384, 'r2': 0.9997526455744467, 'epoch': 500, 'time': 0}
-  {'mae': 1.5765084, 'rmse': 2.243586, 'r2': 0.999922322884754, 'epoch': 1000, 'time': 1}
----> Finsh the first module
+----------------------------------------
 
+  Demo cigp 
+
+----------------------------------------
 ---> module config
-  dataset: {'name': 'poisson_v4_02', 'fidelity': ['low', 'high'], 'type': 'x_yl_2_yh', 'train_start_index': 0, 'train_sample': 16, 'eval_start_index': 0, 'eval_sample': 128}
+  dataset: {'name': 'TopOP_mfGent_v5', 'fidelity': ['low'], 'type': 'x_2_y', 'train_start_index': 0, 'train_sample': 8, 'eval_start_index': 0, 'eval_sample': 128, 'seed': None}
   lr: {'kernel': 0.1, 'optional_param': 0.1, 'noise': 0.1}
   kernel: {'K1': {'SE': {'exp_restrict': False, 'length_scale': 1.0, 'scale': 1.0}}}
   evaluate_method: ['mae', 'rmse', 'r2']
   optimizer: adam
   exp_restrict: False
-  input_normalzie: True
+  input_normalize: True
   output_normalize: True
   noise_init: 1.0
   res_cigp: None
 ---> training record
-  {'mae': 199.96063, 'rmse': 240.42204, 'r2': -10687.796780576711, 'epoch': 1, 'time': 0}
-  {'mae': 197.14139, 'rmse': 237.58334, 'r2': -1082.7449018452808, 'epoch': 10, 'time': 0}
-  {'mae': 43.73416, 'rmse': 65.29449, 'r2': 0.8595665145207478, 'epoch': 100, 'time': 0}
-  {'mae': 18.875355, 'rmse': 28.620735, 'r2': 0.9792750968089359, 'epoch': 300, 'time': 0}
-  {'mae': 12.686804, 'rmse': 19.165888, 'r2': 0.9913046387310596, 'epoch': 500, 'time': 0}
-  {'mae': 7.352481, 'rmse': 10.971422, 'r2': 0.997333656740898, 'epoch': 1000, 'time': 1}
+  epoch       	mae         	rmse        	r2          	time        
+  1           	0.13148     	0.18433     	-32.46941   	0           
+  10          	0.14220     	0.19357     	-74.25451   	0           
+  100         	0.08899     	0.13848     	-7.02144    	0           
+  300         	0.08371     	0.13307     	-5.02526    	0           
+  500         	0.08253     	0.13185     	-4.50828    	0           
+  1000        	0.08161     	0.13088     	-4.02513    	1           
+---> try to load best state
+              	0.08161     	0.13088     	-4.02513    	1                eval state : test_on_restore;
+              	0.08161     	0.13088     	-4.02513    	1                eval state : test_on_last_epoch;
+---> final result
+              	0.08161     	0.13088     	-4.02513    	1                eval state : final;
+---> end
+
+----------------------------------------
+
+  Demo hogp 
+
+----------------------------------------
+---> module config
+  dataset: {'name': 'TopOP_mfGent_v5', 'fidelity': ['low'], 'type': 'x_2_y', 'train_start_index': 0, 'train_sample': 32, 'eval_start_index': 0, 'eval_sample': 128, 'seed': 0}
+  lr: {'kernel': 0.1, 'optional_param': 0.1, 'noise': 0.1}
+  kernel: {'K1': {'SE': {'exp_restrict': True, 'length_scale': 1.0, 'scale': 1.0}}, 'K2': {'SE': {'exp_restrict': True, 'length_scale': 1.0, 'scale': 1.0}}, 'K3': {'SE': {'exp_restrict': True, 'length_scale': 1.0, 'scale': 1.0}}}
+  evaluate_method: ['mae', 'rmse', 'r2', 'gaussian_loss']
+  optimizer: adam
+  exp_restrict: False
+  input_normalzie: True
+  output_normalize: True
+  noise_init: 100.0
+  grid_config: {'grid_size': [-1, -1], 'type': 'fixed', 'dimension_map': 'identity'}
+---> training record
+  epoch       	mae         	r2          	rmse        	gaussian_loss      	time        
+  1           	0.05768     	0.81142     	0.08539     	18.15626           	0           
+  10          	0.04766     	0.88255     	0.07139     	-4.96192           	0           
+  100         	0.04780     	0.84405     	0.07641     	14.72625           	0           
+  300         	0.04783     	0.84366     	0.07670     	9.81767            	1           
+  500         	0.04855     	0.83999     	0.07799     	3.96804            	2           
+  1000        	0.04927     	0.82906     	0.07763     	12.68856           	4           
+---> try to load best state
+              	0.04927     	0.82906     	0.07763     	12.68856           	4                eval state : test_on_restore;
+              	0.04927     	0.82906     	0.07763     	12.68856           	4                eval state : test_on_last_epoch;
+---> final result
+              	0.04927     	0.82906     	0.07763     	12.68856           	4                eval state : final;
+---> end
+

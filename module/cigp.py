@@ -148,7 +148,8 @@ class CIGP_MODULE:
             assert False
 
         # shuffle
-        x_tr, y_tr = self._random_shuffle([[x_tr, 0], [y_tr, 0]])
+        if self.module_config['dataset']['seed'] is not None:
+            x_tr, y_tr = self._random_shuffle([[x_tr, 0], [y_tr, 0]])
         
         # vectorize, reshape to 2D
         _temp_list = [x_tr, y_tr, x_eval, y_eval]
@@ -295,7 +296,7 @@ class CIGP_MODULE:
         # print('loss_nll:', loss.item())
 
     def _random_shuffle(self, np_array_list):
-        random.seed(1024)
+        random.seed(self.module_config['dataset']['seed'])
         # check dim shape
         # TODO support -1 dim
         dim_lenth = []

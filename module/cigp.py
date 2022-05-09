@@ -106,7 +106,7 @@ class CIGP_MODULE:
             self.Y_normalizer = Normalizer(self.outputs_tr[0])
             self.outputs_tr[0] = self.Y_normalizer.normalize(self.outputs_tr[0])
             if self.module_config['res_cigp'] is not None:
-                self.inputs_tr[1] = Normalizer(self.inputs_tr[1])
+                self.inputs_tr[1] = self.Y_normalizer.normalize(self.inputs_tr[1])
         else:
             self.Y_normalizer = None
 

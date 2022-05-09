@@ -53,7 +53,7 @@ default_module_config = {
     'dataset' : {'name': 'poisson_v4_02',
                  'fidelity': ['low', 'high'],
                  'type':'x_yl_2_yh',    # x_yl_2_yh
-                 'connection_method': 'res_mapping',  # Only valid when x_yl_2_yh, identity, res_rho, res_mapping
+                 'connection_method': 'res_mapping',  # Only valid when x_yl_2_yh, res_standard, res_rho, res_mapping
                  'train_start_index': 0, 
                  'train_sample': 8, 
                  'eval_start_index': 0, 

@@ -53,7 +53,7 @@ default_module_config = {
     'dataset' : {'name': 'Piosson_mfGent_v5',
                  'fidelity': ['low'],
                  'type':'x_2_y',    # x_yl_2_yh, x_2_y
-                 'connection_method': 'res_mapping',  # Only valid when x_yl_2_yh, identity, res_rho, res_mapping
+                 'connection_method': 'res_mapping',  # Only valid when x_yl_2_yh, res_standard, res_rho, res_mapping
                  'train_start_index': 0, 
                  'train_sample': 8, 
                  'eval_start_index': 0, 

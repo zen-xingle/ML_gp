@@ -20,7 +20,7 @@ if __name__ == '__main__':
     } # use defualt config
 
     ct_module_config = {
-        'dataset': {'name': 'Piosson_mfGent_v5',
+        'dataset': {'name': 'Burget_mfGent_v5',
                     'fidelity': ['low'],
                     'type':'x_2_y',    # x_yl_2_yh, x_2_y
                     'train_start_index': 0, 
@@ -38,7 +38,7 @@ if __name__ == '__main__':
     ct.rc_file.flush()
 
     mfct_module_config = {
-        'dataset': {'name': 'Piosson_mfGent_v5',
+        'dataset': {'name': 'Burget_mfGent_v5',
                     'fidelity': ['low','high'],
                     'type':'x_yl_2_yh',    # x_yl_2_yh, x_2_y
                     'connection_method': 'res_mapping',

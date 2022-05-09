@@ -179,8 +179,8 @@ class HOGP_MODULE:
             if _value == -1:
                 _value = self.outputs_tr[0].shape[i]
             if grid_config['type'] == 'fixed':
-                # self.grid.append(torch.tensor(range(_value)).reshape(-1,1).float())
-                self.grid.append(torch.ones(_value).reshape(-1,1).float())
+                self.grid.append(torch.tensor(range(_value)).reshape(-1,1).float())
+                # self.grid.append(torch.ones(_value).reshape(-1,1).float())
             elif grid_config['type'] == 'learnable':
                 self.grid.append(torch.nn.Parameter(torch.tensor(range(_value)).reshape(-1,1).float()))
         
@@ -245,9 +245,9 @@ class HOGP_MODULE:
         # update grid
         for i in range(len(self.grid)):
             _in = tensorly.tenalg.mode_dot(self.grid[i], self.mapping_vector[i], 0)
-            # self.K.append(self.kernel_list[i](_in, _in))
-            nn = self.grid[i].shape[0]
-            self.K.append(torch.eye(nn))
+            self.K.append(self.kernel_list[i](_in, _in))
+            # nn = self.grid[i].shape[0]
+            # self.K.append(torch.eye(nn))
             self.K_eigen.append(eigen_pairs(self.K[i]))
 
         # update x
@@ -306,7 +306,7 @@ class HOGP_MODULE:
                 input_param[0] = self.X_normalizer.normalize(input_param[0])
             
             #! may needn't?
-            self.update_product()
+            # self.update_product()
 
             # /*** Get predict mean***/
             if len(input_param[0].shape) != len(self.inputs_tr[0].shape):

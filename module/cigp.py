@@ -349,12 +349,12 @@ class CIGP_MODULE:
             # LinvKx,_ = torch.triangular_solve(kx, L, upper = False)
 
             if self.module_config['res_cigp'] is not None:
-                u = kx.t() @ torch.cholesky_solve(self.target_connection(self.inputs_tr[1], self.outputs_tr[0]))
+                u = kx.t() @ torch.cholesky_solve(self.target_connection(self.inputs_tr[1], self.outputs_tr[0]), L)
                 if self.module_config['output_normalize'] is True:
                     input_param[1] = self.Y_normalizer.normalize(input_param[1])
-                    u = self.target_connection(input_param[1], u)
+                    u = self.target_connection.low_2_high(input_param[1], u)
                 else:
-                    u = self.target_connection(input_param[1], u)
+                    u = self.target_connection.low_2_high(input_param[1], u)
             else:
                 u = kx.t() @ torch.cholesky_solve(self.outputs_tr[0], L)
 

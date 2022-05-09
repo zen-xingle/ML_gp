@@ -58,7 +58,8 @@ default_module_config = {
                  'train_sample': 8, 
                  'eval_start_index': 0, 
                  'eval_sample':256,
-                 'seed': 0},
+                 'seed': 0,
+                 'interp_data': False},
 
     'lr': {'kernel':0.01, 
            'optional_param':0.01, 
@@ -158,11 +159,17 @@ class HOGP_MF_MODULE:
                 _first_fidelity = fidelity_map[dataset_config['fidelity'][0]]
                 _second_fidelity = fidelity_map[dataset_config['fidelity'][1]]
                 x_tr = torch.tensor(data['xtr'], dtype=torch.float32)
-                y_tr_low = torch.tensor(data['Ytr'][0][_first_fidelity], dtype=torch.float32)
-                y_tr = torch.tensor(data['Ytr'][0][_second_fidelity], dtype=torch.float32)
                 x_eval = torch.tensor(data['xte'], dtype=torch.float32)
-                y_eval_low = torch.tensor(data['Yte'][0][_first_fidelity], dtype=torch.float32)
-                y_eval = torch.tensor(data['Yte'][0][_second_fidelity], dtype=torch.float32)
+                if self.module_config['dataset']['interp_data'] is True:
+                    y_tr_low = torch.tensor(data['Ytr_interp'][0][_first_fidelity], dtype=torch.float32)
+                    y_tr = torch.tensor(data['Ytr_interp'][0][_second_fidelity], dtype=torch.float32)
+                    y_eval_low = torch.tensor(data['Yte_interp'][0][_first_fidelity], dtype=torch.float32)
+                    y_eval = torch.tensor(data['Yte_interp'][0][_second_fidelity], dtype=torch.float32)
+                else:
+                    y_tr_low = torch.tensor(data['Ytr'][0][_first_fidelity], dtype=torch.float32)
+                    y_tr = torch.tensor(data['Ytr'][0][_second_fidelity], dtype=torch.float32)
+                    y_eval_low = torch.tensor(data['Yte'][0][_first_fidelity], dtype=torch.float32)
+                    y_eval = torch.tensor(data['Yte'][0][_second_fidelity], dtype=torch.float32)
                 # shuffle
                 if self.module_config['dataset']['seed'] is not None:
                     x_tr, y_tr_low, y_tr = self._random_shuffle([[x_tr, 0], [y_tr_low, 0], [y_tr, 0]])
@@ -536,6 +543,5 @@ class HOGP_MF_MODULE:
         predict_var = _last_dim_to_fist(predict_var)
         target = _last_dim_to_fist(self.outputs_eval[0])
         result = high_level_evaluator([predict_y, predict_var], target, self.module_config['evaluate_method'])
-        print(result)
         print(result)
         return result

@@ -16,7 +16,8 @@ def _smooth_mapping_matrix(_shape):
 
         # for tensorly multi-dot
         _init_tensor = _init_tensor.transpose(1,0)
-
+    elif _shape[0] == _shape[1]:
+        _init_tensor = torch.eye(_shape[0])
     else:
         # down_sample
         assert False, NotImplemented
@@ -30,9 +31,13 @@ def _new_distribution(_shape):
 
 class rho_connection(torch.nn.Module):
     # rho connection between yl/yh
-    def __init__(self, rho=1.) -> None:
+    def __init__(self, rho=1., trainable=True) -> None:
         super().__init__()
-        self.rho = torch.nn.Parameter(torch.tensor(rho))
+        self.trainable = trainable
+        if trainable is True:
+            self.rho = torch.nn.Parameter(torch.tensor(rho))
+        else:
+            self.rho = torch.tensor(rho)
 
     def forward(self, yl, yh):
         res = yh - yl*self.rho
@@ -47,12 +52,14 @@ class rho_connection(torch.nn.Module):
         return yl
 
     def get_param(self, optimize_param_list):
-        optimize_param_list.append(self.rho)
+        if self.trainable is True:
+            optimize_param_list.append(self.rho)
         return optimize_param_list
 
     def set_param(self, param_list):
-        with torch.no_grad():
-            self.rho.copy_(param_list[0])
+        if self.trainable is True:
+            with torch.no_grad():
+                self.rho.copy_(param_list[0])
 
     def get_params_need_check(self):
         return None

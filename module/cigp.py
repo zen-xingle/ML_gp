@@ -254,11 +254,11 @@ class CIGP_MODULE:
 
     def _select_connection_kernel(self, type_name):
         from kernel.Multi_fidelity_connection import rho_connection, mapping_connection
-        assert type_name in ['identity', 'res_rho', 'res_mapping']
-        if type_name == 'identity':
-            self.target_connection = rho_connection(rho=1, trainable=False)
+        assert type_name in ['res_standard', 'res_rho', 'res_mapping']
+        if type_name == 'res_standard':
+            self.target_connection = rho_connection(rho=1., trainable=False)
         elif type_name in ['res_rho']:
-            self.target_connection = rho_connection(rho=1, trainable=True)
+            self.target_connection = rho_connection(rho=1., trainable=True)
         elif type_name in ['res_mapping']:
             self.target_connection = mapping_connection(self.target_list[0][:,:,0].shape, 
                                                         self.target_list[1][:,:,0].shape,

@@ -893,3 +893,312 @@ lar cigp for 32 samples
               	0.00819     	0.02465     	0.89273     	4                eval state : test_on_last_epoch;
 ---> final result
               	0.00819     	0.02465     	0.89273     	4                eval state : final;
+----------------------------------------
+
+  Demo hogp 
+  seed: None 
+  interp_data: False 
+
+----------------------------------------
+----------------------------------------
+
+  Demo hogp 
+  seed: 0 
+  interp_data: False 
+
+----------------------------------------
+----------------------------------------
+
+  Demo hogp 
+  seed: 1 
+  interp_data: False 
+
+----------------------------------------
+---> module config
+  dataset: {'name': 'TopOP_mfGent_v5', 'fidelity': ['low'], 'type': 'x_2_y', 'train_start_index': 0, 'train_sample': 64, 'eval_start_index': 0, 'eval_sample': 128, 'seed': 1, 'interp_data': False}
+  lr: {'kernel': 0.1, 'optional_param': 0.1, 'noise': 0.1}
+  kernel: {'K1': {'SE': {'exp_restrict': True, 'length_scale': 1.0, 'scale': 1.0}}, 'K2': {'SE': {'exp_restrict': True, 'length_scale': 1.0, 'scale': 1.0}}, 'K3': {'SE': {'exp_restrict': True, 'length_scale': 1.0, 'scale': 1.0}}}
+  evaluate_method: ['mae', 'rmse', 'r2']
+  optimizer: adam
+  exp_restrict: False
+  input_normalzie: True
+  output_normalize: True
+  noise_init: 0.005
+  grid_config: {'grid_size': [-1, -1], 'type': 'fixed', 'dimension_map': 'identity'}
+---> training record
+  epoch       	mae         	rmse        	r2          	time        
+  1           	0.20929     	0.25268     	-61.67487   	0           
+  10          	0.07344     	0.10705     	0.64179     	0           
+  100         	0.05476     	0.08241     	0.85579     	0           
+  300         	0.04911     	0.07437     	0.89309     	1           
+  500         	0.04591     	0.06997     	0.91006     	2           
+  1000        	0.04089     	0.06328     	0.93172     	5           
+---> try to load best state
+              	0.04089     	0.06328     	0.93172     	5                eval state : test_on_restore;
+              	0.04089     	0.06328     	0.93172     	5                eval state : test_on_last_epoch;
+---> final result              	0.04089     	0.06328     	0.93172     	5                eval state : final;
+---> end
+
+----------------------------------------
+
+  Demo hogp 
+  seed: None 
+  interp_data: False 
+
+----------------------------------------
+---> module config
+  dataset: {'name': 'TopOP_mfGent_v5', 'fidelity': ['low'], 'type': 'x_2_y', 'train_start_index': 0, 'train_sample': 64, 'eval_start_index': 0, 'eval_sample': 128, 'seed': None, 'interp_data': False}
+  lr: {'kernel': 0.1, 'optional_param': 0.1, 'noise': 0.1}
+  kernel: {'K1': {'SE': {'exp_restrict': True, 'length_scale': 1.0, 'scale': 1.0}}, 'K2': {'SE': {'exp_restrict': True, 'length_scale': 1.0, 'scale': 1.0}}, 'K3': {'SE': {'exp_restrict': True, 'length_scale': 1.0, 'scale': 1.0}}}
+  evaluate_method: ['mae', 'rmse', 'r2']
+  optimizer: adam
+  exp_restrict: False
+  input_normalzie: True
+  output_normalize: True
+  noise_init: 0.005
+  grid_config: {'grid_size': [-1, -1], 'type': 'fixed', 'dimension_map': 'identity'}
+---> training record
+  epoch       	mae         	rmse        	r2          	time        
+  1           	0.20929     	0.25268     	-61.67487   	0           
+  10          	0.07344     	0.10705     	0.64179     	0           
+  100         	0.05476     	0.08241     	0.85579     	0           
+  300         	0.04911     	0.07437     	0.89309     	1           
+  500         	0.04591     	0.06997     	0.91006     	2           
+  1000        	0.04089     	0.06328     	0.93172     	5           
+---> try to load best state
+              	0.04089     	0.06328     	0.93172     	5                eval state : test_on_restore;
+              	0.04089     	0.06328     	0.93172     	5                eval state : test_on_last_epoch;
+---> final result              	0.04089     	0.06328     	0.93172     	5                eval state : final;
+---> end
+
+----------------------------------------
+
+  Demo hogp 
+  seed: 0 
+  interp_data: False 
+
+----------------------------------------
+---> module config
+  dataset: {'name': 'TopOP_mfGent_v5', 'fidelity': ['low'], 'type': 'x_2_y', 'train_start_index': 0, 'train_sample': 64, 'eval_start_index': 0, 'eval_sample': 128, 'seed': 0, 'interp_data': False}
+  lr: {'kernel': 0.1, 'optional_param': 0.1, 'noise': 0.1}
+  kernel: {'K1': {'SE': {'exp_restrict': True, 'length_scale': 1.0, 'scale': 1.0}}, 'K2': {'SE': {'exp_restrict': True, 'length_scale': 1.0, 'scale': 1.0}}, 'K3': {'SE': {'exp_restrict': True, 'length_scale': 1.0, 'scale': 1.0}}}
+  evaluate_method: ['mae', 'rmse', 'r2']
+  optimizer: adam
+  exp_restrict: False
+  input_normalzie: True
+  output_normalize: True
+  noise_init: 0.005
+  grid_config: {'grid_size': [-1, -1], 'type': 'fixed', 'dimension_map': 'identity'}
+---> training record
+  epoch       	mae         	rmse        	r2          	time        
+  1           	0.20929     	0.25268     	-61.67487   	0           
+  10          	0.07344     	0.10705     	0.64179     	0           
+  100         	0.05476     	0.08241     	0.85579     	0           
+  300         	0.04911     	0.07437     	0.89309     	1           
+  500         	0.04591     	0.06997     	0.91006     	2           
+  1000        	0.04089     	0.06328     	0.93172     	5           
+---> try to load best state
+              	0.04089     	0.06328     	0.93172     	5                eval state : test_on_restore;
+              	0.04089     	0.06328     	0.93172     	5                eval state : test_on_last_epoch;
+---> final result              	0.04089     	0.06328     	0.93172     	5                eval state : final;
+---> end
+
+----------------------------------------
+
+  Demo hogp 
+  seed: 1 
+  interp_data: False 
+
+----------------------------------------
+---> module config
+  dataset: {'name': 'TopOP_mfGent_v5', 'fidelity': ['low'], 'type': 'x_2_y', 'train_start_index': 0, 'train_sample': 64, 'eval_start_index': 0, 'eval_sample': 128, 'seed': 1, 'interp_data': False}
+  lr: {'kernel': 0.1, 'optional_param': 0.1, 'noise': 0.1}
+  kernel: {'K1': {'SE': {'exp_restrict': True, 'length_scale': 1.0, 'scale': 1.0}}, 'K2': {'SE': {'exp_restrict': True, 'length_scale': 1.0, 'scale': 1.0}}, 'K3': {'SE': {'exp_restrict': True, 'length_scale': 1.0, 'scale': 1.0}}}
+  evaluate_method: ['mae', 'rmse', 'r2']
+  optimizer: adam
+  exp_restrict: False
+  input_normalzie: True
+  output_normalize: True
+  noise_init: 0.005
+  grid_config: {'grid_size': [-1, -1], 'type': 'fixed', 'dimension_map': 'identity'}
+---> training record
+  epoch       	mae         	rmse        	r2          	time        
+  1           	0.20929     	0.25268     	-61.67487   	0           
+  10          	0.07344     	0.10705     	0.64179     	0           
+  100         	0.05476     	0.08241     	0.85579     	0           
+  300         	0.04911     	0.07437     	0.89309     	1           
+----------------------------------------
+
+  Demo GAR 
+  seed: None 
+  interp_data: True 
+
+----------------------------------------
+---> Training x -> yl part
+---> module config
+  dataset: {'name': 'Burget_mfGent_v5', 'fidelity': ['low'], 'type': 'x_2_y', 'train_start_index': 0, 'train_sample': 128, 'eval_start_index': 0, 'eval_sample': 128}
+  lr: {'kernel': 0.1, 'optional_param': 0.1, 'noise': 0.1}
+  kernel: {'K1': {'SE': {'exp_restrict': True, 'length_scale': 1.0, 'scale': 1.0}}, 'K2': {'SE': {'exp_restrict': True, 'length_scale': 1.0, 'scale': 1.0}}, 'K3': {'SE': {'exp_restrict': True, 'length_scale': 1.0, 'scale': 1.0}}}
+  evaluate_method: ['mae', 'rmse', 'r2']
+  optimizer: adam
+  exp_restrict: False
+  input_normalzie: True
+  output_normalize: True
+  noise_init: 0.005
+  grid_config: {'grid_size': [-1, -1], 'type': 'fixed', 'dimension_map': 'identity'}
+---> training record
+  epoch       	mae         	rmse        	r2          	time        
+  1           	0.16775     	0.21728     	-0.23626    	0           
+  10          	0.03005     	0.04688     	0.98255     	0           
+  100         	0.01688     	0.03597     	0.98835     	1           
+  300         	0.01331     	0.02624     	0.99341     	3           
+  500         	0.01137     	0.02227     	0.99515     	5           
+  1000        	0.00920     	0.01865     	0.99652     	10          
+---> try to load best state
+              	0.00920     	0.01865     	0.99652     	10               eval state : test_on_restore;
+              	0.00920     	0.01865     	0.99652     	10               eval state : test_on_last_epoch;
+---> final result              	0.00920     	0.01865     	0.99652     	10               eval state : final;
+---> end
+
+
+---------->
+SGAR for 4 samples
+---> Training x,yl -> yh part
+
+---> module config
+  dataset: {'name': 'Burget_mfGent_v5', 'fidelity': ['low', 'high'], 'type': 'x_yl_2_yh', 'connection_method': 'res_mapping', 'train_start_index': 0, 'train_sample': 16, 'eval_start_index': 0, 'eval_sample': 128}
+  lr: {'kernel': 0.01, 'optional_param': 0.01, 'noise': 0.01}
+  kernel: {'K1': {'SE': {'exp_restrict': True, 'length_scale': 1.0, 'scale': 1.0}}, 'K2': {'SE': {'exp_restrict': True, 'length_scale': 1.0, 'scale': 1.0}}, 'K3': {'SE': {'exp_restrict': True, 'length_scale': 1.0, 'scale': 1.0}}}
+  evaluate_method: ['mae', 'rmse', 'r2']
+  optimizer: adam
+  exp_restrict: False
+  input_normalize: True
+  output_normalize: True
+  noise_init: 0.005
+  grid_config: {'grid_size': [-1, -1], 'type': 'fixed', 'dimension_map': 'identity'}
+---> training record
+  epoch       	mae         	rmse        	r2          	time        
+  1           	0.06829     	0.13615     	0.79189     	0           
+  10          	0.02362     	0.04660     	0.97661     	0           
+  100         	0.67826     	0.76595     	0.26428     	0           
+  epoch 196 reach nan state
+---> try to load best state
+              	0.02613     	0.03621     	0.98806     	1                eval state : test_on_restore;
+              	0.67826     	0.76595     	0.26428     	1                eval state : test_on_last_epoch;
+---> final result              	0.02613     	0.03621     	0.98806     	1                eval state : final;
+---> end
+
+----------------------------------------
+
+  Demo GAR 
+  seed: None 
+  interp_data: True 
+
+----------------------------------------
+---> Training x -> yl part
+---> module config
+  dataset: {'name': 'Burget_mfGent_v5', 'fidelity': ['low'], 'type': 'x_2_y', 'train_start_index': 0, 'train_sample': 128, 'eval_start_index': 0, 'eval_sample': 128}
+  lr: {'kernel': 0.1, 'optional_param': 0.1, 'noise': 0.1}
+  kernel: {'K1': {'SE': {'exp_restrict': True, 'length_scale': 1.0, 'scale': 1.0}}, 'K2': {'SE': {'exp_restrict': True, 'length_scale': 1.0, 'scale': 1.0}}, 'K3': {'SE': {'exp_restrict': True, 'length_scale': 1.0, 'scale': 1.0}}}
+  evaluate_method: ['mae', 'rmse', 'r2']
+  optimizer: adam
+  exp_restrict: False
+  input_normalzie: True
+  output_normalize: True
+  noise_init: 0.005
+  grid_config: {'grid_size': [-1, -1], 'type': 'fixed', 'dimension_map': 'identity'}
+---> training record
+  epoch       	mae         	rmse        	r2          	time        
+  1           	0.16775     	0.21728     	-0.23626    	0           
+  10          	0.03005     	0.04688     	0.98255     	0           
+  100         	0.01688     	0.03597     	0.98835     	1           
+  300         	0.01331     	0.02624     	0.99341     	3           
+  500         	0.01137     	0.02227     	0.99515     	5           
+  1000        	0.00920     	0.01865     	0.99652     	10          
+---> try to load best state
+              	0.00920     	0.01865     	0.99652     	10               eval state : test_on_restore;
+              	0.00920     	0.01865     	0.99652     	10               eval state : test_on_last_epoch;
+---> final result              	0.00920     	0.01865     	0.99652     	10               eval state : final;
+---> end
+
+
+---------->
+SGAR for 4 samples
+---> Training x,yl -> yh part
+
+---> module config
+  dataset: {'name': 'Burget_mfGent_v5', 'fidelity': ['low', 'high'], 'type': 'x_yl_2_yh', 'connection_method': 'res_mapping', 'train_start_index': 0, 'train_sample': 16, 'eval_start_index': 0, 'eval_sample': 128}
+  lr: {'kernel': 0.01, 'optional_param': 0.01, 'noise': 0.01}
+  kernel: {'K1': {'SE': {'exp_restrict': True, 'length_scale': 1.0, 'scale': 1.0}}, 'K2': {'SE': {'exp_restrict': True, 'length_scale': 1.0, 'scale': 1.0}}, 'K3': {'SE': {'exp_restrict': True, 'length_scale': 1.0, 'scale': 1.0}}}
+  evaluate_method: ['mae', 'rmse', 'r2']
+  optimizer: adam
+  exp_restrict: False
+  input_normalize: True
+  output_normalize: True
+  noise_init: 0.005
+  grid_config: {'grid_size': [-1, -1], 'type': 'fixed', 'dimension_map': 'identity'}
+---> training record
+  epoch       	mae         	rmse        	r2          	time        
+  1           	0.06829     	0.13615     	0.79189     	0           
+  10          	0.02362     	0.04660     	0.97661     	0           
+  100         	0.67826     	0.76595     	0.26428     	0           
+  epoch 196 reach nan state
+---> try to load best state
+              	0.02613     	0.03621     	0.98806     	1                eval state : test_on_restore;
+              	0.67826     	0.76595     	0.26428     	1                eval state : test_on_last_epoch;
+---> final result              	0.02613     	0.03621     	0.98806     	1                eval state : final;
+---> end
+
+
+---------->
+SGAR for 8 samples
+---> Training x,yl -> yh part
+
+---> module config
+  dataset: {'name': 'Burget_mfGent_v5', 'fidelity': ['low', 'high'], 'type': 'x_yl_2_yh', 'connection_method': 'res_mapping', 'train_start_index': 0, 'train_sample': 16, 'eval_start_index': 0, 'eval_sample': 128}
+  lr: {'kernel': 0.01, 'optional_param': 0.01, 'noise': 0.01}
+  kernel: {'K1': {'SE': {'exp_restrict': True, 'length_scale': 1.0, 'scale': 1.0}}, 'K2': {'SE': {'exp_restrict': True, 'length_scale': 1.0, 'scale': 1.0}}, 'K3': {'SE': {'exp_restrict': True, 'length_scale': 1.0, 'scale': 1.0}}}
+  evaluate_method: ['mae', 'rmse', 'r2']
+  optimizer: adam
+  exp_restrict: False
+  input_normalize: True
+  output_normalize: True
+  noise_init: 0.005
+  grid_config: {'grid_size': [-1, -1], 'type': 'fixed', 'dimension_map': 'identity'}
+---> training record
+  epoch       	mae         	rmse        	r2          	time        
+  1           	0.06829     	0.13615     	0.79189     	0           
+  10          	0.02362     	0.04660     	0.97661     	0           
+  100         	0.67826     	0.76595     	0.26428     	1           
+  epoch 196 reach nan state
+---> try to load best state
+              	0.02613     	0.03621     	0.98806     	2                eval state : test_on_restore;
+              	0.67826     	0.76595     	0.26428     	2                eval state : test_on_last_epoch;
+---> final result              	0.02613     	0.03621     	0.98806     	2                eval state : final;
+---> end
+
+----------------------------------------
+
+  Demo GAR 
+  seed: 0 
+  interp_data: True 
+
+----------------------------------------
+---> Training x -> yl part
+---> module config
+  dataset: {'name': 'Burget_mfGent_v5', 'fidelity': ['low'], 'type': 'x_2_y', 'train_start_index': 0, 'train_sample': 128, 'eval_start_index': 0, 'eval_sample': 128}
+  lr: {'kernel': 0.1, 'optional_param': 0.1, 'noise': 0.1}
+  kernel: {'K1': {'SE': {'exp_restrict': True, 'length_scale': 1.0, 'scale': 1.0}}, 'K2': {'SE': {'exp_restrict': True, 'length_scale': 1.0, 'scale': 1.0}}, 'K3': {'SE': {'exp_restrict': True, 'length_scale': 1.0, 'scale': 1.0}}}
+  evaluate_method: ['mae', 'rmse', 'r2']
+  optimizer: adam
+  exp_restrict: False
+  input_normalzie: True
+  output_normalize: True
+  noise_init: 0.005
+  grid_config: {'grid_size': [-1, -1], 'type': 'fixed', 'dimension_map': 'identity'}
+---> training record
+  epoch       	mae         	rmse        	r2          	time        
+  1           	0.16775     	0.21728     	-0.23626    	0           
+  10          	0.03005     	0.04688     	0.98255     	0           
+  100         	0.01688     	0.03597     	0.98835     	1           
+  300         	0.01331     	0.02624     	0.99341     	3           

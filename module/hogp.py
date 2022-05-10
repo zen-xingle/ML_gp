@@ -60,14 +60,15 @@ default_module_config = {
                  'eval_sample':256,
                  'seed': 0},
 
-    'lr': {'kernel':0.1, 
-           'optional_param':0.1, 
-           'noise':0.1},
+    'lr': {'kernel':0.01, 
+           'optional_param':0.01, 
+           'noise':0.01},
     # kernel number as dim + 1
     'kernel': {
             'K1': {'SE': {'exp_restrict':True, 'length_scale':1., 'scale': 1.}},
             'K2': {'SE': {'exp_restrict':True, 'length_scale':1., 'scale': 1.}},
             'K3': {'SE': {'exp_restrict':True, 'length_scale':1., 'scale': 1.}},
+            'K4': {'SE': {'exp_restrict':True, 'length_scale':1., 'scale': 1.}},
               },
     'evaluate_method': ['mae', 'rmse', 'r2', 'gaussian_loss'],
     'optimizer': 'adam',

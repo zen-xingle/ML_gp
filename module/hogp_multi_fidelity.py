@@ -60,7 +60,7 @@ default_module_config = {
                  'eval_sample':256,
                  'seed': 0},
 
-    'lr': {'kernel':0.01, 
+    'lr': {'kernel':0.0005, 
            'optional_param':0.01, 
            'noise':0.01},
     # kernel number as dim + 1
@@ -74,7 +74,7 @@ default_module_config = {
     'exp_restrict': False,
     'input_normalize': True,
     'output_normalize': True,
-    'noise_init' : 100.,
+    'noise_init' : 100.0 ,
     'grid_config': {'grid_size': [-1, -1], 
                     'type': 'fixed', # learnable, fixed
                     'dimension_map': 'identity', # latent space, identity, learnable_identity, learnable_map

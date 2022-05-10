@@ -13,6 +13,8 @@ from module.hogp import HOGP_MODULE
 from module.hogp_multi_fidelity import HOGP_MF_MODULE
 
 
+interp_data=True
+
 if __name__ == '__main__':
     for _seed in [None]:
         with open('record.txt', 'a') as _temp_file:
@@ -20,9 +22,14 @@ if __name__ == '__main__':
             _temp_file.write('\n')
             _temp_file.write('  Demo GAR \n')
             _temp_file.write('  seed: {} \n'.format(_seed))
+            _temp_file.write('  interp_data: {} \n'.format(interp_data))
             _temp_file.write('\n')
             _temp_file.write('-'*40 + '\n')
+            _temp_file.write('-'*3 + '> Training x -> yl part\n')
             _temp_file.flush()
+
+        # ================================================================
+        # Training x -> yl part
 
         controller_config = {
             'max_epoch': 1000
@@ -36,7 +43,8 @@ if __name__ == '__main__':
                         'train_sample': 64, 
                         'eval_start_index': 0,
                         'eval_sample':128,
-                        'seed': _seed},
+                        'seed': _seed,
+                        'interp_data': interp_data},
         } # only change dataset config, others use default config
         ct = controller(HOGP_MODULE, controller_config, ct_module_config)
         ct.start_train()
@@ -47,10 +55,21 @@ if __name__ == '__main__':
         ct.rc_file.write('-'*10 + '> finish x-yl training\n\n')
         ct.rc_file.flush()
 
+<<<<<<< HEAD:demo/demo_multi-fidelity_hogp.py
         for _sample in [4]:
             with open('record.txt', 'a') as _temp_file:
                 _temp_file.write('\n'+ '-'*10 + '>\n')
                 _temp_file.write('GAR for {} samples\n\n'.format(_sample))
+=======
+        # ================================================================
+        # Training x,yl -> yh part
+
+        for _sample in [4,8,16,32]:
+            with open('record.txt', 'a') as _temp_file:
+                _temp_file.write('\n'+ '-'*10 + '>\n')
+                _temp_file.write('SGAR for {} samples\n'.format(_sample))
+                _temp_file.write('-'*3 + '> Training x,yl -> yh part\n\n')
+>>>>>>> b63ca61d277af71675736dd860581bdc2c105d03:demo/interp_data/demo_multi-fidelity_hogp.py
                 _temp_file.flush()
 
             mfct_module_config = {
@@ -62,7 +81,8 @@ if __name__ == '__main__':
                             'train_sample': _sample, 
                             'eval_start_index': 0,
                             'eval_sample':128,
-                            'seed': _seed},
+                            'seed': _seed,
+                            'interp_data': interp_data},
             } # only change dataset config, others use default config
 
             mfct = controller(HOGP_MF_MODULE, controller_config, mfct_module_config)

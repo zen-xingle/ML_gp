@@ -52,7 +52,9 @@ default_module_config = {
                  'train_start_index': 0, 
                  'train_sample': 32, 
                  'eval_start_index': 0, 
-                 'eval_sample':256},
+                 'eval_sample':256,
+                 'seed': 0,
+                 'interp_data': True},
 
     'lr': {'kernel':0.1, 
            'optional_param':0.1, 
@@ -67,7 +69,7 @@ default_module_config = {
     'input_normalize': True,
     'output_normalize': True,
     'noise_init' : 1.,
-    'res_cigp': None,
+    'res_cigp': None, #only available when x_yl_2_yh
 }
 
 
@@ -80,6 +82,12 @@ class CIGP_MODULE:
 
         # param check
         assert module_config['optimizer'] in ['adam'], 'now optimizer only support adam, but get {}'.format(module_config['optimizer'])
+
+        # check_if res_cigp available, do this before load data
+        if module_config['dataset']['type'] == 'x_2_y':
+            if self.module_config['res_cigp'] is not None:
+                print("!WARNING!: For data type x_2_y, res_cigp is not available!")
+                self.module_config['res_cigp'] = None
 
         # load_data
         self._load_data(module_config['dataset'])
@@ -97,6 +105,8 @@ class CIGP_MODULE:
         if module_config['output_normalize'] is True:
             self.Y_normalizer = Normalizer(self.outputs_tr[0])
             self.outputs_tr[0] = self.Y_normalizer.normalize(self.outputs_tr[0])
+            if self.module_config['res_cigp'] is not None:
+                self.inputs_tr[1] = self.Y_normalizer.normalize(self.inputs_tr[1])
         else:
             self.Y_normalizer = None
 
@@ -124,62 +134,131 @@ class CIGP_MODULE:
             # they got the same data format
             data = loadmat(mat_dataset_paths[dataset_config['name']])
 
-            if dataset_config['type'] == 'x_2_y':
-                assert len(dataset_config['fidelity']) == 1, 'for x_2_y, fidelity length must be 1'
-                _fidelity = fidelity_map[dataset_config['fidelity'][0]]
-                # 0 for low, 1 for middle, 2 for high
-                x_tr = torch.tensor(data['xtr'], dtype=torch.float32)
-                y_tr = torch.tensor(data['Ytr'][0][_fidelity], dtype=torch.float32)
-                x_eval = torch.tensor(data['xte'], dtype=torch.float32)
-                y_eval = torch.tensor(data['Yte'][0][_fidelity], dtype=torch.float32)
-            elif dataset_config['type'] == 'x_yl_2_yh':
-                assert len(dataset_config['fidelity']) == 2, 'for x_yl_2_yh, fidelity length must be 2'
-                _first_fidelity = fidelity_map[dataset_config['fidelity'][0]]
-                _second_fidelity = fidelity_map[dataset_config['fidelity'][1]]
-                x_tr_0 = torch.tensor(data['xtr'], dtype=torch.float32)
-                x_tr_1 = torch.tensor(data['Ytr'][0][_first_fidelity], dtype=torch.float32)
-                x_tr = torch.cat([x_tr_0.reshape(x_tr_0.shape[0], -1), x_tr_1.reshape(x_tr_1.shape[0], -1)], dim=1)
-                y_tr = torch.tensor(data['Ytr'][0][_second_fidelity], dtype=torch.float32)
-                x_eval_0 = torch.tensor(data['xte'], dtype=torch.float32)
-                x_eval_1 = torch.tensor(data['Yte'][0][_first_fidelity], dtype=torch.float32)
-                x_eval = torch.cat([x_eval_0.reshape(x_eval_0.shape[0], -1), x_eval_1.reshape(x_eval_1.shape[0], -1)], dim=1)
-                y_eval = torch.tensor(data['Yte'][0][_second_fidelity], dtype=torch.float32)
+            if self.module_config['res_cigp'] is None:
+                if dataset_config['type'] == 'x_2_y':
+                    assert len(dataset_config['fidelity']) == 1, 'for x_2_y, fidelity length must be 1'
+                    _fidelity = fidelity_map[dataset_config['fidelity'][0]]
+                    # 0 for low, 1 for middle, 2 for high
+                    x_tr = torch.tensor(data['xtr'], dtype=torch.float32)
+                    x_eval = torch.tensor(data['xte'], dtype=torch.float32)
+                    if dataset_config['interp_data'] is True:
+                        y_tr = torch.tensor(data['Ytr_interp'][0][_fidelity], dtype=torch.float32)
+                        y_eval = torch.tensor(data['Yte_interp'][0][_fidelity], dtype=torch.float32)
+                    else:
+                        y_tr = torch.tensor(data['Ytr'][0][_fidelity], dtype=torch.float32)
+                        y_eval = torch.tensor(data['Yte'][0][_fidelity], dtype=torch.float32)
+
+                elif dataset_config['type'] == 'x_yl_2_yh':
+                    assert len(dataset_config['fidelity']) == 2, 'for x_yl_2_yh, fidelity length must be 2'
+                    _first_fidelity = fidelity_map[dataset_config['fidelity'][0]]
+                    _second_fidelity = fidelity_map[dataset_config['fidelity'][1]]
+                    x_tr_0 = torch.tensor(data['xtr'], dtype=torch.float32)
+                    x_eval_0 = torch.tensor(data['xte'], dtype=torch.float32)
+
+                    if dataset_config['interp_data'] is True:
+                        x_tr_1 = torch.tensor(data['Ytr_interp'][0][_first_fidelity], dtype=torch.float32)
+                        x_tr = torch.cat([x_tr_0.reshape(x_tr_0.shape[0], -1), x_tr_1.reshape(x_tr_1.shape[0], -1)], dim=1)
+                        y_tr = torch.tensor(data['Ytr_interp'][0][_second_fidelity], dtype=torch.float32)
+
+                        x_eval_1 = torch.tensor(data['Yte_interp'][0][_first_fidelity], dtype=torch.float32)
+                        x_eval = torch.cat([x_eval_0.reshape(x_eval_0.shape[0], -1), x_eval_1.reshape(x_eval_1.shape[0], -1)], dim=1)
+                        y_eval = torch.tensor(data['Yte_interp'][0][_second_fidelity], dtype=torch.float32)
+                    else:
+                        x_tr_1 = torch.tensor(data['Ytr'][0][_first_fidelity], dtype=torch.float32)
+                        x_tr = torch.cat([x_tr_0.reshape(x_tr_0.shape[0], -1), x_tr_1.reshape(x_tr_1.shape[0], -1)], dim=1)
+                        y_tr = torch.tensor(data['Ytr'][0][_second_fidelity], dtype=torch.float32)
+
+                        x_eval_1 = torch.tensor(data['Yte'][0][_first_fidelity], dtype=torch.float32)
+                        x_eval = torch.cat([x_eval_0.reshape(x_eval_0.shape[0], -1), x_eval_1.reshape(x_eval_1.shape[0], -1)], dim=1)
+                        y_eval = torch.tensor(data['Yte'][0][_second_fidelity], dtype=torch.float32)
+                
+                # this work for x_2_y and x_yl_2_yh
+                # shuffle
+                if self.module_config['dataset']['seed'] is not None:
+                    x_tr, y_tr = self._random_shuffle([[x_tr, 0], [y_tr, 0]])
+                
+                # vectorize, reshape to 2D
+                _temp_list = [x_tr, y_tr, x_eval, y_eval]
+                for i,_value in enumerate(_temp_list):
+                    _temp_list[i] = _value.reshape(_value.shape[0], -1)
+                x_tr = _temp_list[0]
+                y_tr = _temp_list[1]
+                x_eval = _temp_list[2]
+                y_eval = _temp_list[3]
+                
+                _index = dataset_config['train_start_index']
+                self.inputs_tr = []
+                self.inputs_tr.append(x_tr[_index:_index+dataset_config['train_sample'], :])
+                self.outputs_tr = []
+                self.outputs_tr.append(y_tr[_index:_index+dataset_config['train_sample'], :])
+
+                _index = dataset_config['eval_start_index']
+                self.inputs_eval = []
+                self.inputs_eval.append(x_eval[_index:_index+dataset_config['eval_sample'], :])
+                self.outputs_eval = []
+                self.outputs_eval.append(y_eval[_index:_index+dataset_config['eval_sample'], :])
+            else:
+                if dataset_config['type'] == 'x_yl_2_yh':
+                    assert len(dataset_config['fidelity']) == 2, 'for x_yl_2_yh, fidelity length must be 2'
+                    _first_fidelity = fidelity_map[dataset_config['fidelity'][0]]
+                    _second_fidelity = fidelity_map[dataset_config['fidelity'][1]]
+                    x_tr_0 = torch.tensor(data['xtr'], dtype=torch.float32)
+                    x_eval_0 = torch.tensor(data['xte'], dtype=torch.float32)
+
+                    if dataset_config['interp_data'] is True:
+                        x_tr_1 = torch.tensor(data['Ytr_interp'][0][_first_fidelity], dtype=torch.float32)
+                        y_tr = torch.tensor(data['Ytr_interp'][0][_second_fidelity], dtype=torch.float32)
+                        x_eval_1 = torch.tensor(data['Yte_interp'][0][_first_fidelity], dtype=torch.float32)
+                        y_eval = torch.tensor(data['Yte_interp'][0][_second_fidelity], dtype=torch.float32)
+                    else:
+                        x_tr_1 = torch.tensor(data['Ytr'][0][_first_fidelity], dtype=torch.float32)
+                        y_tr = torch.tensor(data['Ytr'][0][_second_fidelity], dtype=torch.float32)
+                        x_eval_1 = torch.tensor(data['Yte'][0][_first_fidelity], dtype=torch.float32)
+                        y_eval = torch.tensor(data['Yte'][0][_second_fidelity], dtype=torch.float32)
+                        assert x_tr_1.shape[1:] == y_tr.shape[1:], "for res_cigp, yl.shape == yh.shape, but we got {} != {}".format(x_tr_1.shape[1:],y_tr.shape[1:])
+                else:
+                    assert False, NotImplemented
+                
+                # shuffle
+                if self.module_config['dataset']['seed'] is not None:
+                    x_tr_0, x_tr_1, y_tr = self._random_shuffle([[x_tr_0, 0], [x_tr_1, 0], [y_tr, 0]])
+                
+                # vectorize, reshape to 2D
+                _temp_list = [x_tr_0, x_tr_1, y_tr, x_eval_0, x_eval_1, y_eval]
+                for i,_value in enumerate(_temp_list):
+                    _temp_list[i] = _value.reshape(_value.shape[0], -1)
+                x_tr_0 = _temp_list[0]
+                x_tr_1 = _temp_list[1]
+                y_tr = _temp_list[2]
+                x_eval_0 = _temp_list[3]
+                x_eval_1 = _temp_list[4]
+                y_eval = _temp_list[5]
+                
+                _index = dataset_config['train_start_index']
+                self.inputs_tr = []
+                self.inputs_tr.append(x_tr_0[_index:_index+dataset_config['train_sample'], :])
+                self.inputs_tr.append(x_tr_1[_index:_index+dataset_config['train_sample'], :])
+                self.outputs_tr = []
+                self.outputs_tr.append(y_tr[_index:_index+dataset_config['train_sample'], :])
+
+                _index = dataset_config['eval_start_index']
+                self.inputs_eval = []
+                self.inputs_eval.append(x_eval_0[_index:_index+dataset_config['eval_sample'], :])
+                self.inputs_eval.append(x_eval_1[_index:_index+dataset_config['eval_sample'], :])
+                self.outputs_eval = []
+                self.outputs_eval.append(y_eval[_index:_index+dataset_config['eval_sample'], :])
         else:
             assert False
 
-        # shuffle
-        if self.module_config['dataset']['seed'] is not None:
-            x_tr, y_tr = self._random_shuffle([[x_tr, 0], [y_tr, 0]])
-        
-        # vectorize, reshape to 2D
-        _temp_list = [x_tr, y_tr, x_eval, y_eval]
-        for i,_value in enumerate(_temp_list):
-            _temp_list[i] = _value.reshape(_value.shape[0], -1)
-        x_tr = _temp_list[0]
-        y_tr = _temp_list[1]
-        x_eval = _temp_list[2]
-        y_eval = _temp_list[3]
-        
-        _index = dataset_config['train_start_index']
-        self.inputs_tr = []
-        self.inputs_tr.append(torch.tensor(x_tr[_index:_index+dataset_config['train_sample'], :]))
-        self.outputs_tr = []
-        self.outputs_tr.append(torch.tensor(y_tr[_index:_index+dataset_config['train_sample'], :]))
-
-        _index = dataset_config['eval_start_index']
-        self.inputs_eval = []
-        self.inputs_eval.append(torch.tensor(x_eval[_index:_index+dataset_config['eval_sample'], :]))
-        self.outputs_eval = []
-        self.outputs_eval.append(torch.tensor(y_eval[_index:_index+dataset_config['eval_sample'], :]))
 
 
     def _select_connection_kernel(self, type_name):
         from kernel.Multi_fidelity_connection import rho_connection, mapping_connection
-        assert type_name in ['res_rho', 'res_mapping']
-        if type_name == 'identity':
-            self.target_connection = None
+        assert type_name in ['res_standard', 'res_rho', 'res_mapping']
+        if type_name == 'res_standard':
+            self.target_connection = rho_connection(rho=1., trainable=False)
         elif type_name in ['res_rho']:
-            self.target_connection = rho_connection()
+            self.target_connection = rho_connection(rho=1., trainable=True)
         elif type_name in ['res_mapping']:
             self.target_connection = mapping_connection(self.target_list[0][:,:,0].shape, 
                                                         self.target_list[1][:,:,0].shape,
@@ -210,8 +289,7 @@ class CIGP_MODULE:
     def _optimizer_setup(self):
         optional_params = []
         if self.module_config['res_cigp'] is not None:
-            optional_params.append(self.res)
-            assert False, 'res_cigp is not supported yet'
+            optional_params = self.target_connection.get_param(optional_params)
 
         kernel_learnable_param = []
         for _kernel in self.kernel_list:
@@ -271,12 +349,12 @@ class CIGP_MODULE:
             # LinvKx,_ = torch.triangular_solve(kx, L, upper = False)
 
             if self.module_config['res_cigp'] is not None:
-                u = kx.t() @ torch.cholesky_solve(self.target_connection(self.inputs_tr[1], self.outputs_tr[0]))
+                u = kx.t() @ torch.cholesky_solve(self.target_connection(self.inputs_tr[1], self.outputs_tr[0]), L)
                 if self.module_config['output_normalize'] is True:
                     input_param[1] = self.Y_normalizer.normalize(input_param[1])
-                    u = self.target_connection(input_param[1], u)
+                    u = self.target_connection.low_2_high(input_param[1], u)
                 else:
-                    u = self.target_connection(input_param[1], u)
+                    u = self.target_connection.low_2_high(input_param[1], u)
             else:
                 u = kx.t() @ torch.cholesky_solve(self.outputs_tr[0], L)
 
@@ -338,8 +416,7 @@ class CIGP_MODULE:
 
         state_dict.append(self.noise)
         if self.module_config['res_cigp'] is True:
-            # TODO
-            assert False, "res_cigp is not supported"        
+            state_dict.extend(self.target_connection.get_param([]))
         return state_dict
 
 
@@ -352,9 +429,9 @@ class CIGP_MODULE:
         
         with torch.no_grad():
             self.noise.copy_(params_list[index])
+            index += 1
             if self.module_config['res_cigp'] is True:
-                # TODO
-                assert False, "res_cigp is not supported" 
+                self.target_connection.set_param(params_list[index:])
 
     def eval(self):
         print('---> start eval')

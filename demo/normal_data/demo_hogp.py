@@ -8,16 +8,18 @@ realpath = _sep.join(realpath[:realpath.index('ML_gp')+1])
 sys.path.append(realpath)
 
 from utils.main_controller import controller
-from module.cigp import CIGP_MODULE
+from module.hogp import HOGP_MODULE
 
+interp_data = False
 
 if __name__ == '__main__':
     for _seed in [None, 0, 1]:
         with open('record.txt', 'a') as _temp_file:
             _temp_file.write('-'*40 + '\n')
             _temp_file.write('\n')
-            _temp_file.write('  Demo cigp \n')
+            _temp_file.write('  Demo hogp \n')
             _temp_file.write('  seed: {} \n'.format(_seed))
+            _temp_file.write('  interp_data: {} \n'.format(interp_data))
             _temp_file.write('\n')
             _temp_file.write('-'*40 + '\n')
             _temp_file.flush()
@@ -27,12 +29,14 @@ if __name__ == '__main__':
                         'fidelity': ['low'],
                         'type':'x_2_y',    # x_yl_2_yh, x_2_y
                         'train_start_index': 0, 
-                        'train_sample': 8, 
+                        'train_sample': 32, 
                         'eval_start_index': 0,
-                        'eval_sample':128,
-                        'seed': None},
+                        'eval_sample': 128,
+                        'seed': _seed,
+                        'interp_data': interp_data,
+                        },
         }
-        ct = controller(CIGP_MODULE, {}, module_config)
+        ct = controller(HOGP_MODULE, {}, module_config)
         ct.start_train()
         ct.smart_restore_state(-1)
         ct.rc_file.write('---> final result\n')

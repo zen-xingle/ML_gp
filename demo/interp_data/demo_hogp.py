@@ -10,6 +10,7 @@ sys.path.append(realpath)
 from utils.main_controller import controller
 from module.hogp import HOGP_MODULE
 
+interp_data = True
 
 if __name__ == '__main__':
     for _seed in [None, 0, 1]:
@@ -18,6 +19,7 @@ if __name__ == '__main__':
             _temp_file.write('\n')
             _temp_file.write('  Demo hogp \n')
             _temp_file.write('  seed: {} \n'.format(_seed))
+            _temp_file.write('  interp_data: {} \n'.format(interp_data))
             _temp_file.write('\n')
             _temp_file.write('-'*40 + '\n')
             _temp_file.flush()
@@ -30,7 +32,8 @@ if __name__ == '__main__':
                         'train_sample': 32, 
                         'eval_start_index': 0,
                         'eval_sample': 128,
-                        'seed': 0,
+                        'seed': _seed,
+                        'interp_data': interp_data,
                         },
         }
         ct = controller(HOGP_MODULE, {}, module_config)

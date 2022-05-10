@@ -53,12 +53,13 @@ default_module_config = {
     'dataset' : {'name': 'Piosson_mfGent_v5',
                  'fidelity': ['low'],
                  'type':'x_2_y',    # x_yl_2_yh, x_2_y
-                 'connection_method': 'res_mapping',  # Only valid when x_yl_2_yh, identity, res_rho, res_mapping
+                 'connection_method': 'res_mapping',  # Only valid when x_yl_2_yh, res_standard, res_rho, res_mapping
                  'train_start_index': 0, 
                  'train_sample': 8, 
                  'eval_start_index': 0, 
                  'eval_sample':256,
-                 'seed': 0},
+                 'seed': 0,
+                 'interp_data': False},
 
     'lr': {'kernel':0.01, 
            'optional_param':0.01, 
@@ -151,9 +152,13 @@ class HOGP_MODULE:
                 _fidelity = fidelity_map[dataset_config['fidelity'][0]]
                 # 0 for low, 1 for middle, 2 for high
                 x_tr = torch.tensor(data['xtr'], dtype=torch.float32)
-                y_tr = torch.tensor(data['Ytr'][0][_fidelity], dtype=torch.float32)
                 x_eval = torch.tensor(data['xte'], dtype=torch.float32)
-                y_eval = torch.tensor(data['Yte'][0][_fidelity], dtype=torch.float32)
+                if self.module_config['dataset']['interp_data'] is True:
+                    y_tr = torch.tensor(data['Ytr_interp'][0][_fidelity], dtype=torch.float32)
+                    y_eval = torch.tensor(data['Yte_interp'][0][_fidelity], dtype=torch.float32)
+                else:
+                    y_tr = torch.tensor(data['Ytr'][0][_fidelity], dtype=torch.float32)
+                    y_eval = torch.tensor(data['Yte'][0][_fidelity], dtype=torch.float32)
                 # shuffle
                 if self.module_config['dataset']['seed'] is not None:
                     x_tr, y_tr = self._random_shuffle([[x_tr, 0], [y_tr, 0]])
@@ -161,16 +166,16 @@ class HOGP_MODULE:
                 # gen vector, put num to the last dim
                 _index = dataset_config['train_start_index']
                 self.inputs_tr = []
-                self.inputs_tr.append(torch.tensor(x_tr[_index:_index+dataset_config['train_sample'], ...]))
+                self.inputs_tr.append(x_tr[_index:_index+dataset_config['train_sample'], ...])
                 self.outputs_tr = []
-                self.outputs_tr.append(torch.tensor(y_tr[_index:_index+dataset_config['train_sample'], ...]))
+                self.outputs_tr.append(y_tr[_index:_index+dataset_config['train_sample'], ...])
                 self.outputs_tr[-1] = _first_dim_to_last(self.outputs_tr[-1])
 
                 _index = dataset_config['eval_start_index']
                 self.inputs_eval = []
-                self.inputs_eval.append(torch.tensor(x_eval[_index:_index+dataset_config['eval_sample'], ...]))
+                self.inputs_eval.append(x_eval[_index:_index+dataset_config['eval_sample'], ...])
                 self.outputs_eval = []
-                self.outputs_eval.append(torch.tensor(y_eval[_index:_index+dataset_config['eval_sample'], ...]))
+                self.outputs_eval.append(y_eval[_index:_index+dataset_config['eval_sample'], ...])
                 self.outputs_eval[-1] = _first_dim_to_last(self.outputs_eval[-1])
         else:
             assert False

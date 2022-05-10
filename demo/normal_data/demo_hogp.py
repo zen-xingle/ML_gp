@@ -13,7 +13,7 @@ from module.hogp import HOGP_MODULE
 interp_data = False
 
 if __name__ == '__main__':
-    for _seed in [None, 0, 1]:
+    for _seed in [None]:
         with open('record.txt', 'a') as _temp_file:
             _temp_file.write('-'*40 + '\n')
             _temp_file.write('\n')
@@ -25,7 +25,7 @@ if __name__ == '__main__':
             _temp_file.flush()
 
         module_config = {
-            'dataset': {'name': 'TopOP_mfGent_v5',
+            'dataset': {'name': 'Piosson_mfGent_v5',
                         'fidelity': ['low'],
                         'type':'x_2_y',    # x_yl_2_yh, x_2_y
                         'train_start_index': 0, 

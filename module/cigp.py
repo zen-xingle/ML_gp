@@ -68,7 +68,7 @@ default_module_config = {
     'exp_restrict': False,
     'input_normalize': True,
     'output_normalize': True,
-    'noise_init' : 1.,
+    'noise_init' : 100.,
     'res_cigp': None, #only available when x_yl_2_yh
 }
 

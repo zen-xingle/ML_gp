@@ -16,11 +16,11 @@ from module.hogp_multi_fidelity import HOGP_MF_MODULE
 interp_data = False
 
 if __name__ == '__main__':
-    for _seed in [None, 0, 1]:
+    for _seed in [0]:
         with open('record.txt', 'a') as _temp_file:
             _temp_file.write('-'*40 + '\n')
             _temp_file.write('\n')
-            _temp_file.write('  Demo SGAR \n')
+            _temp_file.write('  Demo GAR \n')
             _temp_file.write('  seed: {} \n'.format(_seed))
             _temp_file.write('  interp_data: {} \n'.format(interp_data))
             _temp_file.write('\n')
@@ -36,7 +36,7 @@ if __name__ == '__main__':
         } # use defualt config
 
         ct_module_config = {
-            'dataset': {'name': 'TopOP_mfGent_v5',
+            'dataset': {'name': 'Heat_mfGent_v5',
                         'fidelity': ['low'],
                         'type':'x_2_y',    # x_yl_2_yh, x_2_y
                         'train_start_index': 0, 
@@ -44,7 +44,7 @@ if __name__ == '__main__':
                         'eval_start_index': 0,
                         'eval_sample':128,
                         'seed': _seed,
-                        'interp_data': interp_data},
+                        'interp_data': False},
         } # only change dataset config, others use default config
         ct = controller(HOGP_MODULE, controller_config, ct_module_config)
         ct.start_train()
@@ -58,7 +58,7 @@ if __name__ == '__main__':
         # ================================================================
         # Training x,yl -> yh part
 
-        for _sample in [4,8,16,32]:
+        for _sample in [16]:
             with open('record.txt', 'a') as _temp_file:
                 _temp_file.write('\n'+ '-'*10 + '>\n')
                 _temp_file.write('SGAR for {} samples\n'.format(_sample))
@@ -66,7 +66,7 @@ if __name__ == '__main__':
                 _temp_file.flush()
 
             mfct_module_config = {
-                'dataset': {'name': 'TopOP_mfGent_v5',
+                'dataset': {'name': 'Heat_mfGent_v5',
                             'fidelity': ['low','high'],
                             'type':'x_yl_2_yh',    # x_yl_2_yh, x_2_y
                             'connection_method': 'res_mapping',
@@ -75,7 +75,7 @@ if __name__ == '__main__':
                             'eval_start_index': 0,
                             'eval_sample':128,
                             'seed': _seed,
-                            'interp_data': interp_data},
+                            'interp_data': False},
             } # only change dataset config, others use default config
 
             mfct = controller(HOGP_MF_MODULE, controller_config, mfct_module_config)

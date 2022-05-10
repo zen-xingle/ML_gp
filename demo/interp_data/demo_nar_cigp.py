@@ -38,12 +38,8 @@ if __name__ == '__main__':
                         'train_sample': 32, 
                         'eval_start_index': 0, 
                         'eval_sample':128,
-<<<<<<< HEAD:demo/demo_nar_cigp.py
-                        'seed': _seed},
-=======
                         'seed': _seed,
                         'interp_data': interp_data},
->>>>>>> b63ca61d277af71675736dd860581bdc2c105d03:demo/interp_data/demo_nar_cigp.py
         } # only change dataset config, others use default config
         ct = controller(CIGP_MODULE, controller_config, module_config)
         ct.start_train()
@@ -55,14 +51,10 @@ if __name__ == '__main__':
         ct.rc_file.flush()
 
 
-<<<<<<< HEAD:demo/demo_nar_cigp.py
-        for _sample in [4, 8, 16, 32]:
-=======
         # ================================================================
         # Training x,yl -> yh part
 
         for _sample in [4,8,16,32]:
->>>>>>> b63ca61d277af71675736dd860581bdc2c105d03:demo/interp_data/demo_nar_cigp.py
             with open('record.txt', 'a') as _temp_file:
                 _temp_file.write('\n'+ '-'*10 + '>\n')
                 _temp_file.write('NAR for {} samples\n'.format(_sample))
@@ -80,13 +72,9 @@ if __name__ == '__main__':
                             'train_sample': _sample,
                             'eval_start_index': 0, 
                             'eval_sample':128,
-<<<<<<< HEAD:demo/demo_nar_cigp.py
-                            'seed': _seed},
-=======
                             'seed': _seed,
                             'interp_data': interp_data},
                 'res_cigp': None,
->>>>>>> b63ca61d277af71675736dd860581bdc2c105d03:demo/interp_data/demo_nar_cigp.py
             }
             second_ct = controller(CIGP_MODULE, controller_config, second_module_config)
             # replace ground truth eval data with low fidelity predict

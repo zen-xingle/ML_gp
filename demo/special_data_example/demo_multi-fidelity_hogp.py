@@ -20,7 +20,7 @@ if __name__ == '__main__':
         with open('record.txt', 'a') as _temp_file:
             _temp_file.write('-'*40 + '\n')
             _temp_file.write('\n')
-            _temp_file.write('  Demo SGAR \n')
+            _temp_file.write('  Demo GAR \n')
             _temp_file.write('  seed: {} \n'.format(_seed))
             _temp_file.write('  interp_data: {} \n'.format(interp_data))
             _temp_file.write('\n')

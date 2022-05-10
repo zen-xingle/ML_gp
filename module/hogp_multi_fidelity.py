@@ -61,7 +61,7 @@ default_module_config = {
                  'seed': 0,
                  'interp_data': False},
 
-    'lr': {'kernel':0.0005, 
+    'lr': {'kernel':0.01, 
            'optional_param':0.01, 
            'noise':0.01},
     # kernel number as dim + 1

@@ -13,7 +13,7 @@ from module.hogp import HOGP_MODULE
 interp_data = False
 
 if __name__ == '__main__':
-    for _seed in [None, 0, 1]:
+    for _seed in [None]:
         with open('record.txt', 'a') as _temp_file:
             _temp_file.write('-'*40 + '\n')
             _temp_file.write('\n')
@@ -29,7 +29,7 @@ if __name__ == '__main__':
                         'fidelity': ['low'],
                         'type':'x_2_y',    # x_yl_2_yh, x_2_y
                         'train_start_index': 0, 
-                        'train_sample': 32, 
+                        'train_sample': 64, 
                         'eval_start_index': 0,
                         'eval_sample': 128,
                         'seed': _seed,

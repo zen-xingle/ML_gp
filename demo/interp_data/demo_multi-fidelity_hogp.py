@@ -55,21 +55,14 @@ if __name__ == '__main__':
         ct.rc_file.write('-'*10 + '> finish x-yl training\n\n')
         ct.rc_file.flush()
 
-<<<<<<< HEAD:demo/demo_multi-fidelity_hogp.py
-        for _sample in [4]:
-            with open('record.txt', 'a') as _temp_file:
-                _temp_file.write('\n'+ '-'*10 + '>\n')
-                _temp_file.write('GAR for {} samples\n\n'.format(_sample))
-=======
         # ================================================================
         # Training x,yl -> yh part
 
-        for _sample in [4,8,16,32]:
+        for _sample in [4]:
             with open('record.txt', 'a') as _temp_file:
                 _temp_file.write('\n'+ '-'*10 + '>\n')
                 _temp_file.write('SGAR for {} samples\n'.format(_sample))
                 _temp_file.write('-'*3 + '> Training x,yl -> yh part\n\n')
->>>>>>> b63ca61d277af71675736dd860581bdc2c105d03:demo/interp_data/demo_multi-fidelity_hogp.py
                 _temp_file.flush()
 
             mfct_module_config = {

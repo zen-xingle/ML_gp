@@ -57,7 +57,9 @@ default_module_config = {
                  'train_start_index': 0, 
                  'train_sample': 8, 
                  'eval_start_index': 0, 
-                 'eval_sample':256},
+                 'eval_sample':256,
+                 'seed': 0,
+                 'interp_data': False},
 
     'lr': {'kernel':0.01, 
            'optional_param':0.01, 
@@ -73,7 +75,7 @@ default_module_config = {
     'exp_restrict': False,
     'input_normalize': True,
     'output_normalize': True,
-    'noise_init' : 0.005,
+    'noise_init' : 100.,
     'grid_config': {'grid_size': [-1, -1], 
                     'type': 'fixed', # learnable, fixed
                     'dimension_map': 'identity', # latent space, identity, learnable_identity, learnable_map
@@ -437,7 +439,7 @@ class HOGP_MF_MODULE:
 
 
     def _random_shuffle(self, np_array_list):
-        random.seed(0)
+        random.seed()
         # check dim shape
         # TODO support -1 dim
         dim_lenth = []

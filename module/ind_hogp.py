@@ -406,7 +406,7 @@ class HOGP_MODULE:
 
 
     def _random_shuffle(self, np_array_list):
-        random.seed(0)
+        random.seed(self.module_config['dataset']['seed'])
         # check dim shape
         # TODO support -1 dim
         dim_lenth = []

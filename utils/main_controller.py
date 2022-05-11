@@ -1,7 +1,7 @@
 import torch
 import time
 import os
-
+import shutil
 from copy import deepcopy
 
 
@@ -128,6 +128,48 @@ class controller(object):
             self.discriptor = result_discriptor(result)
         _word = self.discriptor.discript(result)
         self.record_to_file(_word)
+        if additional_dict is not None and 'eval state' in additional_dict:
+            need = ['module_name', 'eval state', 'cp_record_file']
+            save_to_csv = True
+            for key in need:
+                if key not in additional_dict:
+                    save_to_csv = False
+                    break
+            if additional_dict['eval state'] != 'final':
+                save_to_csv = False
+            if save_to_csv == True:
+                dir_name = './exp/{}'.format(additional_dict['module_name'])
+                dataset_name = self.module.module_config['dataset']['name']
+                seed = 'Seed[{}]'.format(str(self.module.module_config['dataset']['seed']))
+                intep = 'Interp[{}]'.format(str(self.module.module_config['dataset']['interp_data']))
+                if not os.path.exists('./exp'):
+                    os.mkdir('./exp')
+                if not os.path.exists(dir_name):
+                    os.makedirs(dir_name)
+                dir_name = os.path.join(dir_name, dataset_name)
+                if not os.path.exists(dir_name):
+                    os.makedirs(dir_name)
+
+                csv_file_path = '{}/{}_{}_{}.csv'.format(dir_name, dataset_name, seed, intep)
+                if not os.path.exists(csv_file_path):
+                    init_csv = True
+                else:
+                    init_csv = False
+
+                with open(csv_file_path, 'a') as f:
+                    _keys_line = []
+                    result_line = []
+                    for key, value in result.items():
+                        _keys_line.append(key)
+                        result_line.append(str(value))
+                    _keys_line.append('train_sample')
+                    result_line.append(str(self.module.module_config['dataset']['train_sample']))
+                    if init_csv is True:
+                        f.write(','.join(_keys_line) + '\n')
+                    f.write(','.join(result_line) + '\n')
+
+                if additional_dict['cp_record_file'] is True:
+                    shutil.copy('./record.txt', os.path.join(dir_name, 'Interp[{}]_record.txt'.format(str(self.module.module_config['dataset']['interp_data']))))
         return result
 
     def _train(self):
@@ -188,7 +230,8 @@ class controller(object):
     def record_to_file(self, line):
         # 记录写入文件
         if self.rc_file is None:
-            self.rc_file = open('record.txt', 'a')
+            self.rc_file = open('record.txt', 'a') 
+            # self.rc_file = open('record.txt', 'w') # clear old record every time
             # self.rc_file.write('---> {}\n'.format(self.module_config))
             self.rc_file.write('---> module config\n')
             for key, _value in self.module.module_config.items():
@@ -201,3 +244,5 @@ class controller(object):
     def save_state(self):
         pass
         
+    def clear_record(self):
+        open('record.txt', 'w').close()

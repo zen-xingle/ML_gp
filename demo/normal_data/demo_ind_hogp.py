@@ -43,6 +43,10 @@ if __name__ == '__main__':
         ct.smart_restore_state(-1)
         ct.rc_file.write('---> final result')
         ct.rc_file.flush()
-        ct.start_eval({'eval state':'final'})
+        ct.start_eval({'eval state':'final',
+                       'module_name':'ind_hogp',
+                       'cp_record_file': True})
         ct.rc_file.write('---> end\n\n')
         ct.rc_file.flush()
+
+    ct.clear_record()

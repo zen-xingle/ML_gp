@@ -92,5 +92,10 @@ if __name__ == '__main__':
             second_ct.smart_restore_state(-1)
             second_ct.rc_file.write('---> final result\n')
             second_ct.rc_file.flush()
-            second_ct.start_eval({'eval state':'final'})
+            second_ct.start_eval({'eval state':'final',
+                                'module_name':'ResGP',
+                                'cp_record_file': True})
+            second_ct.rc_file.write('---> end\n\n')
             second_ct.rc_file.flush()
+
+    second_ct.clear_record()

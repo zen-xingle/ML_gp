@@ -82,6 +82,10 @@ if __name__ == '__main__':
             mfct.smart_restore_state(-1)
             mfct.rc_file.write('---> final result')
             mfct.rc_file.flush()
-            mfct.start_eval({'eval state':'final'})
+            mfct.start_eval({'eval state':'final',
+                            'module_name': 'SGAR',
+                            'cp_record_file': True})
             mfct.rc_file.write('---> end\n\n')
             mfct.rc_file.flush()
+
+    mfct.clear_record()

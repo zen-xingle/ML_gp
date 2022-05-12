@@ -22,6 +22,8 @@ from utils.normalizer import Normalizer
 # from module.gp_output_decorator import posterior_output_decorator
 from utils.performance_evaluator import performance_evaluator, high_level_evaluator
 from scipy.io import loadmat
+from utils.data_loader import SP_DataLoader, np_list_to_tensor_list
+
 
 # optimize for main_controller
 
@@ -68,7 +70,7 @@ default_module_config = {
     'kernel': {
             'K1': {'SE': {'exp_restrict':True, 'length_scale':1., 'scale': 1.}},
             'K2': {'SE': {'exp_restrict':True, 'length_scale':1., 'scale': 1.}},
-            'K3': {'SE': {'exp_restrict':True, 'length_scale':1., 'scale': 1.}},
+            # 'K3': {'SE': {'exp_restrict':True, 'length_scale':1., 'scale': 1.}},
               },
     'evaluate_method': ['mae', 'rmse', 'r2', 'gaussian_loss'],
     'optimizer': 'adam',
@@ -76,7 +78,7 @@ default_module_config = {
     'input_normalize': True,
     'output_normalize': True,
     'noise_init' : 100.0 ,
-    'grid_config': {'grid_size': [-1, -1], 
+    'grid_config': {'grid_size': [-1], 
                     'type': 'fixed', # learnable, fixed
                     'dimension_map': 'identity', # latent space, identity, learnable_identity, learnable_map
                     },
@@ -196,6 +198,56 @@ class HOGP_MF_MODULE:
                 self.outputs_eval = []
                 self.outputs_eval.append(y_eval[_index:_index+dataset_config['eval_sample'], ...])
                 self.outputs_eval[-1] = _first_dim_to_last(self.outputs_eval[-1])
+        
+        elif dataset_config['name'] in SP_DataLoader.dataset_available:
+            if dataset_config['name'] == 'SOFC_MF':
+                sp_data = SP_DataLoader(dataset_config['name'], force_2d=False)
+            else:
+                sp_data = SP_DataLoader(dataset_config['name'], force_2d=True)
+            x_tr, y_tr, x_te, y_te = sp_data.get_data()
+            x_tr = np_list_to_tensor_list(x_tr)
+            x_te = np_list_to_tensor_list(x_te)
+            y_tr = np_list_to_tensor_list(y_tr)
+            y_te = np_list_to_tensor_list(y_te)
+            assert dataset_config['type'] == 'x_yl_2_yh', 'hogp only support x_yl_2_yh'
+            assert len(dataset_config['fidelity']) == 2, 'for x_yl_2_yh, fidelity length must be 2'
+            _first_fidelity = fidelity_map[dataset_config['fidelity'][0]]
+            _second_fidelity = fidelity_map[dataset_config['fidelity'][1]]
+            if _second_fidelity >= len(y_tr):
+                _second_fidelity = len(y_tr) - 1
+
+            x_tr = x_tr[0]
+            x_te = x_te[0]
+            y_tr_low = y_tr[_first_fidelity]
+            y_tr = y_tr[_second_fidelity]
+            y_te_low = y_te[_first_fidelity]
+            y_te = y_te[_second_fidelity]
+            # shuffle
+            if self.module_config['dataset']['seed'] is not None:
+                x_tr, y_tr_low, y_tr = self._random_shuffle([[x_tr, 0], [y_tr_low, 0], [y_tr, 0]])
+            
+            # gen vector, put num to the last dim
+            # for train set
+            _index = dataset_config['train_start_index']
+            self.inputs_tr = []
+            self.inputs_tr.append(x_tr[_index:_index+dataset_config['train_sample'], ...])
+            self.inputs_tr.append(y_tr_low[_index:_index+dataset_config['train_sample'], ...])
+            self.inputs_tr[-1] = _first_dim_to_last(self.inputs_tr[-1])
+
+            self.outputs_tr = []
+            self.outputs_tr.append(y_tr[_index:_index+dataset_config['train_sample'], ...])
+            self.outputs_tr[-1] = _first_dim_to_last(self.outputs_tr[-1])
+
+            # for eval set
+            _index = dataset_config['eval_start_index']
+            self.inputs_eval = []
+            self.inputs_eval.append(x_te[_index:_index+dataset_config['eval_sample'], ...])
+            self.inputs_eval.append(y_te_low[_index:_index+dataset_config['eval_sample'], ...])
+            self.inputs_eval[-1] = _first_dim_to_last(self.inputs_eval[-1])
+
+            self.outputs_eval = []
+            self.outputs_eval.append(y_te[_index:_index+dataset_config['eval_sample'], ...])
+            self.outputs_eval[-1] = _first_dim_to_last(self.outputs_eval[-1])
         else:
             assert False
 

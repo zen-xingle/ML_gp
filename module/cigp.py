@@ -9,6 +9,7 @@ import random
 
 from copy import deepcopy
 from scipy.io import loadmat
+from utils.data_loader import SP_DataLoader, np_list_to_tensor_list
 
 realpath=os.path.abspath(__file__)
 _sep = os.path.sep
@@ -247,6 +248,76 @@ class CIGP_MODULE:
                 self.inputs_eval.append(x_eval_1[_index:_index+dataset_config['eval_sample'], :])
                 self.outputs_eval = []
                 self.outputs_eval.append(y_eval[_index:_index+dataset_config['eval_sample'], :])
+        
+        elif dataset_config['name'] in SP_DataLoader.dataset_available:
+            sp_data = SP_DataLoader(dataset_config['name'], force_2d=True)
+            x_tr, y_tr, x_te, y_te = sp_data.get_data()
+            x_tr = np_list_to_tensor_list(x_tr)
+            x_te = np_list_to_tensor_list(x_te)
+            y_tr = np_list_to_tensor_list(y_tr)
+            y_te = np_list_to_tensor_list(y_te)
+            if self.module_config['res_cigp'] is None:
+                if dataset_config['type'] == 'x_2_y':
+                    assert len(dataset_config['fidelity']) == 1, 'for x_2_y, fidelity length must be 1'
+                    _fidelity = fidelity_map[dataset_config['fidelity'][0]]
+                    y_tr = [y_tr[_fidelity]]
+                    y_te = [y_te[_fidelity]]
+                elif dataset_config['type'] == 'x_yl_2_yh':
+                    assert len(dataset_config['fidelity']) == 2, 'for x_yl_2_yh, fidelity length must be 2'
+                    _first_fidelity = fidelity_map[dataset_config['fidelity'][0]]
+                    _second_fidelity = fidelity_map[dataset_config['fidelity'][1]]
+                    if _second_fidelity >= len(y_tr):
+                        _second_fidelity = len(y_tr) - 1
+                    x_tr = [torch.cat([x_tr[0], y_tr[_first_fidelity]], dim=1)]
+                    x_te = [torch.cat([x_te[0], y_te[_first_fidelity]], dim=1)]
+                    y_tr = [y_tr[_second_fidelity]]
+                    y_te = [y_te[_second_fidelity]]
+                if self.module_config['dataset']['seed'] is not None:
+                    x_tr, y_tr = self._random_shuffle([[x_tr[0], 0], [y_tr[0], 0]])
+                    x_tr = [x_tr]
+                    y_tr = [y_tr]
+                
+                _index = dataset_config['train_start_index']
+                self.inputs_tr = []
+                self.inputs_tr.append(x_tr[0][_index:_index+dataset_config['train_sample'], :])
+                self.outputs_tr = []
+                self.outputs_tr.append(y_tr[0][_index:_index+dataset_config['train_sample'], :])
+
+                _index = dataset_config['eval_start_index']
+                self.inputs_eval = []
+                self.inputs_eval.append(x_te[0][_index:_index+dataset_config['eval_sample'], :])
+                self.outputs_eval = []
+                self.outputs_eval.append(y_te[0][_index:_index+dataset_config['eval_sample'], :])
+
+            elif self.module_config['res_cigp'] is not None:
+                assert dataset_config['type'] == 'x_yl_2_yh', 'for res_cigp, dataset type must be x_yl_2_yh'
+                assert len(dataset_config['fidelity']) == 2, 'for x_yl_2_yh, fidelity length must be 2'
+                _first_fidelity = fidelity_map[dataset_config['fidelity'][0]]
+                _second_fidelity = fidelity_map[dataset_config['fidelity'][1]]
+                if _second_fidelity >= len(y_tr):
+                    _second_fidelity = len(y_tr) - 1
+                x_tr_0 = x_tr[0]
+                x_tr_1 = y_tr[_first_fidelity]
+                y_tr = y_tr[_second_fidelity]
+                x_te_0 = x_te[0]
+                x_te_1 = y_te[_first_fidelity]
+                y_te = y_te[_second_fidelity]
+                # shuffle
+                if self.module_config['dataset']['seed'] is not None:
+                    x_tr_0, x_tr_1, y_tr = self._random_shuffle([[x_tr_0, 0], [x_tr_1, 0], [y_tr, 0]])
+                _index = dataset_config['train_start_index']
+                self.inputs_tr = []
+                self.inputs_tr.append(x_tr_0[_index:_index+dataset_config['train_sample'], :])
+                self.inputs_tr.append(x_tr_1[_index:_index+dataset_config['train_sample'], :])
+                self.outputs_tr = []
+                self.outputs_tr.append(y_tr[_index:_index+dataset_config['train_sample'], :])
+
+                _index = dataset_config['eval_start_index']
+                self.inputs_eval = []
+                self.inputs_eval.append(x_te_0[_index:_index+dataset_config['eval_sample'], :])
+                self.inputs_eval.append(x_te_1[_index:_index+dataset_config['eval_sample'], :])
+                self.outputs_eval = []
+                self.outputs_eval.append(y_te[_index:_index+dataset_config['eval_sample'], :])
         else:
             assert False
 

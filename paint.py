@@ -1,4 +1,5 @@
 import xlrd
+import pandas as pd
 import os
 import numpy as np
 from matplotlib import pyplot as plt
@@ -34,13 +35,42 @@ def get_fig_data_nar(file, data, num, seed, type):
 
     return d
 
+def get_data(file, type):
+    data = pd.read_csv(file)
+    target_list = data[type]
+    return target_list.values
+
+def get_mean_and_std(method, data, interp, type, n):
+    m = []
+    s = []
+    val = []
+    for i in ['0', '1', '2', '3', '4']:
+        f = "exp/" + method + "/" + data + "/" + data + "_Seed[" + i + "]_" + interp + ".csv"
+        val.append(get_data(f, type))
+
+    for i in range(n):
+        temp = []
+        for j in range(5):
+            temp.append(val[j][i])
+        temp = np.array(temp)
+        m.append(temp.mean())
+        s.append(temp.std())
+
+    return np.array(m), np.array(s)
+
+
 if __name__ == '__main__':
-    ratio = 0.4
-    data_name = "Burger"
-    max_num = 64
+    data_name = "Heat"
+    max_num = 32
     vals = []
     vars = []
-    typ = ["GAR", "NAR", "LarGP", "ResGP","SGAR"] #方法类型
+    typ = ["NAR", "LarGP", "ResGP"] #方法类型
+    gar_m, gar_s = get_mean_and_std('GAR', 'Heat_mfGent_v5', 'Interp[True]', 'rmse', 4)
+    vals.append(gar_m)
+    vars.append(gar_s)
+    sgar_m, sgar_s = get_mean_and_std('SGAR', 'Heat_mfGent_v5', 'Interp[True]', 'rmse', 4)
+    vals.append(sgar_m)
+    vars.append(sgar_s)
     for i in typ:
         if i == "GAR":
             name = data_name + i
@@ -61,15 +91,15 @@ if __name__ == '__main__':
     else:
         orders = result_list_32
     
-    for i in range(5):
-        plt.plot(orders, vals[i], linewidth=3, color=color[i], label=typ[i], marker=marker[i])
-        plt.fill_between(orders, vals[i] - vars[i] * ratio, vals[i] + vars[i] * ratio, alpha=0.2, color=color[i])
+    for i in range(4):
+        plt.errorbar(orders, vals[i],yerr = vars[i], linewidth=2, color=color[i], label=typ[i], marker=marker[i])
+        # plt.fill_between(orders, vals[i] - vars[i] * ratio, vals[i] + vars[i] * ratio, alpha=0.2, color=color[i])
 
     plt.xlabel("num of high-fidelity training sample", fontsize=14)
     plt.ylabel("RMSE", fontsize = 14)
     ax = plt.gca()
     plt.tick_params(axis='both', labelsize=10)
     plt.legend(loc='upper right', fontsize=12)
-    plt.title("Burger_v4_02",fontsize = 12)
+    plt.title("Heat_mfGent_v5",fontsize = 12)
     plt.grid()
     plt.show()

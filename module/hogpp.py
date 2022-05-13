@@ -20,7 +20,7 @@ from tensorly import tucker_to_tensor
 from utils.eigen import eigen_pairs
 from utils.normalizer import Normalizer
 # from module.gp_output_decorator import posterior_output_decorator
-from utils.performance_evaluator import performance_evaluator
+from utils.performance_evaluator import performance_evaluator, high_level_evaluator
 from scipy.io import loadmat
 
 # optimize for main_controller
@@ -56,25 +56,26 @@ default_module_config = {
                  'type':'x_2_y',    # x_yl_2_yh, x_2_y
                  'connection_method': 'res_mapping',  # Only valid when x_yl_2_yh, identity, res_rho, res_mapping
                  'train_start_index': 0, 
-                 'train_sample': 32, 
+                 'train_sample': 8, 
                  'eval_start_index': 0, 
-                 'eval_sample':256},
+                 'eval_sample':256,
+                 'seed': 0},
 
-    'lr': {'kernel':0.1, 
-           'optional_param':0.1, 
-           'noise':0.1},
+    'lr': {'kernel':0.01, 
+           'optional_param':0.01, 
+           'noise':0.01},
     # kernel number as dim + 1
     'kernel': {
             'K1': {'SE': {'exp_restrict':True, 'length_scale':1., 'scale': 1.}},
             'K2': {'SE': {'exp_restrict':True, 'length_scale':1., 'scale': 1.}},
             'K3': {'SE': {'exp_restrict':True, 'length_scale':1., 'scale': 1.}},
               },
-    'evaluate_method': ['mae', 'rmse', 'r2'],
+    'evaluate_method': ['mae', 'rmse', 'r2', 'gaussian_loss'],
     'optimizer': 'adam',
     'exp_restrict': False,
     'input_normalzie': True,
     'output_normalize': True,
-    'noise_init' : 0.005,
+    'noise_init' : 100.,
     'grid_config': {'grid_size': [-1, -1], 
                     'type': 'fixed', # learnable, fixed
                     'dimension_map': 'identity', # latent space: identity, learnable_identity, learnable_map
@@ -154,7 +155,8 @@ class HOGP_MODULE:
                 x_eval = torch.tensor(data['xte'], dtype=torch.float32)
                 y_eval = torch.tensor(data['Yte'][0][_fidelity], dtype=torch.float32)
                 # shuffle
-                x_tr, y_tr = self._random_shuffle([[x_tr, 0], [y_tr, 0]])
+                if self.module_config['dataset']['seed'] is not None:
+                    x_tr, y_tr = self._random_shuffle([[x_tr, 0], [y_tr, 0]])
 
                 # gen vector, put num to the last dim
                 _index = dataset_config['train_start_index']
@@ -181,7 +183,6 @@ class HOGP_MODULE:
                 _value = self.outputs_tr[0].shape[i]
             if grid_config['type'] == 'fixed':
                 self.grid.append(torch.tensor(range(_value)).reshape(-1,1).float())
-                # self.grid.append(torch.ones(_value).reshape(-1,1).float())
             elif grid_config['type'] == 'learnable':
                 self.grid.append(torch.nn.Parameter(torch.tensor(range(_value)).reshape(-1,1).float()))
         
@@ -220,11 +221,8 @@ class HOGP_MODULE:
                 optional_params.append(self.mapping_vector[i])
         
         kernel_learnable_param = []
-        #让grid的kernel 不再优化
-        _kernel = self.kernel_list[-1]
-        _kernel.get_param(kernel_learnable_param)
-        # for _kernel in self.kernel_list:
-        #     _kernel.get_param(kernel_learnable_param)
+        for _kernel in self.kernel_list:
+            _kernel.get_param(kernel_learnable_param)
 
         # TODO support SGD?
         # module_config['lr'] = {'kernel':0.01, 'optional_param':0.01, 'noise':0.01}
@@ -247,8 +245,6 @@ class HOGP_MODULE:
         for i in range(len(self.grid)):
             _in = tensorly.tenalg.mode_dot(self.grid[i], self.mapping_vector[i], 0)
             self.K.append(self.kernel_list[i](_in, _in))
-            # nn = self.grid[i].shape[0]
-            # self.K.append(torch.eye(nn))
             self.K_eigen.append(eigen_pairs(self.K[i]))
 
         # update x
@@ -327,6 +323,7 @@ class HOGP_MODULE:
 
             # /*** Get predict var***/
             '''
+            '''
             # NOTE: now only work for the normal predict
             _init_value = torch.tensor([1.0]).reshape(*[1 for i in self.K])
             diag_K = tucker_to_tensor(( _init_value, [K.diag().reshape(-1,1) for K in self.K[:-1]]))
@@ -337,11 +334,10 @@ class HOGP_MODULE:
             # S_product = tensorly.tenalg.multi_mode_dot(S_2, [eigen_vector_d1.pow(2), eigen_vector_d2.pow(2), (K_star@K_p.inverse()@eigen_vector_p).pow(2)])
             S_product = tensorly.tenalg.multi_mode_dot(S_2, [self.K_eigen[i].vector.pow(2) for i in range(len(self.K_eigen)-1)]+[(K_star@self.K[-1].inverse()@self.K_eigen[-1].vector).pow(2)])
             M = diag_K + S_product
-            if self.module_config['output_normalize'] is True:
-                M = M * self.Y_normalizer.std ** 2
-            '''
+            # if self.module_config['output_normalize'] is True:
+            #     M = M * self.Y_normalizer.std ** 2
 
-        return predict_u, None
+        return predict_u, M
 
     '''
     def predict_postprior(self, input_param, target_y, target_mask, method):
@@ -469,7 +465,7 @@ class HOGP_MODULE:
 
         if self.module_config['grid_config']['dimension_map'] not in ['identity']:
             state_dict.extend(self.mapping_vector)
-
+        
         return state_dict
 
         # TODO save word
@@ -497,8 +493,12 @@ class HOGP_MODULE:
 
     def eval(self):
         print('---> start eval')
-        predict_y = self.predict(self.inputs_eval)[0]
-        result = performance_evaluator(predict_y, self.outputs_eval[0], self.module_config['evaluate_method'])
-        self.predict_y = predict_y
+        predict_y, predict_var = self.predict(self.inputs_eval)
+        self.predict_y = deepcopy(predict_y)
+        # result = performance_evaluator(predict_y, self.outputs_eval[0], self.module_config['evaluate_method'])
+        predict_y = _last_dim_to_fist(predict_y)
+        predict_var = _last_dim_to_fist(predict_var)
+        target = _last_dim_to_fist(self.outputs_eval[0])
+        result = high_level_evaluator([predict_y, predict_var], target, self.module_config['evaluate_method'])
         print(result)
         return result

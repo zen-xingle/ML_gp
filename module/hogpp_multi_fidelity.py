@@ -20,7 +20,7 @@ from tensorly import tucker_to_tensor
 from utils.eigen import eigen_pairs
 from utils.normalizer import Normalizer
 # from module.gp_output_decorator import posterior_output_decorator
-from utils.performance_evaluator import performance_evaluator
+from utils.performance_evaluator import performance_evaluator, high_level_evaluator
 from scipy.io import loadmat
 
 # optimize for main_controller
@@ -51,33 +51,34 @@ mat_dataset_paths = {
 
 
 default_module_config = {
-    'dataset' : {'name': 'Piosson_mfGent_v5',
-                 'fidelity': ['low'],
-                 'type':'x_2_y',    # x_yl_2_yh, x_2_y
+    'dataset' : {'name': 'poisson_v4_02',
+                 'fidelity': ['low', 'high'],
+                 'type':'x_yl_2_yh',    # x_yl_2_yh
                  'connection_method': 'res_mapping',  # Only valid when x_yl_2_yh, identity, res_rho, res_mapping
                  'train_start_index': 0, 
-                 'train_sample': 32, 
+                 'train_sample': 8, 
                  'eval_start_index': 0, 
-                 'eval_sample':256},
+                 'eval_sample':256,
+                 'seed': 0},
 
-    'lr': {'kernel':0.1, 
-           'optional_param':0.1, 
-           'noise':0.1},
+    'lr': {'kernel':0.01, 
+           'optional_param':0.01, 
+           'noise':0.01},
     # kernel number as dim + 1
     'kernel': {
             'K1': {'SE': {'exp_restrict':True, 'length_scale':1., 'scale': 1.}},
             'K2': {'SE': {'exp_restrict':True, 'length_scale':1., 'scale': 1.}},
             'K3': {'SE': {'exp_restrict':True, 'length_scale':1., 'scale': 1.}},
               },
-    'evaluate_method': ['mae', 'rmse', 'r2'],
+    'evaluate_method': ['mae', 'rmse', 'r2', 'gaussian_loss'],
     'optimizer': 'adam',
     'exp_restrict': False,
-    'input_normalzie': True,
+    'input_normalize': True,
     'output_normalize': True,
-    'noise_init' : 0.005,
+    'noise_init' : 100.0 ,
     'grid_config': {'grid_size': [-1, -1], 
                     'type': 'fixed', # learnable, fixed
-                    'dimension_map': 'identity', # latent space: identity, learnable_identity, learnable_map
+                    'dimension_map': 'identity', # latent space, identity, learnable_identity, learnable_map
                     },
 }
 
@@ -92,7 +93,7 @@ def _first_dim_to_last(_tensor):
     return _tensor.permute(*_dim)
 
 
-class HOGP_MODULE:
+class HOGP_MF_MODULE:
     # def __init__(self, grid_params_list, kernel_list, target_list, normalize=True, restrict_method= 'exp') -> None:
     def __init__(self, module_config) -> None:
         default_module_config.update(module_config)
@@ -105,13 +106,14 @@ class HOGP_MODULE:
         # load_data
         self._load_data(module_config['dataset'])
         self._grid_setup(module_config['grid_config'])
+        self._select_connection_kernel(module_config['dataset']['connection_method'])
 
         # TODO if param allow more than single kernel, optimize code here
         self.vector_dims = len(self.grid)
         self.param_dims = 1
 
         # X - normalize
-        if module_config['input_normalzie'] is True:
+        if module_config['input_normalize'] is True:
             self.X_normalizer = Normalizer(self.inputs_tr[0])
             self.inputs_tr[0] = self.X_normalizer.normalize(self.inputs_tr[0])
         else:
@@ -122,6 +124,7 @@ class HOGP_MODULE:
         if module_config['output_normalize'] is True:
             self.Y_normalizer = Normalizer(self.outputs_tr[0], dim=[i for i in range(len(self.outputs_tr[0].shape))])
             self.outputs_tr[0] = self.Y_normalizer.normalize(self.outputs_tr[0])
+            self.inputs_tr[1] = self.Y_normalizer.normalize(self.inputs_tr[1])
         else:
             self.Y_normalizer = None
 
@@ -141,38 +144,55 @@ class HOGP_MODULE:
 
     def _load_data(self, dataset_config):
         print('dataset_config name:', dataset_config['name'])
-        if dataset_config['name'] in mat_dataset_paths:
+        if dataset_config['name'] == 'test_v1':
+            _sample = 100
+            x_eval = torch.linspace(0, 6, _sample).view(-1, 1)
+            y_eval = torch.sin(x_eval) + 10
+            x_tr = torch.rand(32, 1) * 6
+            y_tr = torch.sin(x_tr) + torch.rand(32, 1) * 0.5 + 10
+        elif dataset_config['name'] in mat_dataset_paths:
             # they got the same data format
             data = loadmat(mat_dataset_paths[dataset_config['name']])
 
-            if dataset_config['type'] == 'x_2_y':
-                assert len(dataset_config['fidelity']) == 1, 'for x_2_y, fidelity length must be 1'
-                _fidelity = fidelity_map[dataset_config['fidelity'][0]]
-                # 0 for low, 1 for middle, 2 for high
+            if dataset_config['type'] == 'x_yl_2_yh':
+                assert len(dataset_config['fidelity']) == 2, 'for x_yl_2_yh, fidelity length must be 2'
+                _first_fidelity = fidelity_map[dataset_config['fidelity'][0]]
+                _second_fidelity = fidelity_map[dataset_config['fidelity'][1]]
                 x_tr = torch.tensor(data['xtr'], dtype=torch.float32)
-                y_tr = torch.tensor(data['Ytr'][0][_fidelity], dtype=torch.float32)
+                y_tr_low = torch.tensor(data['Ytr'][0][_first_fidelity], dtype=torch.float32)
+                y_tr = torch.tensor(data['Ytr'][0][_second_fidelity], dtype=torch.float32)
                 x_eval = torch.tensor(data['xte'], dtype=torch.float32)
-                y_eval = torch.tensor(data['Yte'][0][_fidelity], dtype=torch.float32)
+                y_eval_low = torch.tensor(data['Yte'][0][_first_fidelity], dtype=torch.float32)
+                y_eval = torch.tensor(data['Yte'][0][_second_fidelity], dtype=torch.float32)
                 # shuffle
-                x_tr, y_tr = self._random_shuffle([[x_tr, 0], [y_tr, 0]])
+                if self.module_config['dataset']['seed'] is not None:
+                    x_tr, y_tr_low, y_tr = self._random_shuffle([[x_tr, 0], [y_tr_low, 0], [y_tr, 0]])
 
                 # gen vector, put num to the last dim
+                # for train set
                 _index = dataset_config['train_start_index']
                 self.inputs_tr = []
                 self.inputs_tr.append(torch.tensor(x_tr[_index:_index+dataset_config['train_sample'], ...]))
+                self.inputs_tr.append(torch.tensor(y_tr_low[_index:_index+dataset_config['train_sample'], ...]))
+                self.inputs_tr[-1] = _first_dim_to_last(self.inputs_tr[-1])
+
                 self.outputs_tr = []
                 self.outputs_tr.append(torch.tensor(y_tr[_index:_index+dataset_config['train_sample'], ...]))
                 self.outputs_tr[-1] = _first_dim_to_last(self.outputs_tr[-1])
 
+                # for eval set
                 _index = dataset_config['eval_start_index']
                 self.inputs_eval = []
                 self.inputs_eval.append(torch.tensor(x_eval[_index:_index+dataset_config['eval_sample'], ...]))
+                self.inputs_eval.append(torch.tensor(y_eval_low[_index:_index+dataset_config['eval_sample'], ...]))
+                self.inputs_eval[-1] = _first_dim_to_last(self.inputs_eval[-1])
+
                 self.outputs_eval = []
                 self.outputs_eval.append(torch.tensor(y_eval[_index:_index+dataset_config['eval_sample'], ...]))
                 self.outputs_eval[-1] = _first_dim_to_last(self.outputs_eval[-1])
         else:
             assert False
-        
+
 
     def _grid_setup(self, grid_config):
         self.grid = []
@@ -181,7 +201,6 @@ class HOGP_MODULE:
                 _value = self.outputs_tr[0].shape[i]
             if grid_config['type'] == 'fixed':
                 self.grid.append(torch.tensor(range(_value)).reshape(-1,1).float())
-                # self.grid.append(torch.ones(_value).reshape(-1,1).float())
             elif grid_config['type'] == 'learnable':
                 self.grid.append(torch.nn.Parameter(torch.tensor(range(_value)).reshape(-1,1).float()))
         
@@ -198,6 +217,15 @@ class HOGP_MODULE:
                 # TODO add init function
                 self.mapping_vector.append(torch.nn.Parameter(torch.randn(_value, self.outputs_tr[0].shape[i])))
 
+    def _select_connection_kernel(self, type_name):
+        from kernel.Multi_fidelity_connection import rho_connection, mapping_connection
+        assert type_name in ['res_rho', 'res_mapping']
+        if type_name in ['res_rho']:
+            self.target_connection = rho_connection()
+        elif type_name in ['res_mapping']:
+            self.target_connection = mapping_connection(self.inputs_tr[1][:,:,0].shape, 
+                                                        self.outputs_tr[0][:,:,0].shape,
+                                                        )
 
     def _init_kernel(self, kernel_config):
         from kernel.kernel_generator import kernel_generator
@@ -220,11 +248,9 @@ class HOGP_MODULE:
                 optional_params.append(self.mapping_vector[i])
         
         kernel_learnable_param = []
-        #让grid的kernel 不再优化
-        _kernel = self.kernel_list[-1]
-        _kernel.get_param(kernel_learnable_param)
-        # for _kernel in self.kernel_list:
-        #     _kernel.get_param(kernel_learnable_param)
+        for _kernel in self.kernel_list:
+            _kernel.get_param(kernel_learnable_param)
+        self.target_connection.get_param(kernel_learnable_param)
 
         # TODO support SGD?
         # module_config['lr'] = {'kernel':0.01, 'optional_param':0.01, 'noise':0.01}
@@ -247,8 +273,6 @@ class HOGP_MODULE:
         for i in range(len(self.grid)):
             _in = tensorly.tenalg.mode_dot(self.grid[i], self.mapping_vector[i], 0)
             self.K.append(self.kernel_list[i](_in, _in))
-            # nn = self.grid[i].shape[0]
-            # self.K.append(torch.eye(nn))
             self.K_eigen.append(eigen_pairs(self.K[i]))
 
         # update x
@@ -285,7 +309,8 @@ class HOGP_MODULE:
         # TODO: add jitter limite here?
         
         # vec(z).T@ S.inverse @ vec(z) = b.T @ b,  b = S.pow(-1/2) @ vec(z)
-        T_1 = tensorly.tenalg.multi_mode_dot(self.outputs_tr[0], [eigen.vector.T for eigen in self.K_eigen])
+        _res = self.target_connection(self.inputs_tr[-1], self.outputs_tr[0])
+        T_1 = tensorly.tenalg.multi_mode_dot(_res, [eigen.vector.T for eigen in self.K_eigen])
         T_2 = T_1 * A.pow(-1/2)
         T_3 = tensorly.tenalg.multi_mode_dot(T_2, [eigen.vector for eigen in self.K_eigen])
         b = tensorly.tensor_to_vec(T_3)
@@ -303,11 +328,11 @@ class HOGP_MODULE:
     def predict(self, input_param):
         input_param = deepcopy(input_param)
         with torch.no_grad():
-            if self.module_config['input_normalzie'] is True:
+            if self.module_config['input_normalize'] is True:
                 input_param[0] = self.X_normalizer.normalize(input_param[0])
             
             #! may needn't?
-            # self.update_product()
+            self.update_product()
 
             # /*** Get predict mean***/
             if len(input_param[0].shape) != len(self.inputs_tr[0].shape):
@@ -323,25 +348,28 @@ class HOGP_MODULE:
             predict_u = tensorly.tenalg.multi_mode_dot(self.g, K_predict)
             # predict_u = predict_u.reshape_as(self.outputs_eval[:,:,0])
             if self.module_config['output_normalize'] is True:
+                base_yl = self.Y_normalizer.normalize(input_param[1])
+                predict_u = self.target_connection.low_2_high(base_yl, predict_u)
                 predict_u = self.Y_normalizer.denormalize(predict_u)
+            else:
+                predict_u = self.target_connection.low_2_high(input_param[1], predict_u)
 
             # /*** Get predict var***/
+            '''
             '''
             # NOTE: now only work for the normal predict
             _init_value = torch.tensor([1.0]).reshape(*[1 for i in self.K])
             diag_K = tucker_to_tensor(( _init_value, [K.diag().reshape(-1,1) for K in self.K[:-1]]))
 
-            # var则为0, 怎么利用该信息更新输入？
             S = self.A * self.A.pow(-1/2)
             S_2 = S.pow(2)
             # S_product = tensorly.tenalg.multi_mode_dot(S_2, [eigen_vector_d1.pow(2), eigen_vector_d2.pow(2), (K_star@K_p.inverse()@eigen_vector_p).pow(2)])
             S_product = tensorly.tenalg.multi_mode_dot(S_2, [self.K_eigen[i].vector.pow(2) for i in range(len(self.K_eigen)-1)]+[(K_star@self.K[-1].inverse()@self.K_eigen[-1].vector).pow(2)])
             M = diag_K + S_product
-            if self.module_config['output_normalize'] is True:
-                M = M * self.Y_normalizer.std ** 2
-            '''
+            # if self.module_config['output_normalize'] is True:
+            #     M = M * self.Y_normalizer.std ** 2
 
-        return predict_u, None
+        return predict_u, M
 
     '''
     def predict_postprior(self, input_param, target_y, target_mask, method):
@@ -407,7 +435,7 @@ class HOGP_MODULE:
 
 
     def _random_shuffle(self, np_array_list):
-        random.seed(self.module_config['dataset']['seed'])
+        random.seed(0)
         # check dim shape
         # TODO support -1 dim
         dim_lenth = []
@@ -447,6 +475,7 @@ class HOGP_MODULE:
         for i in range(len(self.kernel_list)):
             params_need_check.extend(self.kernel_list[i].get_params_need_check())
         params_need_check.append(self.noise)
+        params_need_check.extend(self.target_connection.get_params_need_check())
         
         if self.module_config['grid_config']['type'] == 'learnable':
             params_need_check.extend(self.grid)
@@ -461,15 +490,15 @@ class HOGP_MODULE:
         state_dict = []
         for i, _kernel in enumerate(self.kernel_list):
             state_dict.extend(_kernel.get_param([]))
-
         state_dict.append(self.noise)
+        state_dict.extend(self.target_connection.get_params_need_check())
 
         if self.module_config['grid_config']['type'] == 'learnable':
             state_dict.extend(self.grid)
 
         if self.module_config['grid_config']['dimension_map'] not in ['identity']:
             state_dict.extend(self.mapping_vector)
-
+        
         return state_dict
 
         # TODO save word
@@ -485,20 +514,29 @@ class HOGP_MODULE:
             self.noise.copy_(params_list[index])
             index += 1
 
+            _len = len(self.target_connection.get_params_need_check())
+            self.target_connection.set_param(params_list[index:index+_len])
+            index += _len
+
             if self.module_config['grid_config']['type'] == 'learnable':
                 for i in range(len(self.grid)):
                     self.grid[i].copy_(params_list[index + i])
                 index += len(self.grid)
 
             if self.module_config['grid_config']['dimension_map'] not in ['identity']:
-                for i in range(len(self.mapping_vector)):
-                    self.mapping_vector[i].copy_(params_list[index + i])
+                self.mapping_vector.copy_(params_list[index + i])
                 index += len(self.mapping_vector)
+
 
     def eval(self):
         print('---> start eval')
-        predict_y = self.predict(self.inputs_eval)[0]
-        result = performance_evaluator(predict_y, self.outputs_eval[0], self.module_config['evaluate_method'])
-        self.predict_y = predict_y
+        predict_y, predict_var = self.predict(self.inputs_eval)
+        self.predict_y = deepcopy(predict_y)
+        # result = performance_evaluator(predict_y, self.outputs_eval[0], self.module_config['evaluate_method'])
+        predict_y = _last_dim_to_fist(predict_y)
+        predict_var = _last_dim_to_fist(predict_var)
+        target = _last_dim_to_fist(self.outputs_eval[0])
+        result = high_level_evaluator([predict_y, predict_var], target, self.module_config['evaluate_method'])
+        print(result)
         print(result)
         return result

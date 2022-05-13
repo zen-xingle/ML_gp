@@ -46,6 +46,7 @@ mat_dataset_paths = {
                 'Piosson_mfGent_v5': 'data/MultiFidelity_ReadyData/Piosson_mfGent_v5.mat',
                 'Schroed2D_mfGent_v1': 'data/MultiFidelity_ReadyData/Schroed2D_mfGent_v1.mat',
                 'TopOP_mfGent_v5': 'data/MultiFidelity_ReadyData/TopOP_mfGent_v5.mat',
+                'DoublePendu_mfGent_v01': 'data/MultiFidelity_ReadyData/DoublePendu_mfGent_v01.mat',
             } # they got the same data format
 
 

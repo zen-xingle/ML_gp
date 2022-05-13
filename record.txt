@@ -1,0 +1,196 @@
+----------------------------------------
+
+  Demo lar cigp 
+  seed: None 
+  interp_data: True 
+
+----------------------------------------
+---> module config
+  dataset: {'name': 'burger_v4_02', 'fidelity': ['low'], 'type': 'x_2_y', 'train_start_index': 0, 'train_sample': 32, 'eval_start_index': 0, 'eval_sample': 128, 'seed': None, 'interp_data': True}
+  lr: {'kernel': 0.01, 'optional_param': 0.01, 'noise': 0.01}
+  kernel: {'K1': {'SE': {'exp_restrict': False, 'length_scale': 1.0, 'scale': 1.0}}}
+  evaluate_method: ['mae', 'rmse', 'r2']
+  optimizer: adam
+  exp_restrict: False
+  input_normalize: True
+  output_normalize: True
+  noise_init: 10.0
+  res_cigp: None
+---> training record
+  epoch       	mae         	rmse        	r2          	time        
+  1           	0.00303     	0.00866     	0.94061     	0           
+  10          	0.00277     	0.00777     	0.95080     	0           
+  100         	0.00135     	0.00417     	0.98123     	0           
+  300         	0.00122     	0.00357     	0.98436     	1           
+  500         	0.00113     	0.00324     	0.98597     	2           
+  1000        	0.00099     	0.00275     	0.98827     	4           
+---> try to load best state
+              	0.00099     	0.00275     	0.98827     	4                eval state : test_on_restore;
+              	0.00099     	0.00275     	0.98827     	4                eval state : test_on_last_epoch;
+---> final result
+              	0.00099     	0.00275     	0.98827     	4                eval state : final;
+----------> finish x-yl training
+
+
+---------->
+lar cigp for 4 samples
+---> Training x,yl -> yh part
+
+---> module config
+  dataset: {'name': 'burger_v4_02', 'fidelity': ['low', 'high'], 'type': 'x_yl_2_yh', 'train_start_index': 0, 'train_sample': 4, 'eval_start_index': 0, 'eval_sample': 128, 'seed': None, 'interp_data': True}
+  lr: {'kernel': 0.01, 'optional_param': 0.01, 'noise': 0.01}
+  kernel: {'K1': {'SE': {'exp_restrict': False, 'length_scale': 1.0, 'scale': 1.0}}}
+  evaluate_method: ['mae', 'rmse', 'r2']
+  optimizer: adam
+  exp_restrict: False
+  input_normalize: True
+  output_normalize: True
+  noise_init: 10.0
+  res_cigp: {'type_name': 'res_rho'}
+---> training record
+  epoch       	mae         	rmse        	r2          	time        
+  1           	0.00294     	0.01102     	0.97219     	0           
+  10          	0.00311     	0.01054     	0.97172     	0           
+  100         	0.00892     	0.01900     	0.84767     	0           
+  300         	0.01199     	0.02540     	0.75740     	0           
+  500         	0.01206     	0.02553     	0.75553     	1           
+----------------------------------------
+
+  Demo res cigp 
+  seed: None 
+  interp_data: True 
+
+----------------------------------------
+---> module config
+  dataset: {'name': 'burger_v4_02', 'fidelity': ['low'], 'type': 'x_2_y', 'train_start_index': 0, 'train_sample': 32, 'eval_start_index': 0, 'eval_sample': 128, 'seed': None, 'interp_data': True}
+  lr: {'kernel': 0.01, 'optional_param': 0.01, 'noise': 0.01}
+  kernel: {'K1': {'SE': {'exp_restrict': False, 'length_scale': 1.0, 'scale': 1.0}}}
+  evaluate_method: ['mae', 'rmse', 'r2']
+  optimizer: adam
+  exp_restrict: False
+  input_normalize: True
+  output_normalize: True
+  noise_init: 10.0
+  res_cigp: None
+---> training record
+  epoch       	mae         	rmse        	r2          	time        
+  1           	0.00303     	0.00866     	0.94061     	0           
+  10          	0.00277     	0.00777     	0.95080     	0           
+  100         	0.00135     	0.00417     	0.98123     	0           
+  300         	0.00122     	0.00357     	0.98436     	0           
+  500         	0.00113     	0.00324     	0.98597     	1           
+  1000        	0.00099     	0.00275     	0.98827     	3           
+---> try to load best state
+              	0.00099     	0.00275     	0.98827     	3                eval state : test_on_restore;
+              	0.00099     	0.00275     	0.98827     	3                eval state : test_on_last_epoch;
+---> final result
+              	0.00099     	0.00275     	0.98827     	3                eval state : final;
+----------> finish x-yl training
+
+
+---------->
+res cigp for 4 samples
+---> Training x,yl -> yh part
+
+---> module config
+  dataset: {'name': 'burger_v4_02', 'fidelity': ['low', 'high'], 'type': 'x_yl_2_yh', 'train_start_index': 0, 'train_sample': 4, 'eval_start_index': 0, 'eval_sample': 128, 'seed': None, 'interp_data': True}
+  lr: {'kernel': 0.01, 'optional_param': 0.01, 'noise': 0.01}
+  kernel: {'K1': {'SE': {'exp_restrict': False, 'length_scale': 1.0, 'scale': 1.0}}}
+  evaluate_method: ['mae', 'rmse', 'r2']
+  optimizer: adam
+  exp_restrict: False
+  input_normalize: True
+  output_normalize: True
+  noise_init: 10.0
+  res_cigp: {'type_name': 'res_standard'}
+---> training record
+  epoch       	mae         	rmse        	r2          	time        
+  1           	0.00294     	0.01102     	0.97200     	0           
+  10          	0.00287     	0.01027     	0.97349     	0           
+  100         	0.00289     	0.00785     	0.97787     	0           
+  300         	0.00334     	0.00857     	0.97782     	0           
+  500         	0.00361     	0.00938     	0.97682     	0           
+  1000        	0.00422     	0.01146     	0.97410     	1           
+---> try to load best state
+              	0.00422     	0.01146     	0.97410     	1                eval state : test_on_restore;
+              	0.00422     	0.01146     	0.97410     	2                eval state : test_on_last_epoch;
+---> final result
+              	0.00422     	0.01146     	0.97410     	2                eval state : final;module_name : ResGP;cp_record_file : True;
+---> end
+
+
+---------->
+res cigp for 8 samples
+---> Training x,yl -> yh part
+
+---> module config
+  dataset: {'name': 'burger_v4_02', 'fidelity': ['low', 'high'], 'type': 'x_yl_2_yh', 'train_start_index': 0, 'train_sample': 8, 'eval_start_index': 0, 'eval_sample': 128, 'seed': None, 'interp_data': True}
+  lr: {'kernel': 0.01, 'optional_param': 0.01, 'noise': 0.01}
+  kernel: {'K1': {'SE': {'exp_restrict': False, 'length_scale': 1.0, 'scale': 1.0}}}
+  evaluate_method: ['mae', 'rmse', 'r2']
+  optimizer: adam
+  exp_restrict: False
+  input_normalize: True
+  output_normalize: True
+  noise_init: 10.0
+  res_cigp: {'type_name': 'res_standard'}
+---> training record
+  epoch       	mae         	rmse        	r2          	time        
+  1           	0.00177     	0.00568     	0.98428     	0           
+  10          	0.00175     	0.00545     	0.98461     	0           
+  100         	0.00183     	0.00474     	0.98486     	0           
+  300         	0.00227     	0.00545     	0.98428     	0           
+  500         	0.00273     	0.00668     	0.98285     	1           
+----------------------------------------
+
+  Demo res cigp 
+  seed: None 
+  interp_data: True 
+
+----------------------------------------
+---> module config
+  dataset: {'name': 'burger_v4_02', 'fidelity': ['low'], 'type': 'x_2_y', 'train_start_index': 0, 'train_sample': 32, 'eval_start_index': 0, 'eval_sample': 128, 'seed': None, 'interp_data': True}
+  lr: {'kernel': 0.01, 'optional_param': 0.01, 'noise': 0.01}
+  kernel: {'K1': {'SE': {'exp_restrict': False, 'length_scale': 1.0, 'scale': 1.0}}}
+  evaluate_method: ['mae', 'rmse', 'r2']
+  optimizer: adam
+  exp_restrict: False
+  input_normalize: True
+  output_normalize: True
+  noise_init: 1.0
+  res_cigp: None
+---> training record
+  epoch       	mae         	rmse        	r2          	time        
+  1           	0.00565     	0.01829     	0.75239     	0           
+  10          	0.00580     	0.01806     	0.76228     	0           
+  100         	0.00392     	0.01221     	0.89204     	0           
+  300         	0.00300     	0.00862     	0.94124     	1           
+  500         	0.00261     	0.00710     	0.95723     	1           
+  1000        	0.00189     	0.00512     	0.97368     	3           
+---> try to load best state
+              	0.00189     	0.00512     	0.97368     	3                eval state : test_on_restore;
+              	0.00189     	0.00512     	0.97368     	3                eval state : test_on_last_epoch;
+---> final result
+              	0.00189     	0.00512     	0.97368     	3                eval state : final;
+----------> finish x-yl training
+
+
+---------->
+res cigp for 4 samples
+---> Training x,yl -> yh part
+
+---> module config
+  dataset: {'name': 'burger_v4_02', 'fidelity': ['low', 'high'], 'type': 'x_yl_2_yh', 'train_start_index': 0, 'train_sample': 4, 'eval_start_index': 0, 'eval_sample': 128, 'seed': None, 'interp_data': True}
+  lr: {'kernel': 0.01, 'optional_param': 0.01, 'noise': 0.01}
+  kernel: {'K1': {'SE': {'exp_restrict': False, 'length_scale': 1.0, 'scale': 1.0}}}
+  evaluate_method: ['mae', 'rmse', 'r2']
+  optimizer: adam
+  exp_restrict: False
+  input_normalize: True
+  output_normalize: True
+  noise_init: 1.0
+  res_cigp: {'type_name': 'res_standard'}
+---> training record
+  epoch       	mae         	rmse        	r2          	time        
+  1           	0.00731     	0.02471     	0.86422     	0           
+  10          	0.00732     	0.02453     	0.86229     	0           

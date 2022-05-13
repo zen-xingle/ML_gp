@@ -10,29 +10,14 @@ def get_data(file, type):
     target_list = data[type]
     return target_list.values
 
-def get_mean_and_std(method, file, data, interp, type, n):
-    m = []
-    s = []
-    val = []
-    seed = ['0', '1', '2', '3', '4']
+def get_d(method, file, data, interp, type, n):
+    seed = 'None'
     if method == 'dmfal':
-        for i in seed:
-            f = "exp/" + method + "/" + file + "/" + data + "_Seed[" + i + "]_" + interp + ".csv"
-            val.append(get_data(f, 'r2'))
+        f = "exp/" + method + "/" + file + "/" + data + "_Seed[" + seed + "]_" + interp + ".csv"
+        return get_data(f, 'r2')
     else:
-        for i in seed:
-            f = "exp/" + method + "/" + file + "/" + data + "_Seed[" + i + "]_" + interp + ".csv"
-            val.append(get_data(f, type))
-
-    for i in range(n):
-        temp = []
-        for j in range(len(seed)):
-            temp.append(val[j][i])
-        temp = np.array(temp)
-        m.append(temp.mean())
-        s.append(temp.std())
-
-    return np.array(m), np.array(s)
+        f = "exp/" + method + "/" + file + "/" + data + "_Seed[" + seed + "]_" + interp + ".csv"
+        return get_data(f, type)
 
 def makedir(path):
     isExists = os.path.exists(path)
@@ -44,12 +29,12 @@ def makedir(path):
 
 if __name__ == '__main__':
     # ratio = 0.4
-    # method = ['GAR','LarGP','SGAR', 'ResGP', 'dmfal'] #对齐数据
+    # method = ['GAR', 'LarGP','SGAR', 'ResGP', 'dmfal'] #对齐数据
     # method = ['GAR', 'LarGP', 'NAR', 'SGAR', 'ResGP']
     method = ['GAR', 'dmfal','SGAR', 'NAR'] #不对齐数据
     # method = ['GAR', 'SGAR', 'NAR']
-    file_name = 'Burget_mfGent_v5_l2h_32'
-    data_name = 'Burget_mfGent_v5'
+    file_name = 'Heat_mfGent_v5_m2h_32'
+    data_name = 'Heat_mfGent_v5'
     interp = 'Interp[False]'
     max_num = 32
 
@@ -62,10 +47,8 @@ if __name__ == '__main__':
     vals = []
     vars = []
     for i in range(len(method)):
-        m, s = get_mean_and_std(method[i], file_name, data_name , interp, 'rmse', dic[max_num])
-        vals.append(m)
-        vars.append(s)
-        plt.errorbar(orders, vals[i], yerr = vars[i], linewidth=3, color=color_dic[method[i]], label=method[i], marker=marker_dic[method[i]], elinewidth = 2 ,capsize = 2, markersize = 10)
+        temp = get_d(method[i], file_name, data_name , interp, 'rmse', dic[max_num])
+        plt.plot(orders, temp, linewidth=3, color=color_dic[method[i]], label=method[i], marker=marker_dic[method[i]], markersize = 10)
         # plt.plot(orders, vals[i], linewidth=2, color=color[i], label=method[i], marker=marker[i])
         # plt.fill_between(orders, vals[i] - vars[i] * ratio, vals[i] + vars[i] * ratio, alpha=0.001, color=color[i])
 
@@ -79,7 +62,7 @@ if __name__ == '__main__':
     # plt.show()
 
     # makedir(r"fig")
-    fig_file = r"fig_" + file_name + ".eps"
+    fig_file = r"fig_" + file_name + "_none" + ".eps"
     plt.savefig(fig_file, bbox_inches = 'tight')
 
 

@@ -46,6 +46,7 @@ mat_dataset_paths = {
                 'Piosson_mfGent_v5': 'data/MultiFidelity_ReadyData/Piosson_mfGent_v5.mat',
                 'Schroed2D_mfGent_v1': 'data/MultiFidelity_ReadyData/Schroed2D_mfGent_v1.mat',
                 'TopOP_mfGent_v5': 'data/MultiFidelity_ReadyData/TopOP_mfGent_v5.mat',
+                'DoublePendu_mfGent_v01': 'data/MultiFidelity_ReadyData/DoublePendu_mfGent_v01.mat',
             } # they got the same data format
 
 
@@ -68,7 +69,7 @@ default_module_config = {
     'kernel': {
             'K1': {'SE': {'exp_restrict':True, 'length_scale':1., 'scale': 1.}},
             'K2': {'SE': {'exp_restrict':True, 'length_scale':1., 'scale': 1.}},
-            # 'K3': {'SE': {'exp_restrict':True, 'length_scale':1., 'scale': 1.}},
+            'K3': {'SE': {'exp_restrict':True, 'length_scale':1., 'scale': 1.}},
             # 'K4': {'SE': {'exp_restrict':True, 'length_scale':1., 'scale': 1.}},
               },
     'evaluate_method': ['mae', 'rmse', 'r2', 'gaussian_loss'],
@@ -76,8 +77,8 @@ default_module_config = {
     'exp_restrict': False,
     'input_normalzie': True,
     'output_normalize': True,
-    'noise_init' : 100.0,
-    'grid_config': {'grid_size': [-1], 
+    'noise_init' : 0.00001,
+    'grid_config': {'grid_size': [-1, -1], 
                     'type': 'fixed', # learnable, fixed
                     'dimension_map': 'identity', # latent space: identity, learnable_identity, learnable_map
                     },

@@ -60,9 +60,9 @@ default_module_config = {
                  'eval_start_index': 0, 
                  'eval_sample':256},
 
-    'lr': {'kernel':0.1, 
-           'optional_param':0.1, 
-           'noise':0.1},
+    'lr': {'kernel':0.01, 
+           'optional_param':0.01, 
+           'noise':0.01},
     # kernel number as dim + 1
     'kernel': {
             'K1': {'SE': {'exp_restrict':True, 'length_scale':1., 'scale': 1.}},
@@ -74,7 +74,7 @@ default_module_config = {
     'exp_restrict': False,
     'input_normalzie': True,
     'output_normalize': True,
-    'noise_init' : 0.005,
+    'noise_init' : 100.0,
     'grid_config': {'grid_size': [-1, -1], 
                     'type': 'fixed', # learnable, fixed
                     'dimension_map': 'identity', # latent space: identity, learnable_identity, learnable_map

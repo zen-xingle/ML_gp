@@ -16,7 +16,7 @@ from module.hogp_multi_fidelity import HOGP_MF_MODULE
 interp_data = False
 
 if __name__ == '__main__':
-    for _seed in [0]:
+    for _seed in [None, 0, 1, 2, 3, 4]:
         with open('record.txt', 'a') as _temp_file:
             _temp_file.write('-'*40 + '\n')
             _temp_file.write('\n')
@@ -36,7 +36,7 @@ if __name__ == '__main__':
         } # use defualt config
 
         ct_module_config = {
-            'dataset': {'name': 'Heat_mfGent_v5',
+            'dataset': {'name': 'SOFC_MF',
                         'fidelity': ['low'],
                         'type':'x_2_y',    # x_yl_2_yh, x_2_y
                         'train_start_index': 0, 
@@ -66,7 +66,7 @@ if __name__ == '__main__':
                 _temp_file.flush()
 
             mfct_module_config = {
-                'dataset': {'name': 'Heat_mfGent_v5',
+                'dataset': {'name': 'SOFC_MF',
                             'fidelity': ['low','high'],
                             'type':'x_yl_2_yh',    # x_yl_2_yh, x_2_y
                             'connection_method': 'res_mapping',
@@ -75,7 +75,7 @@ if __name__ == '__main__':
                             'eval_start_index': 0,
                             'eval_sample':128,
                             'seed': _seed,
-                            'interp_data': False},
+                            'interp_data': interp_data},
             } # only change dataset config, others use default config
 
             mfct = controller(HOGP_MF_MODULE, controller_config, mfct_module_config)

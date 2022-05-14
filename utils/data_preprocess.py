@@ -13,19 +13,37 @@ fidelity_map = {
 preprocess_default_config_dict = {
     'random_shuffle_seed': None,
 
+    # define sample select
     'train_start_index': 0, 
     'train_sample': 8, 
     'eval_start_index': 0, 
     'eval_sample':256,
     
+    # define multi fidelity input/output format
     'inputs_format': ['x[0]'],
     'outputs_format': ['y[0]', 'y[2]'],
 
+    # others
     'force_2d': False,
     'x_sample_to_last_dim': False,
     'y_sample_to_last_dim': False,
+
+    # now only available for dataset, which not seperate train and test before
+    'slice_param': [0.6, 0.4],
 }
 
+def _get_format_slice_data(length, slice):
+    if isinstance(slice[0], int):
+        return slice[0], slice[1]
+
+    elif isinstance(slice[0], float):
+        assert slice[0] + slice[1] == 1, 'slice sum should be 1'
+        _tr = int(length * slice[0])
+        _te = int(length * slice[1])
+        while _tr + _te > length:
+            _tr -= 1
+            _te -= 1
+        return _tr, _te
 
 def _flatten_inputs(inputs):
     _len_list = [len(_l) for _l in inputs]
@@ -75,10 +93,12 @@ class Data_preprocess(object):
         self.config_dict = default_config
 
     def do_preprocess(self, inputs):
+        out = inputs
+        if inputs[2] is None and inputs[3] is None:
+            out = self._seperate_to_gen_eval_data(out)
+
         if self.config_dict['random_shuffle_seed'] is not None:
             out = self._random_shuffle(inputs)
-        else:
-            out = inputs
 
         out = self._get_sample(out)
         if self.config_dict['force_2d'] is True:
@@ -93,6 +113,22 @@ class Data_preprocess(object):
 
         out = self._get_want_format(out)
         return out
+
+    def _seperate_to_gen_eval_data(self, inputs):
+        outputs = []
+        total_sample = inputs[0][0].shape[0]
+        sample_tr, sample_te = _get_format_slice_data(total_sample, self.config_dict['slice_param'])
+        outputs.append([_array[:sample_tr, ...] for _array in inputs[0]])
+        outputs.append([_array[:sample_tr, ...] for _array in inputs[1]])
+        outputs.append([_array[sample_tr:sample_tr+sample_te, ...] for _array in inputs[0]])
+        outputs.append([_array[sample_te:sample_tr+sample_te, ...] for _array in inputs[1]])
+        return outputs
+
+    def numpy_to_tensor(self, inputs):
+        _temp_array_list,_len_list = _flatten_inputs(inputs)
+        _temp_array_list = [torch.from_numpy(_array) for _array in _temp_array_list]
+        outputs = _reformat_inputs(_temp_array_list, _len_list)
+        return outputs
 
     def _force_2d(self, inputs):
         _temp_array_list,_len_list = _flatten_inputs(inputs)

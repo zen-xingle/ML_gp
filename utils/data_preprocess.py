@@ -89,10 +89,12 @@ class Data_preprocess(object):
     # --------------------------------------------------
     def __init__(self, config_dict):
         default_config = deepcopy(preprocess_default_config_dict)
+        if 'seed' in config_dict and 'random_shuffle_seed' not in config_dict:
+            config_dict['random_shuffle_seed'] = config_dict['seed']
         default_config.update(config_dict)
         self.config_dict = default_config
 
-    def do_preprocess(self, inputs):
+    def do_preprocess(self, inputs, numpy_to_tensor=False):
         out = inputs
         if inputs[2] is None and inputs[3] is None:
             out = self._seperate_to_gen_eval_data(out)
@@ -108,10 +110,13 @@ class Data_preprocess(object):
             out[0] = [_first_dim_to_last(_array) for _array in out[0]]
             out[2] = [_first_dim_to_last(_array) for _array in out[2]]
         if self.config_dict['y_sample_to_last_dim'] is True:
-            out[1] = [_last_dim_to_fist(_array) for _array in out[1]]
-            out[3] = [_last_dim_to_fist(_array) for _array in out[3]]
+            out[1] = [_first_dim_to_last(_array) for _array in out[1]]
+            out[3] = [_first_dim_to_last(_array) for _array in out[3]]
 
         out = self._get_want_format(out)
+        
+        if numpy_to_tensor is True:
+            out = self._numpy_to_tensor(out)
         return out
 
     def _seperate_to_gen_eval_data(self, inputs):
@@ -124,9 +129,9 @@ class Data_preprocess(object):
         outputs.append([_array[sample_te:sample_tr+sample_te, ...] for _array in inputs[1]])
         return outputs
 
-    def numpy_to_tensor(self, inputs):
+    def _numpy_to_tensor(self, inputs):
         _temp_array_list,_len_list = _flatten_inputs(inputs)
-        _temp_array_list = [torch.from_numpy(_array) for _array in _temp_array_list]
+        _temp_array_list = [torch.from_numpy(_array).float() for _array in _temp_array_list]
         outputs = _reformat_inputs(_temp_array_list, _len_list)
         return outputs
 

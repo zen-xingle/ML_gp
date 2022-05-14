@@ -109,7 +109,7 @@ class Standard_mat_DataLoader(object):
                         'Piosson_mfGent_v5',
                         'Schroed2D_mfGent_v1',
                         'TopOP_mfGent_v5',]
-    def __init__(self, dataset_name, force_2d=False) -> None:
+    def __init__(self, dataset_name, need_interp=False) -> None:
         self.dataset_info = {
             'poisson_v4_02': dict_pattern( 'data/MultiFidelity_ReadyData/poisson_v4_02.mat', self._general, True),
             'burger_v4_02': dict_pattern( 'data/MultiFidelity_ReadyData/burger_v4_02.mat', self._general, True),
@@ -122,19 +122,29 @@ class Standard_mat_DataLoader(object):
         }
         if dataset_name not in self.dataset_info:
             assert False
+        if need_interp and self.dataset_info[self.dataset_name]['interp_available'] is False:
+            assert False
         self.dataset_name = dataset_name
-        self.force_2d = force_2d
+        self.need_interp = need_interp
 
     def _general(self):
         _data = loadmat(_smart_path(self.dataset_info[self.dataset_name]['path']))
         x_tr = [_data['xtr']]
         x_te = [_data['xte']]
-        y_tr = []
-        for i in range(len(_data['Ytr'][0])):
-            y_tr.append(_data['Ytr'][0][i])
-        y_te = []
-        for i in range(len(_data['Yte'][0])):
-            y_te.append(_data['Yte'][0][i])
+        if self.need_interp is False:
+            y_tr = []
+            for i in range(len(_data['Ytr'][0])):
+                y_tr.append(_data['Ytr'][0][i])
+            y_te = []
+            for i in range(len(_data['Yte'][0])):
+                y_te.append(_data['Yte'][0][i])
+        else:
+            y_tr = []
+            for i in range(len(_data['Ytr_interp'][0])):
+                y_tr.append(_data['Ytr_interp'][0][i])
+            y_te = []
+            for i in range(len(_data['Yte_interp'][0])):
+                y_te.append(_data['Yte_interp'][0][i])
         return x_tr, y_tr, x_te, y_te
 
     def get_data(self):
@@ -143,14 +153,11 @@ class Standard_mat_DataLoader(object):
 
 
 
-
-
-
 if __name__ == '__main__':
     # sp_data = SP_DataLoader('SOFC_MF', None)
     # print(sp_data.get_data())
 
-    # stand_data = Standard_mat_DataLoader('poisson_v4_02')
-    # print(stand_data.get_data())
+    stand_data = Standard_mat_DataLoader('poisson_v4_02')
+    print(stand_data.get_data())
 
     pass

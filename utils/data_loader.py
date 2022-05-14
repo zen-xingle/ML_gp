@@ -122,7 +122,7 @@ class Standard_mat_DataLoader(object):
         }
         if dataset_name not in self.dataset_info:
             assert False
-        if need_interp and self.dataset_info[self.dataset_name]['interp_available'] is False:
+        if need_interp and self.dataset_info[dataset_name]['interp_available'] is False:
             assert False
         self.dataset_name = dataset_name
         self.need_interp = need_interp

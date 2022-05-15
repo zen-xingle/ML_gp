@@ -79,7 +79,7 @@ if __name__ == '__main__':
                             'eval_sample':256,
                             
                             'inputs_format': ['x[0]', 'y[0]'],
-                            'outputs_format': ['y[2]'],
+                            'outputs_format': ['y[-1]'],
 
                             'force_2d': False,
                             'x_sample_to_last_dim': False,

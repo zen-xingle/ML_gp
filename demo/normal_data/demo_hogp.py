@@ -37,7 +37,7 @@ if __name__ == '__main__':
                         'eval_sample': 128,
 
                         'inputs_format': ['x[0]'],
-                        'outputs_format': ['y[1]'],
+                        'outputs_format': ['y[-1]'],
 
                         'force_2d': False,
                         'x_sample_to_last_dim': False,

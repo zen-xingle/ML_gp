@@ -373,42 +373,6 @@ class HOGP_MODULE:
             print('self.noise:{}'.format(self.noise.data))
 
 
-    def _random_shuffle(self, np_array_list):
-        random.seed(self.module_config['dataset']['seed'])
-        # check dim shape
-        # TODO support -1 dim
-        dim_lenth = []
-        for _np_array in np_array_list:
-            dim = _np_array[1]
-            if dim < 0:
-                dim = len(_np_array[0].shape) + dim
-            dim_lenth.append(_np_array[0].shape[dim])
-
-        assert len(set(dim_lenth)) == 1, "length of dim is not the same"
-
-        shuffle_index = [i for i in range(dim_lenth[0])]
-        random.shuffle(shuffle_index)
-
-        output_array = []
-        for _np_array in np_array_list:
-            dim = _np_array[1]
-            np_array = deepcopy(_np_array[0])
-            if dim < 0:
-                dim = len(_np_array[0].shape) + dim
-
-            if dim==0:
-                output_array.append(np_array[shuffle_index])
-            else:
-                switch_dim = [i for i in range(len(np_array.shape))]
-                switch_dim[switch_dim.index(dim)] = 0
-                switch_dim[0] = dim
-                np_array = np.ascontiguousarray(np.transpose(np_array, switch_dim))
-                np_array = np_array[shuffle_index]
-                np_array = np.ascontiguousarray(np.transpose(np_array, switch_dim))
-                output_array.append(np_array)
-        return output_array
-
-
     def get_params_need_check(self):
         params_need_check = []
         for i in range(len(self.kernel_list)):

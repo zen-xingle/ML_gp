@@ -32,21 +32,30 @@ if __name__ == '__main__':
         # Training x -> yl part
 
         controller_config = {
-            'max_epoch': 1000
+            'max_epoch': 100
         } # use defualt config
 
-        ct_module_config = {
-            'dataset': {'name': 'SOFC_MF',
-                        'fidelity': ['low'],
-                        'type':'x_2_y',    # x_yl_2_yh, x_2_y
+        module_config = {
+            'dataset': {'name': 'poisson_v4_02',
+                        'interp_data': interp_data,
+
+                        'seed': _seed,
                         'train_start_index': 0, 
                         'train_sample': 32, 
                         'eval_start_index': 0,
-                        'eval_sample':128,
-                        'seed': _seed,
-                        'interp_data': False},
-        } # only change dataset config, others use default config
-        ct = controller(HOGP_MODULE, controller_config, ct_module_config)
+                        'eval_sample': 256,
+
+                        'inputs_format': ['x[0]'],
+                        'outputs_format': ['y[0]'],
+
+                        'force_2d': False,
+                        'x_sample_to_last_dim': False,
+                        'y_sample_to_last_dim': True,
+                        'slice_param': [0.6, 0.4], #only available for dataset, which not seperate train and test before
+                        },
+            } # only change dataset config, others use default config
+        
+        ct = controller(HOGP_MODULE, controller_config, module_config)
         ct.start_train()
         ct.smart_restore_state(-1)
         ct.rc_file.write('---> final result')
@@ -66,16 +75,24 @@ if __name__ == '__main__':
                 _temp_file.flush()
 
             mfct_module_config = {
-                'dataset': {'name': 'SOFC_MF',
-                            'fidelity': ['low','high'],
-                            'type':'x_yl_2_yh',    # x_yl_2_yh, x_2_y
-                            'connection_method': 'res_mapping',
-                            'train_start_index': 0, 
-                            'train_sample': _sample, 
-                            'eval_start_index': 0,
-                            'eval_sample':128,
-                            'seed': _seed,
-                            'interp_data': interp_data},
+                'dataset': {'name': 'poisson_v4_02',
+                            'interp_data': interp_data,
+
+                            # preprocess
+                            'random_shuffle_seed': None,
+                            'train_start_index': 0,
+                            'train_sample': 8, 
+                            'eval_start_index': 0, 
+                            'eval_sample':256,
+                            
+                            'inputs_format': ['x[0]', 'y[0]'],
+                            'outputs_format': ['y[2]'],
+
+                            'force_2d': False,
+                            'x_sample_to_last_dim': False,
+                            'y_sample_to_last_dim': True,
+                            'slice_param': [0.6, 0.4], #only available for dataset, which not seperate train and test before
+                            },
             } # only change dataset config, others use default config
 
             mfct = controller(HOGP_MF_MODULE, controller_config, mfct_module_config)

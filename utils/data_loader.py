@@ -44,30 +44,6 @@ def _get_format_slice_data(length, slice):
 
 
 class SP_DataLoader(object):
-<<<<<<< HEAD
-    dataset_available = ['FlowMix3D_MF', 'MolecularDynamic_MF', 'plasmonic2_MF', 'SOFC_MF']
-    def __init__(self, dataset_name, force_2d=False) -> None:
-        # self.dataset_info = {
-        #     'FlowMix3D_MF': 
-        #         dict_pattern('data\MF_data\FlowMix3D_MF.mat', default_seperate, self._FlowMix3D_MF, True),
-        #     'MolecularDynamic_MF': 
-        #         dict_pattern('data\MF_data\MolecularDynamic_MF.mat', default_seperate, self._MolecularDynamic_MF, True),
-        #     'plasmonic2_MF': 
-        #         dict_pattern('data\MF_data\plasmonic2_MF.mat', default_seperate, self._plasmonic2_MF, True),
-        #     'SOFC_MF': 
-        #         dict_pattern('data\MF_data\SOFC_MF.mat', default_seperate, self._SOFC_MF, True),
-        #     }
-
-        self.dataset_info = {
-            'FlowMix3D_MF': 
-                dict_pattern('data/MultiFidelity_ReadyData/FlowMix3D_MF.mat', default_seperate, self._FlowMix3D_MF, True),
-            'MolecularDynamic_MF': 
-                dict_pattern('data/MultiFidelity_ReadyData/MolecularDynamic_MF.mat', default_seperate, self._MolecularDynamic_MF, True),
-            'plasmonic2_MF': 
-                dict_pattern('data/MultiFidelity_ReadyData/plasmonic2_MF.mat', default_seperate, self._plasmonic2_MF, True),
-            'SOFC_MF': 
-                dict_pattern('data/MultiFidelity_ReadyData/SOFC_MF.mat', default_seperate, self._SOFC_MF, True),
-=======
     dataset_available = ['FlowMix3D_MF',
                          'MolecularDynamic_MF', 
                          'plasmonic2_MF', 
@@ -83,7 +59,6 @@ class SP_DataLoader(object):
                 dict_pattern('data\MF_data\plasmonic2_MF.mat', self._general, False),
             'SOFC_MF': 
                 dict_pattern('data\MF_data\SOFC_MF.mat', self._SOFC_MF, False),
->>>>>>> bbc3e36cafce0284d6b0e5d9b47567949ff614c2
             }
         if dataset_name not in self.dataset_info:
             assert False

@@ -45,11 +45,6 @@ default_module_config = {
                  'eval_start_index': 0, 
                  'eval_sample':256,
 
-<<<<<<< HEAD
-    'lr': {'kernel':0.1, 
-           'optional_param':0.1, 
-           'noise':0.1},
-=======
                  'inputs_format': ['x[0]', 'y[0]'],
                  'outputs_format': ['y[2]'],
 
@@ -63,7 +58,6 @@ default_module_config = {
     'lr': {'kernel':0.01, 
            'optional_param':0.01, 
            'noise':0.01},
->>>>>>> bbc3e36cafce0284d6b0e5d9b47567949ff614c2
     # kernel number as dim + 1
     'kernel': {
             'K1': {'SE': {'exp_restrict':True, 'length_scale':1., 'scale': 1.}},

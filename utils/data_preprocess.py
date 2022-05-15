@@ -11,7 +11,7 @@ fidelity_map = {
 
 # fidelity order should be low -> high
 preprocess_default_config_dict = {
-    'random_shuffle_seed': None,
+    'seed': None,
 
     # define sample select
     'train_start_index': 0, 
@@ -89,8 +89,6 @@ class Data_preprocess(object):
     # --------------------------------------------------
     def __init__(self, config_dict):
         default_config = deepcopy(preprocess_default_config_dict)
-        if 'seed' in config_dict and 'random_shuffle_seed' not in config_dict:
-            config_dict['random_shuffle_seed'] = config_dict['seed']
         default_config.update(config_dict)
         self.config_dict = default_config
 
@@ -99,8 +97,8 @@ class Data_preprocess(object):
         if inputs[2] is None and inputs[3] is None:
             out = self._seperate_to_gen_eval_data(out)
 
-        if self.config_dict['random_shuffle_seed'] is not None:
-            out = self._random_shuffle(inputs)
+        if self.config_dict['seed'] is not None:
+            out = self._random_shuffle(out)
 
         out = self._get_sample(out)
         if self.config_dict['force_2d'] is True:
@@ -193,7 +191,7 @@ class Data_preprocess(object):
 
     def _random_shuffle_array_list(self, np_array_list):
         # sample should on first dim
-        random.seed(self.config_dict['random_shuffle_seed'])
+        random.seed(self.config_dict['seed'])
 
         dim_lenth = []
         for _np_array in np_array_list:

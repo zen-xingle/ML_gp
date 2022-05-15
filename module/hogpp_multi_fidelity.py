@@ -67,9 +67,10 @@ default_module_config = {
     # kernel number as dim + 1
     'kernel': {
             'K1': {'SE': {'exp_restrict':True, 'length_scale':1., 'scale': 1.}},
-            'K2': {'SE': {'exp_restrict':True, 'length_scale':1., 'scale': 1.}},
-            'K3': {'SE': {'exp_restrict':True, 'length_scale':1., 'scale': 1.}},
+            # 'K2': {'SE': {'exp_restrict':True, 'length_scale':1., 'scale': 1.}},
+            # 'K3': {'SE': {'exp_restrict':True, 'length_scale':1., 'scale': 1.}},
               },
+    'auto_broadcast_kernel': True,
     'evaluate_method': ['mae', 'rmse', 'r2', 'gaussian_loss'],
     'optimizer': 'adam',
     'exp_restrict': False,
@@ -230,12 +231,26 @@ class HOGP_MF_MODULE:
     def _init_kernel(self, kernel_config):
         from kernel.kernel_generator import kernel_generator
         self.kernel_list = []
-        for key, value in kernel_config.items():
-            for _kernel_type, _kernel_params in value.items():
-                # broadcast exp_restrict
+        if len(kernel_config) == 1 and self.module_config['auto_broadcast_kernel'] is True:
+            print('auto broadcast kernel')
+            kernel_need = len(self.inputs_tr[0].shape) - 1 +\
+                          len(self.outputs_tr[0].shape) - 1
+            for key, value in kernel_config.items():
+                for _kernel_type, _kernel_params in value.items():
+                    # get base _kernel_type, _kernel_params
+                    pass
+            for _ in range(kernel_need):
+            # broadcast exp_restrict
                 if not hasattr(_kernel_params, 'exp_restrict'):
                     _kernel_params['exp_restrict'] = self.module_config['exp_restrict']
                 self.kernel_list.append(kernel_generator(_kernel_type, _kernel_params))
+        else:
+            for key, value in kernel_config.items():
+                for _kernel_type, _kernel_params in value.items():
+                    # broadcast exp_restrict
+                    if not hasattr(_kernel_params, 'exp_restrict'):
+                        _kernel_params['exp_restrict'] = self.module_config['exp_restrict']
+                    self.kernel_list.append(kernel_generator(_kernel_type, _kernel_params))
 
 
     def _optimizer_setup(self):

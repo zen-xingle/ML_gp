@@ -90,7 +90,7 @@ class SP_DataLoader(object):
 
     def _SOFC_MF(self):
         _data = loadmat(_smart_path(self.dataset_info[self.dataset_name]['path']))
-        x = [_data['X']]
+        x = [_data['x']]
         y = []
         for i in range(len(_data['Y1'][0])):
             y.append(_concat_on_new_last_dim([_data['Y1'][0][i], _data['Y2'][0][i]]))

@@ -16,11 +16,7 @@ realpath = realpath.split(_sep)
 realpath = _sep.join(realpath[:realpath.index('ML_gp')+1])
 sys.path.append(realpath)
 
-from utils.normalizer import Normalizer
-from utils.performance_evaluator import performance_evaluator
-from utils.data_loader import SP_DataLoader, Standard_mat_DataLoader
-from utils.data_preprocess import Data_preprocess
-# optimize for main_controller
+from utils import *
 
 JITTER = 1e-6
 EPS = 1e-10

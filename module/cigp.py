@@ -58,9 +58,9 @@ default_module_config = {
                  'seed': 0,
                  'interp_data': True},
 
-    'lr': {'kernel':0.1, 
-           'optional_param':0.1, 
-           'noise':0.1},
+    'lr': {'kernel':0.01, 
+           'optional_param':0.01, 
+           'noise':0.01},
 
     'kernel': {
             'K1': {'SE': {'exp_restrict':False, 'length_scale':1., 'scale': 1.}},

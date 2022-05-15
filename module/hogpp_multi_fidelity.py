@@ -75,7 +75,7 @@ default_module_config = {
     'exp_restrict': False,
     'input_normalize': True,
     'output_normalize': True,
-    'noise_init' : 100.0 ,
+    'noise_init' : 0.0001,
     'grid_config': {'grid_size': [-1, -1], 
                     'type': 'fixed', # learnable, fixed
                     'dimension_map': 'identity', # latent space, identity, learnable_identity, learnable_map

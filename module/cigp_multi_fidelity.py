@@ -28,32 +28,33 @@ PI = 3.1415
 
 tensorly.set_backend('pytorch')
 
-default_module_config = {
-    'dataset' : {'name': 'Piosson_mfGent_v5',
-                 'interp_data': False,
-                 
-                 # preprocess
-                 'random_shuffle_seed': None,
-                 'train_start_index': 0,
-                 'train_sample': 8, 
-                 'eval_start_index': 0, 
-                 'eval_sample':256,
-                
-                 'inputs_format': ['x[0]'],
-                 'outputs_format': ['y[2]'],
 
-                 'force_2d': True,
-                 'x_sample_to_last_dim': False,
-                 'y_sample_to_last_dim': True,
-                 'slice_param': [0.6, 0.4], #only available for dataset, which not seperate train and test before
-                 },
+default_module_config = {
+    'dataset' : {'name': 'poisson_v4_02',
+                'interp_data': True,
+                
+                # preprocess
+                'random_shuffle_seed': 0,
+                'train_start_index': 0,
+                'train_sample': 8, 
+                'eval_start_index': 0, 
+                'eval_sample':256,
+                
+                'inputs_format': ['x[0]','y[0]'],
+                'outputs_format': ['y[2]'],
+
+                'force_2d': True,
+                'x_sample_to_last_dim': False,
+                'y_sample_to_last_dim': False,
+                'slice_param': [0.6, 0.4], #only available for dataset, which not seperate train and test before
+                },
 
     'lr': {'kernel':0.1, 
            'optional_param':0.1, 
            'noise':0.1},
 
     'kernel': {
-            'K1': {'SE': {'exp_restrict':False, 'length_scale':1., 'scale': 1.}},
+            'K1': {'SE': {'exp_restrict':True, 'length_scale':1., 'scale': 1.}},
               },
     'evaluate_method': ['mae', 'rmse', 'r2'],
     'optimizer': 'adam',
@@ -61,10 +62,11 @@ default_module_config = {
     'input_normalize': True,
     'output_normalize': True,
     'noise_init' : 100.,
+    'res_cigp': {'type_name': 'res_standard'}, # only available when x_yl_2_yh
 }
 
 
-class CIGP_MODULE:
+class CIGP_MODULE_Multi_Fidelity(object):
     # def __init__(self, grid_params_list, kernel_list, target_list, normalize=True, restrict_method= 'exp') -> None:
     def __init__(self, module_config) -> None:
         default_module_config.update(module_config)
@@ -76,6 +78,7 @@ class CIGP_MODULE:
 
         # load_data
         self._load_data(module_config['dataset'])
+        self._select_connection_kernel(module_config['res_cigp']['type_name'])
 
         # X - normalize
         if module_config['input_normalize'] is True:
@@ -88,6 +91,8 @@ class CIGP_MODULE:
         if module_config['output_normalize'] is True:
             self.Y_normalizer = Normalizer(self.outputs_tr[0])
             self.outputs_tr[0] = self.Y_normalizer.normalize(self.outputs_tr[0])
+            if self.module_config['res_cigp'] is not None:
+                self.inputs_tr[1] = self.Y_normalizer.normalize(self.inputs_tr[1])
         else:
             self.Y_normalizer = None
 
@@ -155,6 +160,8 @@ class CIGP_MODULE:
 
     def _optimizer_setup(self):
         optional_params = []
+        if self.module_config['res_cigp'] is not None:
+            optional_params = self.target_connection.get_param(optional_params)
 
         kernel_learnable_param = []
         for _kernel in self.kernel_list:
@@ -182,8 +189,10 @@ class CIGP_MODULE:
         #option 1 (use this if torch supports)
         # Gamma,_ = torch.triangular_solve(self.Y, L, upper = False)
         #option 2
-
-        gamma = L.inverse() @ self.outputs_tr[0]       # we can use this as an alternative because L is a lower triangular matrix.
+        if self.module_config['res_cigp'] is not None:
+            gamma = L.inverse() @ self.target_connection(self.inputs_tr[1], self.outputs_tr[0])
+        else:
+            gamma = L.inverse() @ self.outputs_tr[0]       # we can use this as an alternative because L is a lower triangular matrix.
 
         y_num, y_dimension = self.outputs_tr[0].shape
         nll =  0.5 * (gamma ** 2).sum() +  L.diag().log().sum() * y_dimension  \
@@ -211,7 +220,15 @@ class CIGP_MODULE:
             L = torch.cholesky(Sigma)
             # LinvKx,_ = torch.triangular_solve(kx, L, upper = False)
 
-            u = kx.t() @ torch.cholesky_solve(self.outputs_tr[0], L)
+            if self.module_config['res_cigp'] is not None:
+                u = kx.t() @ torch.cholesky_solve(self.target_connection(self.inputs_tr[1], self.outputs_tr[0]), L)
+                if self.module_config['output_normalize'] is True:
+                    input_param[1] = self.Y_normalizer.normalize(input_param[1])
+                    u = self.target_connection.low_2_high(input_param[1], u)
+                else:
+                    u = self.target_connection.low_2_high(input_param[1], u)
+            else:
+                u = kx.t() @ torch.cholesky_solve(self.outputs_tr[0], L)
 
             if self.module_config['output_normalize'] is True:
                 u = self.Y_normalizer.denormalize(u)
@@ -235,6 +252,8 @@ class CIGP_MODULE:
             state_dict.extend(_kernel.get_param([]))
 
         state_dict.append(self.noise)
+        if self.module_config['res_cigp'] is True:
+            state_dict.extend(self.target_connection.get_param([]))
         return state_dict
 
 
@@ -248,6 +267,8 @@ class CIGP_MODULE:
         with torch.no_grad():
             self.noise.copy_(params_list[index])
             index += 1
+            if self.module_config['res_cigp'] is True:
+                self.target_connection.set_param(params_list[index:])
 
     def eval(self):
         print('---> start eval')
@@ -260,4 +281,6 @@ class CIGP_MODULE:
 
 if __name__ == '__main__':
     module_config = {}
-    cigp = CIGP_MODULE(module_config)
+    cigp = CIGP_MODULE_Multi_Fidelity(module_config)
+    for i in range(1000):
+        cigp.train()

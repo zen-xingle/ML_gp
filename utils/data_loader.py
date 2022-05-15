@@ -92,7 +92,7 @@ class SP_DataLoader(object):
         field_need = ['PRec', 'URec', 'VRec']
         x = []
         y = []
-        for i in range(3):
+        for i in range(5):
             _data = h5py.File(_smart_path(self.dataset_info[self.dataset_name]['path'] + '/Fidelity_' + str(i+1) + '.mat'), 'r')
             x.append(_data['X'].value.T)
             _temp_y = []

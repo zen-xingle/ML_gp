@@ -12,14 +12,14 @@ from utils.main_controller import controller
 from module.cigp import CIGP_MODULE
 from module.dc_cigp import DC_CIGP_MODULE
 
-interp_data=False
+interp_data=True
 
 if __name__ == '__main__':
     for _seed in [None, 0, 1, 2, 3, 4]:
         with open('record.txt', 'a') as _temp_file:
             _temp_file.write('-'*40 + '\n')
             _temp_file.write('\n')
-            _temp_file.write('  Demo NAR cigp \n')
+            _temp_file.write('  Demo DC \n')
             _temp_file.write('  seed: {} \n'.format(_seed))
             _temp_file.write('  interp_data: {} \n'.format(interp_data))
             _temp_file.write('\n')
@@ -32,7 +32,7 @@ if __name__ == '__main__':
 
         controller_config = {'max_epoch':100} # use defualt config
         module_config = {
-            'dataset': {'name': 'burger_v4_02',
+            'dataset': {'name': 'Heat_mfGent_v5',
                         'interp_data': interp_data,
 
                         'seed': _seed,
@@ -42,7 +42,7 @@ if __name__ == '__main__':
                         'eval_sample': 128,
 
                         'inputs_format': ['x[0]'],
-                        'outputs_format': ['y[0]'],
+                        'outputs_format': ['y[1]'],
 
                         'force_2d': True,
                         'x_sample_to_last_dim': False,
@@ -70,10 +70,10 @@ if __name__ == '__main__':
                 _temp_file.flush()
 
             second_controller_config = {
-                'max_epoch': 300,
+                'max_epoch': 1000,
             }
             second_module_config = {
-                'dataset': {'name': 'burger_v4_02',
+                'dataset': {'name': 'Heat_mfGent_v5',
                             'interp_data': interp_data,
 
                             'seed': _seed,
@@ -82,7 +82,7 @@ if __name__ == '__main__':
                             'eval_start_index': 0,
                             'eval_sample': 128,
 
-                            'inputs_format': ['x[0]','y[0]'],
+                            'inputs_format': ['x[0]','y[1]'],
                             'outputs_format': ['y[2]'],
 
                             'force_2d': True,
@@ -107,7 +107,7 @@ if __name__ == '__main__':
             second_ct.rc_file.write('---> final result\n')
             second_ct.rc_file.flush()
             second_ct.start_eval({'eval state':'final',
-                       'module_name':'NAR',
+                       'module_name':'DC',
                        'cp_record_file': True})
             second_ct.rc_file.write('---> end\n\n')
             second_ct.rc_file.flush()

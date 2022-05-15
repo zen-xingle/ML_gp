@@ -13,10 +13,10 @@ from utils.main_controller import controller
 from module.ind_hogp import HOGP_MODULE
 from module.ind_hogp_multi_fidelity import HOGP_MF_MODULE
 
-interp_data=True
+interp_data = True
 
 if __name__ == '__main__':
-    for _seed in [None]:
+    for _seed in [None, 0, 1, 2, 3, 4]:
         with open('record.txt', 'a') as _temp_file:
             _temp_file.write('-'*40 + '\n')
             _temp_file.write('\n')
@@ -33,11 +33,11 @@ if __name__ == '__main__':
         } # use defualt config
 
         ct_module_config = {
-            'dataset': {'name': 'poisson_v4_02',
-                        'fidelity': ['low'],
+            'dataset': {'name': 'Heat_mfGent_v5',
+                        'fidelity': ['medium'],
                         'type':'x_2_y',    # x_yl_2_yh, x_2_y
                         'train_start_index': 0, 
-                        'train_sample': 64, 
+                        'train_sample': 32, 
                         'eval_start_index': 0,
                         'eval_sample':128,
                         'seed': _seed,
@@ -52,7 +52,7 @@ if __name__ == '__main__':
         ct.rc_file.write('---> end\n\n')
         ct.rc_file.flush()
 
-        for _sample in [32, 64]:
+        for _sample in [4, 8, 16, 32]:
             with open('record.txt', 'a') as _temp_file:
                 _temp_file.write('\n'+ '-'*10 + '>\n')
                 _temp_file.write('SGAR for {} samples\n'.format(_sample))
@@ -60,8 +60,8 @@ if __name__ == '__main__':
                 _temp_file.flush()
 
             mfct_module_config = {
-                'dataset': {'name': 'poisson_v4_02',
-                            'fidelity': ['low','high'],
+                'dataset': {'name': 'Heat_mfGent_v5',
+                            'fidelity': ['medium','high'],
                             'type':'x_yl_2_yh',    # x_yl_2_yh, x_2_y
                             'connection_method': 'res_mapping',
                             'train_start_index': 0, 
@@ -69,7 +69,7 @@ if __name__ == '__main__':
                             'eval_start_index': 0,
                             'eval_sample':128,
                             'seed': _seed,
-                            'interp_data': False},
+                            'interp_data': interp_data},
             } # only change dataset config, others use default config
 
             mfct = controller(HOGP_MF_MODULE, controller_config, mfct_module_config)

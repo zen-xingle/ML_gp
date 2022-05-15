@@ -13,7 +13,7 @@ from module.hogp import HOGP_MODULE
 from module.hogp_multi_fidelity import HOGP_MF_MODULE
 
 
-interp_data=True
+interp_data = False
 
 if __name__ == '__main__':
     for _seed in [None]:
@@ -36,11 +36,11 @@ if __name__ == '__main__':
         } # use defualt config
 
         ct_module_config = {
-            'dataset': {'name': 'Schroed2D_mfGent_v1',
+            'dataset': {'name': 'DoublePendu_mfGent_v01',
                         'fidelity': ['low'],
                         'type':'x_2_y',    # x_yl_2_yh, x_2_y
                         'train_start_index': 0, 
-                        'train_sample': 64, 
+                        'train_sample': 32, 
                         'eval_start_index': 0,
                         'eval_sample':128,
                         'seed': _seed,
@@ -58,7 +58,7 @@ if __name__ == '__main__':
         # ================================================================
         # Training x,yl -> yh part
 
-        for _sample in [4]:
+        for _sample in [4, 8, 16, 32]:
             with open('record.txt', 'a') as _temp_file:
                 _temp_file.write('\n'+ '-'*10 + '>\n')
                 _temp_file.write('SGAR for {} samples\n'.format(_sample))
@@ -66,7 +66,7 @@ if __name__ == '__main__':
                 _temp_file.flush()
 
             mfct_module_config = {
-                'dataset': {'name': 'Schroed2D_mfGent_v1',
+                'dataset': {'name': 'DoublePendu_mfGent_v01',
                             'fidelity': ['low','high'],
                             'type':'x_yl_2_yh',    # x_yl_2_yh, x_2_y
                             'connection_method': 'res_mapping',

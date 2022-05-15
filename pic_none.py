@@ -31,12 +31,13 @@ if __name__ == '__main__':
     # ratio = 0.4
     # method = ['GAR', 'LarGP','SGAR', 'ResGP', 'dmfal'] #对齐数据
     # method = ['GAR', 'LarGP', 'NAR', 'SGAR', 'ResGP']
-    method = ['GAR', 'dmfal','SGAR', 'NAR'] #不对齐数据
+    method = ['GAR', 'LarGP', 'SGAR', 'ResGP', 'dmfal'] #不对齐数据
     # method = ['GAR', 'SGAR', 'NAR']
-    file_name = 'Heat_mfGent_v5_m2h_32'
-    data_name = 'Heat_mfGent_v5'
-    interp = 'Interp[False]'
-    max_num = 32
+    #TopOP_mfGent_v5_Seed[0]_Interp[True]
+    file_name = 'TopOP_mfGent_v5_128_int'
+    data_name = 'TopOP_mfGent_v5'
+    interp = 'Interp[True]'
+    max_num = 128
 
     dic= {32: 4, 64:5, 128:6}
     color_dic = {'GAR':'#DC143C', 'dmfal':'#1f77b4', 'SGAR':'#2ca02c', 'LarGP':'#ff7f0e', 'ResGP':'#8c564b', 'NAR':'#708090'}

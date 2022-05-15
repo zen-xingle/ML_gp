@@ -21,7 +21,6 @@ from utils.eigen import eigen_pairs
 from utils.normalizer import Normalizer
 # from module.gp_output_decorator import posterior_output_decorator
 from utils.performance_evaluator import performance_evaluator, high_level_evaluator
-from scipy.io import loadmat
 from utils.data_loader import SP_DataLoader, Standard_mat_DataLoader
 from utils.data_preprocess import Data_preprocess
 

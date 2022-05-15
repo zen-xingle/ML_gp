@@ -43,7 +43,7 @@ if __name__ == '__main__':
                         'train_start_index': 0, 
                         'train_sample': 32, 
                         'eval_start_index': 0,
-                        'eval_sample': 256,
+                        'eval_sample': 128,
 
                         'inputs_format': ['x[0]'],
                         'outputs_format': ['y[0]'],
@@ -81,7 +81,7 @@ if __name__ == '__main__':
                             # preprocess
                             'random_shuffle_seed': None,
                             'train_start_index': 0,
-                            'train_sample': 8, 
+                            'train_sample': _sample, 
                             'eval_start_index': 0, 
                             'eval_sample':256,
                             

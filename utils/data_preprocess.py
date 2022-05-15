@@ -126,7 +126,7 @@ class Data_preprocess(object):
         outputs.append([_array[:sample_tr, ...] for _array in inputs[0]])
         outputs.append([_array[:sample_tr, ...] for _array in inputs[1]])
         outputs.append([_array[sample_tr:sample_tr+sample_te, ...] for _array in inputs[0]])
-        outputs.append([_array[sample_te:sample_tr+sample_te, ...] for _array in inputs[1]])
+        outputs.append([_array[sample_tr:sample_tr+sample_te, ...] for _array in inputs[1]])
         return outputs
 
     def _numpy_to_tensor(self, inputs):

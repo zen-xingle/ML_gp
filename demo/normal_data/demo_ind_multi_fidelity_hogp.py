@@ -13,7 +13,11 @@ from utils.main_controller import controller
 from module.ind_hogp import HOGP_MODULE
 from module.ind_hogp_multi_fidelity import HOGP_MF_MODULE
 
+<<<<<<< HEAD
 interp_data = True
+=======
+interp_data=False
+>>>>>>> 6933a50e05cda5da0dd3c7f7cb2ede0ea1df306b
 
 if __name__ == '__main__':
     for _seed in [None, 0, 1, 2, 3, 4]:
@@ -33,15 +37,29 @@ if __name__ == '__main__':
         } # use defualt config
 
         ct_module_config = {
+<<<<<<< HEAD
             'dataset': {'name': 'Heat_mfGent_v5',
                         'fidelity': ['medium'],
                         'type':'x_2_y',    # x_yl_2_yh, x_2_y
+=======
+            'dataset': {'name': 'poisson_v4_02',
+                        'interp_data': interp_data,
+
+                        'seed': _seed,
+>>>>>>> 6933a50e05cda5da0dd3c7f7cb2ede0ea1df306b
                         'train_start_index': 0, 
                         'train_sample': 32, 
                         'eval_start_index': 0,
-                        'eval_sample':128,
-                        'seed': _seed,
-                        'interp_data': interp_data},
+                        'eval_sample': 128,
+
+                        'inputs_format': ['x[0]'],
+                        'outputs_format': ['y[0]'],
+
+                        'force_2d': False,
+                        'x_sample_to_last_dim': False,
+                        'y_sample_to_last_dim': True,
+                        'slice_param': [0.6, 0.4], #only available for dataset, which not seperate train and test before
+                        },
         } # only change dataset config, others use default config
         ct = controller(HOGP_MODULE, controller_config, ct_module_config)
         ct.start_train()
@@ -60,6 +78,7 @@ if __name__ == '__main__':
                 _temp_file.flush()
 
             mfct_module_config = {
+<<<<<<< HEAD
                 'dataset': {'name': 'Heat_mfGent_v5',
                             'fidelity': ['medium','high'],
                             'type':'x_yl_2_yh',    # x_yl_2_yh, x_2_y
@@ -70,6 +89,26 @@ if __name__ == '__main__':
                             'eval_sample':128,
                             'seed': _seed,
                             'interp_data': interp_data},
+=======
+                'dataset': {'name': 'poisson_v4_02',
+                            'interp_data': interp_data,
+
+                            # preprocess
+                            'seed': _seed,
+                            'train_start_index': 0,
+                            'train_sample': _sample, 
+                            'eval_start_index': 0, 
+                            'eval_sample':256,
+                            
+                            'inputs_format': ['x[0]', 'y[0]'],
+                            'outputs_format': ['y[-1]'],
+
+                            'force_2d': False,
+                            'x_sample_to_last_dim': False,
+                            'y_sample_to_last_dim': True,
+                            'slice_param': [0.6, 0.4], #only available for dataset, which not seperate train and test before
+                            },
+>>>>>>> 6933a50e05cda5da0dd3c7f7cb2ede0ea1df306b
             } # only change dataset config, others use default config
 
             mfct = controller(HOGP_MF_MODULE, controller_config, mfct_module_config)

@@ -17,11 +17,7 @@ sys.path.append(realpath)
 
 from tensorly.decomposition import tucker
 from tensorly import tucker_to_tensor
-from utils.eigen import eigen_pairs
-from utils.normalizer import Normalizer
-# from module.gp_output_decorator import posterior_output_decorator
-from utils.performance_evaluator import performance_evaluator
-from scipy.io import loadmat
+from utils import *
 
 # optimize for main_controller
 
@@ -31,37 +27,28 @@ PI = 3.1415
 
 tensorly.set_backend('pytorch')
 
-fidelity_map = {
-    'low': 0,
-    'medium': 1,
-    'high': 2
-}
-
-mat_dataset_paths = {
-                'poisson_v4_02': 'data/MultiFidelity_ReadyData/poisson_v4_02.mat',
-                'burger_v4_02': 'data/MultiFidelity_ReadyData/burger_v4_02.mat',
-                'Burget_mfGent_v5': 'data/MultiFidelity_ReadyData/Burget_mfGent_v5.mat',
-                'Burget_mfGent_v5_02': 'data/MultiFidelity_ReadyData/Burget_mfGent_v5_02.mat',
-                'Heat_mfGent_v5': 'data/MultiFidelity_ReadyData/Heat_mfGent_v5.mat',
-                'Piosson_mfGent_v5': 'data/MultiFidelity_ReadyData/Piosson_mfGent_v5.mat',
-                'Schroed2D_mfGent_v1': 'data/MultiFidelity_ReadyData/Schroed2D_mfGent_v1.mat',
-                'TopOP_mfGent_v5': 'data/MultiFidelity_ReadyData/TopOP_mfGent_v5.mat',
-                'DoublePendu_mfGent_v01': 'data/MultiFidelity_ReadyData/DoublePendu_mfGent_v01.mat',
-            } # they got the same data format
-
 
 default_module_config = {
     'dataset' : {'name': 'poisson_v4_02',
-                 'fidelity': ['low', 'high'],
-                 'type':'x_yl_2_yh',    # x_yl_2_yh
-                 'connection_method': 'res_mapping',  # Only valid when x_yl_2_yh, identity, res_rho, res_mapping
+                 'interp_data': False,
+                 
+                 # preprocess
+                 'seed': None,
                  'train_start_index': 0, 
                  'train_sample': 8, 
                  'eval_start_index': 0, 
                  'eval_sample':256,
-                 'seed': 0,
-                 'interp_data': False},
 
+                 'inputs_format': ['x[0]', 'y[0]'],
+                 'outputs_format': ['y[2]'],
+
+                 'force_2d': False,
+                 'x_sample_to_last_dim': False,
+                 'y_sample_to_last_dim': True,
+                 'slice_param': [0.6, 0.4], #only available for dataset, which not seperate train and test before
+                 },
+
+    'connection_method': 'res_mapping',
     'lr': {'kernel':0.01, 
            'optional_param':0.01, 
            'noise':0.01},
@@ -99,9 +86,9 @@ def _first_dim_to_last(_tensor):
 class HOGP_MF_MODULE:
     # def __init__(self, grid_params_list, kernel_list, target_list, normalize=True, restrict_method= 'exp') -> None:
     def __init__(self, module_config) -> None:
-        default_module_config.update(module_config)
-        self.module_config = deepcopy(default_module_config)
-        module_config = deepcopy(default_module_config)
+        _final_config = smart_update(default_module_config, module_config)
+        self.module_config = deepcopy(_final_config)
+        module_config = deepcopy(_final_config)
 
         # param check
         assert module_config['optimizer'] in ['adam'], 'now optimizer only support adam, but get {}'.format(module_config['optimizer'])
@@ -109,7 +96,7 @@ class HOGP_MF_MODULE:
         # load_data
         self._load_data(module_config['dataset'])
         self._grid_setup(module_config['grid_config'])
-        self._select_connection_kernel(module_config['dataset']['connection_method'])
+        self._select_connection_kernel(module_config['connection_method'])
 
         # TODO if param allow more than single kernel, optimize code here
         self.vector_dims = len(self.grid)
@@ -147,53 +134,18 @@ class HOGP_MF_MODULE:
 
     def _load_data(self, dataset_config):
         print('dataset_config name:', dataset_config['name'])
-        if dataset_config['name'] == 'test_v1':
-            _sample = 100
-            x_eval = torch.linspace(0, 6, _sample).view(-1, 1)
-            y_eval = torch.sin(x_eval) + 10
-            x_tr = torch.rand(32, 1) * 6
-            y_tr = torch.sin(x_tr) + torch.rand(32, 1) * 0.5 + 10
-        elif dataset_config['name'] in mat_dataset_paths:
-            # they got the same data format
-            data = loadmat(mat_dataset_paths[dataset_config['name']])
+        loaded = False
+        for _loader in [SP_DataLoader, Standard_mat_DataLoader]:
+            if dataset_config['name'] in _loader.dataset_available:
+                self.data_loader = _loader(dataset_config['name'], dataset_config['interp_data'])
+                _data = self.data_loader.get_data()
+                loaded = True
+                break
+        if loaded is False:
+            assert False, 'dataset {} not found in all loader'.format(dataset_config['name'])
 
-            if dataset_config['type'] == 'x_yl_2_yh':
-                assert len(dataset_config['fidelity']) == 2, 'for x_yl_2_yh, fidelity length must be 2'
-                _first_fidelity = fidelity_map[dataset_config['fidelity'][0]]
-                _second_fidelity = fidelity_map[dataset_config['fidelity'][1]]
-                x_tr = torch.tensor(data['xtr'], dtype=torch.float32)
-                y_tr_low = torch.tensor(data['Ytr'][0][_first_fidelity], dtype=torch.float32)
-                y_tr = torch.tensor(data['Ytr'][0][_second_fidelity], dtype=torch.float32)
-                x_eval = torch.tensor(data['xte'], dtype=torch.float32)
-                y_eval_low = torch.tensor(data['Yte'][0][_first_fidelity], dtype=torch.float32)
-                y_eval = torch.tensor(data['Yte'][0][_second_fidelity], dtype=torch.float32)
-                # shuffle
-                x_tr, y_tr_low, y_tr = self._random_shuffle([[x_tr, 0], [y_tr_low, 0], [y_tr, 0]])
-
-                # gen vector, put num to the last dim
-                # for train set
-                _index = dataset_config['train_start_index']
-                self.inputs_tr = []
-                self.inputs_tr.append(torch.tensor(x_tr[_index:_index+dataset_config['train_sample'], ...]))
-                self.inputs_tr.append(torch.tensor(y_tr_low[_index:_index+dataset_config['train_sample'], ...]))
-                self.inputs_tr[-1] = _first_dim_to_last(self.inputs_tr[-1])
-
-                self.outputs_tr = []
-                self.outputs_tr.append(torch.tensor(y_tr[_index:_index+dataset_config['train_sample'], ...]))
-                self.outputs_tr[-1] = _first_dim_to_last(self.outputs_tr[-1])
-
-                # for eval set
-                _index = dataset_config['eval_start_index']
-                self.inputs_eval = []
-                self.inputs_eval.append(torch.tensor(x_eval[_index:_index+dataset_config['eval_sample'], ...]))
-                self.inputs_eval.append(torch.tensor(y_eval_low[_index:_index+dataset_config['eval_sample'], ...]))
-                self.inputs_eval[-1] = _first_dim_to_last(self.inputs_eval[-1])
-
-                self.outputs_eval = []
-                self.outputs_eval.append(torch.tensor(y_eval[_index:_index+dataset_config['eval_sample'], ...]))
-                self.outputs_eval[-1] = _first_dim_to_last(self.outputs_eval[-1])
-        else:
-            assert False
+        dp = Data_preprocess(dataset_config)
+        self.inputs_tr, self.outputs_tr, self.inputs_eval, self.outputs_eval = dp.do_preprocess(_data, numpy_to_tensor=True)
 
 
     def _grid_setup(self, grid_config):
@@ -227,8 +179,8 @@ class HOGP_MF_MODULE:
         if type_name in ['res_rho']:
             self.target_connection = rho_connection()
         elif type_name in ['res_mapping']:
-            self.target_connection = mapping_connection(self.inputs_tr[1][:,:,0].shape, 
-                                                        self.outputs_tr[0][:,:,0].shape,
+            self.target_connection = mapping_connection(self.inputs_tr[1][...,0].shape, 
+                                                        self.outputs_tr[0][...,0].shape,
                                                         )
 
     def _init_kernel(self, kernel_config):
@@ -457,41 +409,6 @@ class HOGP_MF_MODULE:
             print('self.noise:{}'.format(self.noise.data))
 
 
-    def _random_shuffle(self, np_array_list):
-        random.seed()
-        # check dim shape
-        # TODO support -1 dim
-        dim_lenth = []
-        for _np_array in np_array_list:
-            dim = _np_array[1]
-            if dim < 0:
-                dim = len(_np_array[0].shape) + dim
-            dim_lenth.append(_np_array[0].shape[dim])
-
-        assert len(set(dim_lenth)) == 1, "length of dim is not the same"
-
-        shuffle_index = [i for i in range(dim_lenth[0])]
-        random.shuffle(shuffle_index)
-
-        output_array = []
-        for _np_array in np_array_list:
-            dim = _np_array[1]
-            np_array = deepcopy(_np_array[0])
-            if dim < 0:
-                dim = len(_np_array[0].shape) + dim
-
-            if dim==0:
-                output_array.append(np_array[shuffle_index])
-            else:
-                switch_dim = [i for i in range(len(np_array.shape))]
-                switch_dim[switch_dim.index(dim)] = 0
-                switch_dim[0] = dim
-                np_array = np.ascontiguousarray(np.transpose(np_array, switch_dim))
-                np_array = np_array[shuffle_index]
-                np_array = np.ascontiguousarray(np.transpose(np_array, switch_dim))
-                output_array.append(np_array)
-        return output_array
-
 
     def get_params_need_check(self):
         params_need_check = []
@@ -553,8 +470,10 @@ class HOGP_MF_MODULE:
 
     def eval(self):
         print('---> start eval')
-        predict_y = self.predict(self.inputs_eval)[0]
-        result = performance_evaluator(predict_y, self.outputs_eval[0], self.module_config['evaluate_method'])
-        self.predict_y = predict_y
+        predict_y, _ = self.predict(self.inputs_eval)
+        self.predict_y = deepcopy(predict_y)
+        predict_y = _last_dim_to_fist(predict_y)
+        target = _last_dim_to_fist(self.outputs_eval[0])
+        result = high_level_evaluator([predict_y, None], target, self.module_config['evaluate_method'])
         print(result)
         return result

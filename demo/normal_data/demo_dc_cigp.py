@@ -82,14 +82,21 @@ if __name__ == '__main__':
                             'eval_start_index': 0,
                             'eval_sample': 128,
 
+<<<<<<< HEAD
                             'inputs_format': ['x[0]','y[1]'],
                             'outputs_format': ['y[2]'],
+=======
+                            'inputs_format': ['x[0]','y[0]'],
+                            'outputs_format': ['y[-1]'],
+>>>>>>> 6933a50e05cda5da0dd3c7f7cb2ede0ea1df306b
 
                             'force_2d': True,
                             'x_sample_to_last_dim': False,
                             'y_sample_to_last_dim': False,
                             'slice_param': [0.6, 0.4], #only available for dataset, which not seperate train and test before
                             },
+                'pca': {'type': 'listPCA', 
+                        'r': 0.99, } # listPCA, resPCA_mf,
             }
             second_ct = controller(DC_CIGP_MODULE, controller_config, second_module_config)
             # replace ground truth eval data with low fidelity predict
@@ -107,7 +114,11 @@ if __name__ == '__main__':
             second_ct.rc_file.write('---> final result\n')
             second_ct.rc_file.flush()
             second_ct.start_eval({'eval state':'final',
+<<<<<<< HEAD
                        'module_name':'DC',
+=======
+                       'module_name':'DC_cigp',
+>>>>>>> 6933a50e05cda5da0dd3c7f7cb2ede0ea1df306b
                        'cp_record_file': True})
             second_ct.rc_file.write('---> end\n\n')
             second_ct.rc_file.flush()

@@ -15,7 +15,7 @@ from module.ind_hogp import HOGP_MODULE
 interp_data = False
 
 if __name__ == '__main__':
-    for _seed in [None, 0, 1]:
+    for _seed in [None, 0, 1, 2, 3, 4]:
         with open('record.txt', 'a') as _temp_file:
             _temp_file.write('-'*40 + '\n')
             _temp_file.write('\n')
@@ -27,16 +27,25 @@ if __name__ == '__main__':
             _temp_file.flush()
 
         module_config = {
-            'dataset': {'name': 'TopOP_mfGent_v5',
-                        'fidelity': ['low'],
-                        'type':'x_2_y',    # x_yl_2_yh, x_2_y
+            'dataset': {
+                        # 'name': 'poisson_v4_02',
+                        'name': 'TopOP_mfGent_v5',
+                        'interp_data': interp_data,
+
+                        'seed': _seed,
                         'train_start_index': 0, 
                         'train_sample': 64, 
                         'eval_start_index': 0,
-                        'eval_sample':128,
-                        'seed': _seed,
-                        'interp_data': interp_data,
-                        }
+                        'eval_sample': 128,
+
+                        'inputs_format': ['x[0]'],
+                        'outputs_format': ['y[-1]'],
+
+                        'force_2d': False,
+                        'x_sample_to_last_dim': False,
+                        'y_sample_to_last_dim': True,
+                        'slice_param': [0.6, 0.4], #only available for dataset, which not seperate train and test before
+                        },
         }
         ct = controller(HOGP_MODULE, {}, module_config)
         ct.start_train()

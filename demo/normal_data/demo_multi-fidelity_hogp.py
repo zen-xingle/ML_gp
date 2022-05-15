@@ -43,7 +43,7 @@ if __name__ == '__main__':
                         'train_start_index': 0, 
                         'train_sample': 32, 
                         'eval_start_index': 0,
-                        'eval_sample': 256,
+                        'eval_sample': 128,
 
                         'inputs_format': ['x[0]'],
                         'outputs_format': ['y[0]'],
@@ -79,14 +79,14 @@ if __name__ == '__main__':
                             'interp_data': interp_data,
 
                             # preprocess
-                            'random_shuffle_seed': None,
+                            'seed': _seed,
                             'train_start_index': 0,
-                            'train_sample': 8, 
+                            'train_sample': _sample, 
                             'eval_start_index': 0, 
                             'eval_sample':256,
                             
                             'inputs_format': ['x[0]', 'y[0]'],
-                            'outputs_format': ['y[2]'],
+                            'outputs_format': ['y[-1]'],
 
                             'force_2d': False,
                             'x_sample_to_last_dim': False,

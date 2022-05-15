@@ -17,13 +17,7 @@ sys.path.append(realpath)
 
 from tensorly.decomposition import tucker
 from tensorly import tucker_to_tensor
-from utils.eigen import eigen_pairs
-from utils.normalizer import Normalizer
-# from module.gp_output_decorator import posterior_output_decorator
-from utils.performance_evaluator import performance_evaluator, high_level_evaluator
-from scipy.io import loadmat
-from utils.data_loader import SP_DataLoader, Standard_mat_DataLoader
-from utils.data_preprocess import Data_preprocess
+from utils import *
 
 # optimize for main_controller
 
@@ -39,7 +33,7 @@ default_module_config = {
                  'interp_data': False,
                  
                  # preprocess
-                 'random_shuffle_seed': None,
+                 'seed': None,
                  'train_start_index': 0, 
                  'train_sample': 8, 
                  'eval_start_index': 0, 
@@ -92,9 +86,9 @@ def _first_dim_to_last(_tensor):
 class HOGP_MF_MODULE:
     # def __init__(self, grid_params_list, kernel_list, target_list, normalize=True, restrict_method= 'exp') -> None:
     def __init__(self, module_config) -> None:
-        default_module_config.update(module_config)
-        self.module_config = deepcopy(default_module_config)
-        module_config = deepcopy(default_module_config)
+        _final_config = smart_update(default_module_config, module_config)
+        self.module_config = deepcopy(_final_config)
+        module_config = deepcopy(_final_config)
 
         # param check
         assert module_config['optimizer'] in ['adam'], 'now optimizer only support adam, but get {}'.format(module_config['optimizer'])

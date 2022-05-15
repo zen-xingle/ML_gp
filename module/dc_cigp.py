@@ -16,12 +16,7 @@ realpath = realpath.split(_sep)
 realpath = _sep.join(realpath[:realpath.index('ML_gp')+1])
 sys.path.append(realpath)
 
-from utils.normalizer import Normalizer
-from utils.performance_evaluator import performance_evaluator
-from utils.data_loader import SP_DataLoader, Standard_mat_DataLoader
-from utils.data_preprocess import Data_preprocess
-from utils.ResPCA import listPCA, resPCA_mf
-# optimize for main_controller
+from utils import *
 
 JITTER = 1e-6
 EPS = 1e-10
@@ -34,7 +29,7 @@ default_module_config = {
                  'interp_data': False,
                  
                  # preprocess
-                 'random_shuffle_seed': None,
+                 'seed': None,
                  'train_start_index': 0,
                  'train_sample': 8, 
                  'eval_start_index': 0, 
@@ -72,9 +67,9 @@ pca_map = {'listPCA': listPCA, 'resPCA_mf': resPCA_mf}
 class DC_CIGP_MODULE:
     # def __init__(self, grid_params_list, kernel_list, target_list, normalize=True, restrict_method= 'exp') -> None:
     def __init__(self, module_config) -> None:
-        default_module_config.update(module_config)
-        module_config = default_module_config
-        self.module_config = deepcopy(module_config)
+        _final_config = smart_update(default_module_config, module_config)
+        self.module_config = deepcopy(_final_config)
+        module_config = deepcopy(_final_config)
 
         # param check
         assert module_config['optimizer'] in ['adam'], 'now optimizer only support adam, but get {}'.format(module_config['optimizer'])

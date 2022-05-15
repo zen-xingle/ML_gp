@@ -142,8 +142,8 @@ class controller(object):
                 dataset_name = self.module.module_config['dataset']['name']
 
                 # TODO fix and remove this
-                if 'random_shuffle_seed' in self.module.module_config['dataset']:
-                    seed = 'Seed[{}]'.format(str(self.module.module_config['dataset']['random_shuffle_seed']))
+                if 'seed' in self.module.module_config['dataset']:
+                    seed = 'Seed[{}]'.format(str(self.module.module_config['dataset']['seed']))
                 else:
                     seed = 'Seed[{}]'.format(str(self.module.module_config['dataset']['seed']))
                 intep = 'Interp[{}]'.format(str(self.module.module_config['dataset']['interp_data']))

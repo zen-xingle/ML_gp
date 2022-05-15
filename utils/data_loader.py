@@ -18,13 +18,8 @@ def dict_pattern(path, function, interp_available):
     return {'path': path, 'function': function, 'interp_available': interp_available}
 
 def _concat_on_new_last_dim(arrays):
-    # TODO support multi in, now support 2
-    in1 = arrays[0]
-    in2 = arrays[1]
-    assert in1.shape == in2.shape
-    in1 = in1.reshape(*in1.shape, 1)
-    in2 = in2.reshape(*in2.shape, 1)
-    return np.concatenate([in1, in2], axis=-1)
+    arrays = [_array.reshape(*_array.shape, 1) for _array in arrays]
+    return np.concatenate(arrays, axis=-1)
 
 def _force_2d(arrays):
     return [_array.reshape(_array.shape[0], -1) for _array in arrays]
@@ -48,18 +43,22 @@ class SP_DataLoader(object):
                          'MolecularDynamic_MF', 
                          'plasmonic2_MF', 
                          'SOFC_MF',
+                         'NavierStock_mfGent_v1_02',
                          ]
     def __init__(self, dataset_name, need_interp=False) -> None:
         self.dataset_info = {
             'FlowMix3D_MF': 
-                dict_pattern('data\MF_data\FlowMix3D_MF.mat', self._general, False),
+                dict_pattern('data/MF_data/FlowMix3D_MF.mat', self._general, False),
             'MolecularDynamic_MF': 
-                dict_pattern('data\MF_data\MolecularDynamic_MF.mat', self._general, False),
+                dict_pattern('data/MF_data/MolecularDynamic_MF.mat', self._general, False),
             'plasmonic2_MF': 
-                dict_pattern('data\MF_data\plasmonic2_MF.mat', self._general, False),
+                dict_pattern('data/MF_data/plasmonic2_MF.mat', self._general, False),
             'SOFC_MF': 
-                dict_pattern('data\MF_data\SOFC_MF.mat', self._SOFC_MF, False),
+                dict_pattern('data/MF_data/SOFC_MF.mat', self._SOFC_MF, False),
+            'NavierStock_mfGent_v1_02':
+                dict_pattern('data/NavierStock_mfGent_v1_02', self._NavierStock_mfGent_v1_02, False),
             }
+
         if dataset_name not in self.dataset_info:
             assert False
         if need_interp and self.dataset_info[self.dataset_name]['interp_available'] is False:
@@ -87,6 +86,23 @@ class SP_DataLoader(object):
 
     # def _plasmonic2_MF(self):
     #     return self._general()
+
+    def _NavierStock_mfGent_v1_02(self):
+        import h5py
+        field_need = ['PRec', 'URec', 'VRec']
+        x = []
+        y = []
+        for i in range(3):
+            _data = h5py.File(_smart_path(self.dataset_info[self.dataset_name]['path'] + '/Fidelity_' + str(i+1) + '.mat'), 'r')
+            x.append(_data['X'].value.T)
+            _temp_y = []
+            for _field_name in field_need:
+                _temp_y.append(_data[_field_name].value.T)
+            if len(_temp_y) > 1:
+                y.append(_concat_on_new_last_dim(_temp_y))
+            elif len(_temp_y) == 1:
+                y.append(_temp_y[0])
+        return x, y, None, None
 
     def _SOFC_MF(self):
         _data = loadmat(_smart_path(self.dataset_info[self.dataset_name]['path']))
@@ -154,10 +170,11 @@ class Standard_mat_DataLoader(object):
 
 
 if __name__ == '__main__':
+    sp_data = SP_DataLoader('NavierStock_mfGent_v1_02', None)
     # sp_data = SP_DataLoader('SOFC_MF', None)
-    # print(sp_data.get_data())
+    print(sp_data.get_data())
 
-    stand_data = Standard_mat_DataLoader('poisson_v4_02')
-    print(stand_data.get_data())
+    # stand_data = Standard_mat_DataLoader('poisson_v4_02')
+    # print(stand_data.get_data())
 
     pass

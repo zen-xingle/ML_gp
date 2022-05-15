@@ -15,7 +15,7 @@ from module.ind_hogp import HOGP_MODULE
 interp_data = False
 
 if __name__ == '__main__':
-    for _seed in [None, 0, 1]:
+    for _seed in [None, 0, 1, 2, 3, 4]:
         with open('record.txt', 'a') as _temp_file:
             _temp_file.write('-'*40 + '\n')
             _temp_file.write('\n')

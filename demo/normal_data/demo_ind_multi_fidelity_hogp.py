@@ -16,7 +16,7 @@ from module.ind_hogp_multi_fidelity import HOGP_MF_MODULE
 interp_data=False
 
 if __name__ == '__main__':
-    for _seed in [None]:
+    for _seed in [None, 0, 1, 2, 3, 4]:
         with open('record.txt', 'a') as _temp_file:
             _temp_file.write('-'*40 + '\n')
             _temp_file.write('\n')
@@ -72,7 +72,7 @@ if __name__ == '__main__':
                             'interp_data': interp_data,
 
                             # preprocess
-                            'random_shuffle_seed': _seed,
+                            'seed': _seed,
                             'train_start_index': 0,
                             'train_sample': _sample, 
                             'eval_start_index': 0, 

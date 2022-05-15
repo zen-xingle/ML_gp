@@ -79,7 +79,7 @@ if __name__ == '__main__':
                             'interp_data': interp_data,
 
                             # preprocess
-                            'random_shuffle_seed': None,
+                            'seed': _seed,
                             'train_start_index': 0,
                             'train_sample': _sample, 
                             'eval_start_index': 0, 

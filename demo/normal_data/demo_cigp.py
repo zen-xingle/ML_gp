@@ -13,7 +13,7 @@ from module.cigp import CIGP_MODULE
 interp_data = False
 
 if __name__ == '__main__':
-    for _seed in [None, 0, 1]:
+    for _seed in [None, 0, 1, 2, 3, 4]:
         with open('record.txt', 'a') as _temp_file:
             _temp_file.write('-'*40 + '\n')
             _temp_file.write('\n')
@@ -25,7 +25,7 @@ if __name__ == '__main__':
             _temp_file.flush()
 
         module_config = {
-            'dataset': {'name': 'poisson_v4_02',
+            'dataset': {'name': 'FlowMix3D_MF',
                         'interp_data': interp_data,
 
                         'seed': _seed,
@@ -35,7 +35,7 @@ if __name__ == '__main__':
                         'eval_sample': 128,
 
                         'inputs_format': ['x[0]'],
-                        'outputs_format': ['y[2]'],
+                        'outputs_format': ['y[-1]'],
 
                         'force_2d': True,
                         'x_sample_to_last_dim': False,

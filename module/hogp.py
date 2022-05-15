@@ -22,8 +22,8 @@ from utils.normalizer import Normalizer
 # from module.gp_output_decorator import posterior_output_decorator
 from utils.performance_evaluator import performance_evaluator, high_level_evaluator
 from scipy.io import loadmat
-from utils.data_loader import SP_DataLoader, np_list_to_tensor_list
-# optimize for main_controller
+from utils.data_loader import SP_DataLoader, Standard_mat_DataLoader
+from utils.data_preprocess import Data_preprocess
 
 JITTER = 1e-6
 EPS = 1e-10
@@ -31,36 +31,26 @@ PI = 3.1415
 
 tensorly.set_backend('pytorch')
 
-fidelity_map = {
-    'low': 0,
-    'medium': 1,
-    'high': 2
-}
-
-mat_dataset_paths = {
-                'poisson_v4_02': 'data/MultiFidelity_ReadyData/poisson_v4_02.mat',
-                'burger_v4_02': 'data/MultiFidelity_ReadyData/burger_v4_02.mat',
-                'Burget_mfGent_v5': 'data/MultiFidelity_ReadyData/Burget_mfGent_v5.mat',
-                'Burget_mfGent_v5_02': 'data/MultiFidelity_ReadyData/Burget_mfGent_v5_02.mat',
-                'Heat_mfGent_v5': 'data/MultiFidelity_ReadyData/Heat_mfGent_v5.mat',
-                'Piosson_mfGent_v5': 'data/MultiFidelity_ReadyData/Piosson_mfGent_v5.mat',
-                'Schroed2D_mfGent_v1': 'data/MultiFidelity_ReadyData/Schroed2D_mfGent_v1.mat',
-                'TopOP_mfGent_v5': 'data/MultiFidelity_ReadyData/TopOP_mfGent_v5.mat',
-                'DoublePendu_mfGent_v01': 'data/MultiFidelity_ReadyData/DoublePendu_mfGent_v01.mat',
-            } # they got the same data format
-
 
 default_module_config = {
     'dataset' : {'name': 'Piosson_mfGent_v5',
-                 'fidelity': ['low'],
-                 'type':'x_2_y',    # x_yl_2_yh, x_2_y
-                 'connection_method': 'res_mapping',  # Only valid when x_yl_2_yh, res_standard, res_rho, res_mapping
-                 'train_start_index': 0, 
+                 'interp_data': False,
+                 
+                 # preprocess
+                 'random_shuffle_seed': None,
+                 'train_start_index': 0,
                  'train_sample': 8, 
                  'eval_start_index': 0, 
                  'eval_sample':256,
-                 'seed': 0,
-                 'interp_data': False},
+                
+                 'inputs_format': ['x[0]'],
+                 'outputs_format': ['y[2]'],
+
+                 'force_2d': False,
+                 'x_sample_to_last_dim': False,
+                 'y_sample_to_last_dim': True,
+                 'slice_param': [0.6, 0.4], #only available for dataset, which not seperate train and test before
+                 },
 
     'lr': {'kernel':0.01, 
            'optional_param':0.01, 
@@ -144,81 +134,18 @@ class HOGP_MODULE:
 
     def _load_data(self, dataset_config):
         print('dataset_config name:', dataset_config['name'])
-        if dataset_config['name'] in mat_dataset_paths:
-            # they got the same data format
-            data = loadmat(mat_dataset_paths[dataset_config['name']])
+        loaded = False
+        for _loader in [SP_DataLoader, Standard_mat_DataLoader]:
+            if dataset_config['name'] in _loader.dataset_available:
+                self.data_loader = _loader(dataset_config['name'], dataset_config['interp_data'])
+                _data = self.data_loader.get_data()
+                loaded = True
+                break
+        if loaded is False:
+            assert False, 'dataset {} not found in all loader'.format(dataset_config['name'])
 
-            if dataset_config['type'] == 'x_2_y':
-                assert len(dataset_config['fidelity']) == 1, 'for x_2_y, fidelity length must be 1'
-                _fidelity = fidelity_map[dataset_config['fidelity'][0]]
-                # 0 for low, 1 for middle, 2 for high
-                x_tr = torch.tensor(data['xtr'], dtype=torch.float32)
-                x_eval = torch.tensor(data['xte'], dtype=torch.float32)
-                if self.module_config['dataset']['interp_data'] is True:
-                    y_tr = torch.tensor(data['Ytr_interp'][0][_fidelity], dtype=torch.float32)
-                    y_eval = torch.tensor(data['Yte_interp'][0][_fidelity], dtype=torch.float32)
-                else:
-                    y_tr = torch.tensor(data['Ytr'][0][_fidelity], dtype=torch.float32)
-                    y_eval = torch.tensor(data['Yte'][0][_fidelity], dtype=torch.float32)
-                # shuffle
-                if self.module_config['dataset']['seed'] is not None:
-                    x_tr, y_tr = self._random_shuffle([[x_tr, 0], [y_tr, 0]])
-
-                # gen vector, put num to the last dim
-                _index = dataset_config['train_start_index']
-                self.inputs_tr = []
-                self.inputs_tr.append(x_tr[_index:_index+dataset_config['train_sample'], ...])
-                self.outputs_tr = []
-                self.outputs_tr.append(y_tr[_index:_index+dataset_config['train_sample'], ...])
-                self.outputs_tr[-1] = _first_dim_to_last(self.outputs_tr[-1])
-
-                _index = dataset_config['eval_start_index']
-                self.inputs_eval = []
-                self.inputs_eval.append(x_eval[_index:_index+dataset_config['eval_sample'], ...])
-                self.outputs_eval = []
-                self.outputs_eval.append(y_eval[_index:_index+dataset_config['eval_sample'], ...])
-                self.outputs_eval[-1] = _first_dim_to_last(self.outputs_eval[-1])
-        
-        elif dataset_config['name'] in SP_DataLoader.dataset_available:
-            if dataset_config['name'] == 'SOFC_MF':
-                sp_data = SP_DataLoader(dataset_config['name'], force_2d=False)
-            else:
-                sp_data = SP_DataLoader(dataset_config['name'], force_2d=True)
-            x_tr, y_tr, x_te, y_te = sp_data.get_data()
-            x_tr = np_list_to_tensor_list(x_tr)
-            x_te = np_list_to_tensor_list(x_te)
-            y_tr = np_list_to_tensor_list(y_tr)
-            y_te = np_list_to_tensor_list(y_te)
-            assert dataset_config['type'] == 'x_2_y', 'hogp only support x_2_y'
-            assert len(dataset_config['fidelity']) == 1, 'for x_2_y, fidelity length must be 1'
-            _fidelity = fidelity_map[dataset_config['fidelity'][0]]
-            if _fidelity >= len(y_tr):
-                _fidelity = len(y_tr) - 1
-            x_tr = x_tr[0]
-            x_te = x_te[0]
-            y_tr = y_tr[_fidelity]
-            y_te = y_te[_fidelity]
-            # shuffle
-            if self.module_config['dataset']['seed'] is not None:
-                x_tr, y_tr = self._random_shuffle([[x_tr, 0], [y_tr, 0]])
-
-            # gen vector, put num to the last dim
-            _index = dataset_config['train_start_index']
-            self.inputs_tr = []
-            self.inputs_tr.append(x_tr[_index:_index+dataset_config['train_sample'], ...])
-            self.outputs_tr = []
-            self.outputs_tr.append(y_tr[_index:_index+dataset_config['train_sample'], ...])
-            self.outputs_tr[-1] = _first_dim_to_last(self.outputs_tr[-1])
-
-            _index = dataset_config['eval_start_index']
-            self.inputs_eval = []
-            self.inputs_eval.append(x_te[_index:_index+dataset_config['eval_sample'], ...])
-            self.outputs_eval = []
-            self.outputs_eval.append(y_te[_index:_index+dataset_config['eval_sample'], ...])
-            self.outputs_eval[-1] = _first_dim_to_last(self.outputs_eval[-1])
-        else:
-            assert False
-        
+        dp = Data_preprocess(dataset_config)
+        self.inputs_tr, self.outputs_tr, self.inputs_eval, self.outputs_eval = dp.do_preprocess(_data, numpy_to_tensor=True)
 
     def _grid_setup(self, grid_config):
         self.grid = []
@@ -444,42 +371,6 @@ class HOGP_MODULE:
 
         if 'GP_DEBUG' in os.environ and os.environ['GP_DEBUG'] == 'True':
             print('self.noise:{}'.format(self.noise.data))
-
-
-    def _random_shuffle(self, np_array_list):
-        random.seed(self.module_config['dataset']['seed'])
-        # check dim shape
-        # TODO support -1 dim
-        dim_lenth = []
-        for _np_array in np_array_list:
-            dim = _np_array[1]
-            if dim < 0:
-                dim = len(_np_array[0].shape) + dim
-            dim_lenth.append(_np_array[0].shape[dim])
-
-        assert len(set(dim_lenth)) == 1, "length of dim is not the same"
-
-        shuffle_index = [i for i in range(dim_lenth[0])]
-        random.shuffle(shuffle_index)
-
-        output_array = []
-        for _np_array in np_array_list:
-            dim = _np_array[1]
-            np_array = deepcopy(_np_array[0])
-            if dim < 0:
-                dim = len(_np_array[0].shape) + dim
-
-            if dim==0:
-                output_array.append(np_array[shuffle_index])
-            else:
-                switch_dim = [i for i in range(len(np_array.shape))]
-                switch_dim[switch_dim.index(dim)] = 0
-                switch_dim[0] = dim
-                np_array = np.ascontiguousarray(np.transpose(np_array, switch_dim))
-                np_array = np_array[shuffle_index]
-                np_array = np.ascontiguousarray(np.transpose(np_array, switch_dim))
-                output_array.append(np_array)
-        return output_array
 
 
     def get_params_need_check(self):

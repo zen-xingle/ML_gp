@@ -20,6 +20,7 @@ from utils.normalizer import Normalizer
 from utils.performance_evaluator import performance_evaluator
 from utils.data_loader import SP_DataLoader, Standard_mat_DataLoader
 from utils.data_preprocess import Data_preprocess
+from utils.ResPCA import listPCA, resPCA_mf
 # optimize for main_controller
 
 JITTER = 1e-6
@@ -39,7 +40,7 @@ default_module_config = {
                  'eval_start_index': 0, 
                  'eval_sample':256,
                 
-                 'inputs_format': ['x[0]'],
+                 'inputs_format': ['x[0]', 'y[0]'],
                  'outputs_format': ['y[2]'],
 
                  'force_2d': True,
@@ -48,9 +49,9 @@ default_module_config = {
                  'slice_param': [0.6, 0.4], #only available for dataset, which not seperate train and test before
                  },
 
-    'lr': {'kernel':0.01, 
-           'optional_param':0.01, 
-           'noise':0.01},
+    'lr': {'kernel':0.1, 
+           'optional_param':0.1, 
+           'noise':0.1},
 
     'kernel': {
             'K1': {'SE': {'exp_restrict':False, 'length_scale':1., 'scale': 1.}},
@@ -61,10 +62,14 @@ default_module_config = {
     'input_normalize': True,
     'output_normalize': True,
     'noise_init' : 100.,
+    'pca': {'type': 'listPCA', 
+            'r': 0.99, } # listPCA, resPCA_mf,
 }
 
+pca_map = {'listPCA': listPCA, 'resPCA_mf': resPCA_mf}
 
-class CIGP_MODULE:
+
+class DC_CIGP_MODULE:
     # def __init__(self, grid_params_list, kernel_list, target_list, normalize=True, restrict_method= 'exp') -> None:
     def __init__(self, module_config) -> None:
         default_module_config.update(module_config)
@@ -79,8 +84,10 @@ class CIGP_MODULE:
 
         # X - normalize
         if module_config['input_normalize'] is True:
-            self.X_normalizer = Normalizer(self.inputs_tr[0])
-            self.inputs_tr[0] = self.X_normalizer.normalize(self.inputs_tr[0])
+            self.X_normalizer_0 = Normalizer(self.inputs_tr[0])
+            self.inputs_tr[0] = self.X_normalizer_0.normalize(self.inputs_tr[0])
+            self.X_normalizer_1 = Normalizer(self.inputs_tr[1])
+            self.inputs_tr[1] = self.X_normalizer_1.normalize(self.inputs_tr[1])
         else:
             self.X_normalizer = None
 
@@ -90,6 +97,19 @@ class CIGP_MODULE:
             self.outputs_tr[0] = self.Y_normalizer.normalize(self.outputs_tr[0])
         else:
             self.Y_normalizer = None
+
+        # PCA for y
+        if module_config['pca'] is not None:
+            if module_config['pca']['type'] in pca_map:
+                self.pca_model = pca_map[module_config['pca']['type']]([self.inputs_tr[1], self.outputs_tr[0]], module_config['pca']['r'])
+                _temp_list = self.pca_model.project([self.inputs_tr[1], self.outputs_tr[0]])
+                self.inputs_tr = [torch.cat([self.inputs_tr[0],_temp_list[0]], dim=1)]
+                self.outputs_tr = [_temp_list[1]]
+            else:
+                assert False
+        else:
+            self.pca_model = None
+            assert False, "DC need pca"
 
         # init kernel
         self._init_kernel(module_config['kernel'])
@@ -198,7 +218,13 @@ class CIGP_MODULE:
     
         with torch.no_grad():
             if self.module_config['input_normalize'] is True:
-                input_param[0] = self.X_normalizer.normalize(input_param[0])
+                input_param[0] = self.X_normalizer_0.normalize(input_param[0])
+                input_param[1] = self.X_normalizer_1.normalize(input_param[1])
+            if self.pca_model is not None:
+                _temp_record = self.pca_model.project([input_param[1], self.outputs_eval[0]])
+                input_param[1] = _temp_record[0]
+                # input_param[1] = self.pca_model.project([input_param[1], self.outputs_eval[0]])[0]
+            input_param = [torch.cat(input_param, dim=1)]
 
             Sigma = self.kernel_list[0](self.inputs_tr[0], self.inputs_tr[0]) + JITTER * torch.eye(self.inputs_tr[0].size(0))
             if self.module_config['exp_restrict'] is True:
@@ -212,6 +238,9 @@ class CIGP_MODULE:
             # LinvKx,_ = torch.triangular_solve(kx, L, upper = False)
 
             u = kx.t() @ torch.cholesky_solve(self.outputs_tr[0], L)
+
+            if self.pca_model is not None:
+                u = self.pca_model.recover([_temp_record[0],u])[1]
 
             if self.module_config['output_normalize'] is True:
                 u = self.Y_normalizer.denormalize(u)
@@ -260,4 +289,4 @@ class CIGP_MODULE:
 
 if __name__ == '__main__':
     module_config = {}
-    cigp = CIGP_MODULE(module_config)
+    cigp = DC_CIGP_MODULE(module_config)

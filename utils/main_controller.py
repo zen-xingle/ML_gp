@@ -140,7 +140,12 @@ class controller(object):
             if save_to_csv == True:
                 dir_name = './exp/{}'.format(additional_dict['module_name'])
                 dataset_name = self.module.module_config['dataset']['name']
-                seed = 'Seed[{}]'.format(str(self.module.module_config['dataset']['seed']))
+
+                # TODO fix and remove this
+                if 'random_shuffle_seed' in self.module.module_config['dataset']:
+                    seed = 'Seed[{}]'.format(str(self.module.module_config['dataset']['random_shuffle_seed']))
+                else:
+                    seed = 'Seed[{}]'.format(str(self.module.module_config['dataset']['seed']))
                 intep = 'Interp[{}]'.format(str(self.module.module_config['dataset']['interp_data']))
                 if not os.path.exists('./exp'):
                     os.mkdir('./exp')

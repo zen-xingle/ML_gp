@@ -54,7 +54,7 @@ if __name__ == '__main__':
 
                             'seed': _seed,
                             'train_start_index': 0, 
-                            'train_sample': 64, 
+                            'train_sample': 32, 
                             'eval_start_index': 0,
                             'eval_sample': 128,
 
@@ -76,7 +76,7 @@ if __name__ == '__main__':
             ct.rc_file.write('---> end\n\n')
             ct.rc_file.flush()
 
-            for _sample in [32, 64]:
+            for _sample in [4,8,16,32]:
                 with open('record.txt', 'a') as _temp_file:
                     _temp_file.write('\n'+ '-'*10 + '>\n')
                     _temp_file.write('SGAR for {} samples\n'.format(_sample))
@@ -92,7 +92,7 @@ if __name__ == '__main__':
                                 'train_start_index': 0,
                                 'train_sample': _sample, 
                                 'eval_start_index': 0, 
-                                'eval_sample':256,
+                                'eval_sample':128,
                                 
                                 'inputs_format': ['x[0]', 'y[0]'],
                                 'outputs_format': ['y[-1]'],

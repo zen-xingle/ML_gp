@@ -29,7 +29,7 @@ default_module_config = {
                  'interp_data': False,
                  
                  # preprocess
-                 'random_shuffle_seed': None,
+                 'seed': None,
                  'train_start_index': 0,
                  'train_sample': 8, 
                  'eval_start_index': 0, 
@@ -63,9 +63,9 @@ default_module_config = {
 class CIGP_MODULE:
     # def __init__(self, grid_params_list, kernel_list, target_list, normalize=True, restrict_method= 'exp') -> None:
     def __init__(self, module_config) -> None:
-        default_module_config.update(module_config)
-        module_config = default_module_config
-        self.module_config = deepcopy(module_config)
+        _final_config = smart_update(default_module_config, module_config)
+        self.module_config = deepcopy(_final_config)
+        module_config = deepcopy(_final_config)
 
         # param check
         assert module_config['optimizer'] in ['adam'], 'now optimizer only support adam, but get {}'.format(module_config['optimizer'])

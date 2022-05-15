@@ -185,45 +185,28 @@ class Data_preprocess(object):
         return outputs
 
     def _random_shuffle(self, inputs):
-        _temp_array_list,_len_list = _flatten_inputs(inputs)
+        _temp_array_list,_len_list = _flatten_inputs(inputs[0:2])
         _temp_array_list = self._random_shuffle_array_list(_temp_array_list)
         outputs = _reformat_inputs(_temp_array_list, _len_list)
+        outputs.extend(inputs[2:4])
         return outputs
 
     def _random_shuffle_array_list(self, np_array_list):
-        # [array_0, array_1, ...]
+        # sample should on first dim
         random.seed(self.config_dict['random_shuffle_seed'])
-        # check dim shape
-        # TODO support -1 dim
+
         dim_lenth = []
         for _np_array in np_array_list:
-            dim = _np_array[1]
-            if dim < 0:
-                dim = len(_np_array[0].shape) + dim
-            dim_lenth.append(_np_array[0].shape[dim])
+            dim_lenth.append(_np_array.shape[0])
         assert len(set(dim_lenth)) == 1, "length of dim is not the same"
 
         shuffle_index = [i for i in range(dim_lenth[0])]
         random.shuffle(shuffle_index)
 
-        output_array = []
+        output_array_list = []
         for _np_array in np_array_list:
-            dim = _np_array[1]
-            np_array = deepcopy(_np_array[0])
-            if dim < 0:
-                dim = len(_np_array[0].shape) + dim
-
-            if dim==0:
-                output_array.append(np_array[shuffle_index])
-            else:
-                switch_dim = [i for i in range(len(np_array.shape))]
-                switch_dim[switch_dim.index(dim)] = 0
-                switch_dim[0] = dim
-                np_array = np.ascontiguousarray(np.transpose(np_array, switch_dim))
-                np_array = np_array[shuffle_index]
-                np_array = np.ascontiguousarray(np.transpose(np_array, switch_dim))
-                output_array.append(np_array)
-        return output_array
+            output_array_list.append(_np_array[shuffle_index])
+        return output_array_list
 
 
 if __name__ == '__main__':

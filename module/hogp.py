@@ -69,9 +69,10 @@ default_module_config = {
     'input_normalzie': True,
     'output_normalize': True,
     'noise_init' : 0.00001,
-    'grid_config': {'grid_size': [-1, -1], 
+    'grid_config': {'grid_size': [-1], 
                     'type': 'fixed', # learnable, fixed
                     'dimension_map': 'identity', # latent space: identity, learnable_identity, learnable_map
+                    'auto_broadcast_grid_size': True,
                     },
 }
 
@@ -149,6 +150,8 @@ class HOGP_MODULE:
         self.inputs_tr, self.outputs_tr, self.inputs_eval, self.outputs_eval = dp.do_preprocess(_data, numpy_to_tensor=True)
 
     def _grid_setup(self, grid_config):
+        if grid_config['auto_broadcast_grid_size'] is True and len(grid_config['grid_size'])==1:
+            grid_config['grid_size'] = grid_config['grid_size']* (self.outputs_tr[0].ndim - 1)
         self.grid = []
         for i,_value in enumerate(grid_config['grid_size']):
             if _value == -1:

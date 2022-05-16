@@ -11,41 +11,65 @@ from utils.main_controller import controller
 from nn_net.nn_shibo import DeepMFnet
 
 
-interp_data = True
+real_dataset = ['FlowMix3D_MF',
+                'MolecularDynamic_MF', 
+                'plasmonic2_MF', 
+                'SOFC_MF',]
+
+gen_dataset = ['poisson_v4_02',
+                'burger_v4_02',
+                'Burget_mfGent_v5',
+                'Burget_mfGent_v5_02',
+                # 'Heat_mfGent_v5',
+                'Piosson_mfGent_v5',
+                'Schroed2D_mfGent_v1',
+                'TopOP_mfGent_v5',]
+interp_data=True
 
 if __name__ == '__main__':
-    for _seed in [None, 0, 1, 2, 3, 4]:
-        for _sample in [4, 8, 16, 32]:
-            with open('record.txt', 'a') as _temp_file:
-                _temp_file.write('-'*40 + '\n')
-                _temp_file.write('\n')
-                _temp_file.write('  Demo DMFAL \n')
-                _temp_file.write('  seed: {} \n'.format(_seed))
-                _temp_file.write('  interp_data: {} \n'.format(interp_data))
-                _temp_file.write('\n')
-                _temp_file.write('-'*40 + '\n')
-                _temp_file.flush()
+    # for _dataset in real_dataset + gen_dataset:
+    for _dataset in ['poisson_v4_02']:
+        for _seed in [None, 0, 1, 2, 3, 4]:
+            for _sample in [4, 8, 16, 32]:
+                with open('record.txt', 'a') as _temp_file:
+                    _temp_file.write('-'*40 + '\n')
+                    _temp_file.write('\n')
+                    _temp_file.write('  Demo DMFAL \n')
+                    _temp_file.write('  seed: {} \n'.format(_seed))
+                    _temp_file.write('  interp_data: {} \n'.format(interp_data))
+                    _temp_file.write('\n')
+                    _temp_file.write('-'*40 + '\n')
+                    _temp_file.flush()
 
-            module_config = {
-                'dataset' : {'name': 'burger_v4_02',
-                    'fidelity': ['low', 'high'],
-                    'type':'x_yl_2_yh',    # x_yl_2_yh, x_2_y
-                    'train_start_index': 0, 
-                    'train_sample': [32, _sample], 
-                    'eval_start_index': 0, 
-                    'eval_sample': [128, 128],
+                module_config = {
+                    'dataset': {'name': _dataset,
+                    'interp_data': True,
+
                     'seed': _seed,
-                    'interp_data': interp_data},
-            }
-            ct = controller(DeepMFnet, {}, module_config)
-            ct.start_train()
-            ct.smart_restore_state(-1)
-            ct.rc_file.write('---> final result\n')
-            ct.rc_file.flush()
-            ct.start_eval({'eval state':'final',
-                        'module_name':'dmfal',
-                        'cp_record_file': True})
-            ct.rc_file.write('---> end\n\n')
-            ct.rc_file.flush()
+                    'train_start_index': 0, 
+                    'train_sample': 32, 
+                    'eval_start_index': 0,
+                    'eval_sample': 128,
 
-        ct.clear_record()
+                    'inputs_format': ['x[0]'],
+                    'outputs_format': ['y[0]','y[-1]'],
+
+                    'force_2d': True,
+                    'x_sample_to_last_dim': False,
+                    'y_sample_to_last_dim': False,
+                    'slice_param': [0.6, 0.4], #only available for dataset, which not seperate train and test before
+                    },
+                    'second_fidelity_sample': _sample,
+                }
+                ct = controller(DeepMFnet, {}, module_config)
+                ct.start_train()
+                ct.smart_restore_state(-1)
+                ct.rc_file.write('---> final result\n')
+                ct.rc_file.flush()
+                ct.start_eval({'eval state':'final',
+                            'module_name':'dmfal',
+                            'cp_record_file': True})
+                ct.rc_file.write('---> end\n\n')
+                ct.rc_file.flush()
+
+    ct.clear_record()

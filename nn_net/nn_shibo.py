@@ -16,10 +16,8 @@ sys.path.append(realpath)
 
 
 from nn_net.BaseNet import AdaptiveBaseNet
-from utils.normalizer import Normalizer
-# from module.gp_output_decorator import posterior_output_decorator
-from utils.performance_evaluator import performance_evaluator, high_level_evaluator
 from scipy.io import loadmat
+from utils import *
 
 
 # optimize for main_controller
@@ -49,15 +47,33 @@ mat_dataset_paths = {
 
 
 default_module_config = {
-    'dataset' : {'name': 'Piosson_mfGent_v5',
-                 'fidelity': ['low', 'high'],
-                 'type':'x_yl_2_yh',    # x_yl_2_yh, x_2_y
-                 'train_start_index': 0, 
-                 'train_sample': [32, 8], 
-                 'eval_start_index': 0, 
-                 'eval_sample': [128, 128],
-                 'seed': 0,
-                 'interp_data': False},
+    # 'dataset' : {'name': 'Piosson_mfGent_v5',
+    #              'fidelity': ['low', 'high'],
+    #              'type':'x_yl_2_yh',    # x_yl_2_yh, x_2_y
+    #              'train_start_index': 0, 
+    #              'train_sample': [32, 8], 
+    #              'eval_start_index': 0, 
+    #              'eval_sample': [128, 128],
+    #              'seed': 0,
+    #              'interp_data': False},
+    'dataset': {'name': 'poisson_v4_02',
+                'interp_data': True,
+
+                'seed': None,
+                'train_start_index': 0, 
+                'train_sample': 32, 
+                'eval_start_index': 0,
+                'eval_sample': 128,
+
+                'inputs_format': ['x[0]'],
+                'outputs_format': ['y[0]','y[-1]'],
+
+                'force_2d': True,
+                'x_sample_to_last_dim': False,
+                'y_sample_to_last_dim': False,
+                'slice_param': [0.6, 0.4], #only available for dataset, which not seperate train and test before
+                },
+    'second_fidelity_sample': 8,
     'lr': {'opt_param': 0.01},
     'evaluate_method': ['mae', 'rmse', 'r2'],
     'optimizer': 'adam',
@@ -116,8 +132,8 @@ class DeepMFnet:
         # init optimizer
         self._optimizer_setup()
 
-
-    def _load_data(self, dataset_config):
+    '''
+    def _load_data_elder(self, dataset_config):
         print('dataset_config name:', dataset_config['name'])
         if dataset_config['name'] in mat_dataset_paths:
             # they got the same data format
@@ -175,7 +191,26 @@ class DeepMFnet:
             self.outputs_eval.append(y_eval[_index:_index+dataset_config['eval_sample'][1], :])
         else:
             assert False
+    '''
 
+    def _load_data(self, dataset_config):
+        print('dataset_config name:', dataset_config['name'])
+        loaded = False
+        for _loader in [SP_DataLoader, Standard_mat_DataLoader]:
+            if dataset_config['name'] in _loader.dataset_available:
+                self.data_loader = _loader(dataset_config['name'], dataset_config['interp_data'])
+                _data = self.data_loader.get_data()
+                loaded = True
+                break
+        if loaded is False:
+            assert False, 'dataset {} not found in all loader'.format(dataset_config['name'])
+
+        dp = Data_preprocess(dataset_config)
+        _inputs_tr, _outputs_tr, _inputs_eval, _outputs_eval = dp.do_preprocess(_data, numpy_to_tensor=True)
+        self.inputs_tr = [_inputs_tr[0], _inputs_tr[0][0:self.module_config['second_fidelity_sample'],...]]
+        self.outputs_tr = [_outputs_tr[0], _outputs_tr[1][0:self.module_config['second_fidelity_sample'],...]]
+        self.inputs_eval = [_inputs_eval[0], _inputs_eval[0]]
+        self.outputs_eval = [_outputs_eval[0], _outputs_eval[1]]
 
     def _optimizer_setup(self):
         opt_params = []

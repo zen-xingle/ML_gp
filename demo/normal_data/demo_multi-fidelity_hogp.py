@@ -31,7 +31,7 @@ gen_dataset = ['poisson_v4_02',
 
 if __name__ == '__main__':
     # for _dataset in real_dataset + gen_dataset:
-    for _dataset in ['poisson_v4_02']:
+    for _dataset in ['SOFC_MF']:
         for _seed in [None, 0, 1, 2, 3, 4]:
             with open('record.txt', 'a') as _temp_file:
                 _temp_file.write('-'*40 + '\n')
@@ -69,9 +69,31 @@ if __name__ == '__main__':
                             'y_sample_to_last_dim': True,
                             'slice_param': [0.6, 0.4], #only available for dataset, which not seperate train and test before
                             },
+
+                'lr': {'kernel':0.01, 
+                        'optional_param':0.01, 
+                        'noise':0.01},
+                    # kernel number as dim + 1
+                    'kernel': {
+                            'K1': {'SE': {'exp_restrict':True, 'length_scale':1., 'scale': 1.}},
+                            # 'K1': {'Periodic': {'exp_restrict':True, 'length_scale':1., 'scale': 1.}},
+                            # 'K2': {'SE': {'exp_restrict':True, 'length_scale':1., 'scale': 1.}},
+                            # 'K3': {'SE': {'exp_restrict':True, 'length_scale':1., 'scale': 1.}},
+                            },
+                    'exp_restrict': False,
+                    'input_normalzie': True,
+                    'output_normalize': True,
+                    'noise_init' : 1.,
+                    'grid_config': {'grid_size': [-1], 
+                                    'type': 'fixed', # learnable, fixed
+                                    'dimension_map': 'identity', # latent space: identity, learnable_identity, learnable_map
+                                    'auto_broadcast_grid_size': True,
+                                    'squeeze_to_01': False,
+                                    },
+                
                 } # only change dataset config, others use default config
             
-            ct = controller(HOGP_MODULE, controller_config, module_config)
+            ct = controller(HOGP_MODULE, {'max_epoch': 800}, module_config)
             ct.start_train()
             ct.smart_restore_state(-1)
             ct.rc_file.write('---> final result')
@@ -82,7 +104,7 @@ if __name__ == '__main__':
 
             # ================================================================
             # Training x,yl -> yh part
-
+            # exit()
             for _sample in [4,8,16,32]:
                 with open('record.txt', 'a') as _temp_file:
                     _temp_file.write('\n'+ '-'*10 + '>\n')
@@ -109,6 +131,26 @@ if __name__ == '__main__':
                                 'y_sample_to_last_dim': True,
                                 'slice_param': [0.6, 0.4], #only available for dataset, which not seperate train and test before
                                 },
+                    'lr': {'kernel':0.01, 
+                        'optional_param':0.01, 
+                        'noise':0.01},
+                    # kernel number as dim + 1
+                    'kernel': {
+                            'K1': {'SE': {'exp_restrict':True, 'length_scale':1., 'scale': 1.}},
+                            # 'K1': {'Periodic': {'exp_restrict':True, 'length_scale':1., 'scale': 1.}},
+                            # 'K2': {'SE': {'exp_restrict':True, 'length_scale':1., 'scale': 1.}},
+                            # 'K3': {'SE': {'exp_restrict':True, 'length_scale':1., 'scale': 1.}},
+                            },
+                    'exp_restrict': True,
+                    'input_normalzie': True,
+                    'output_normalize': True,
+                    'noise_init' : 1.,
+                    'grid_config': {'grid_size': [-1], 
+                                    'type': 'fixed', # learnable, fixed
+                                    'dimension_map': 'identity', # latent space: identity, learnable_identity, learnable_map
+                                    'auto_broadcast_grid_size': True,
+                                    'squeeze_to_01': False,
+                                    },
                 } # only change dataset config, others use default config
 
                 mfct = controller(HOGP_MF_MODULE, controller_config, mfct_module_config)

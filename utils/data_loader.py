@@ -109,7 +109,13 @@ class SP_DataLoader(object):
         x = [_data['x']]
         y = []
         for i in range(len(_data['Y1'][0])):
-            y.append(_concat_on_new_last_dim([_data['Y1'][0][i], _data['Y2'][0][i]]))
+            # y.append(_concat_on_new_last_dim([_data['Y1'][0][i], _data['Y2'][0][i]]))
+            y.append(_concat_on_new_last_dim([_data['Y1'][0][i][:,0::10], _data['Y2'][0][i][:,0::10]]))
+            # import matplotlib.pyplot as plt
+            # for j in range(128):
+            #     fig, axs = plt.subplots(1, 1)
+            #     axs.plot(list(range(500)),_data['Y1'][0][i][j,::10])
+            #     plt.show()
         return x, y, None, None
 
     def _get_distribute(self):

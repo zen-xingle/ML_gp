@@ -8,8 +8,8 @@ class RQ_kernel(torch.nn.Module):
         self.exp_restrict = exp_restrict
 
         if exp_restrict is True:
-            self.length_scale = torch.nn.Parameter(torch.log(length_scale))
-            self.scale = torch.nn.Parameter(torch.log(scale))
+            self.length_scale = torch.nn.Parameter(torch.log(torch.tensor(length_scale)))
+            self.scale = torch.nn.Parameter(torch.log(torch.tensor(scale)))
         else:
             self.length_scale = torch.nn.Parameter(torch.tensor(length_scale))
             self.scale = torch.nn.Parameter(torch.tensor(scale))

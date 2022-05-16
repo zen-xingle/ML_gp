@@ -186,14 +186,14 @@ class HOGP_MODULE:
                     pass
             for _ in range(kernel_need):
             # broadcast exp_restrict
-                if not hasattr(_kernel_params, 'exp_restrict'):
+                if 'exp_restrict' not in _kernel_params:
                     _kernel_params['exp_restrict'] = self.module_config['exp_restrict']
                 self.kernel_list.append(kernel_generator(_kernel_type, _kernel_params))
         else:
             for key, value in kernel_config.items():
                 for _kernel_type, _kernel_params in value.items():
                     # broadcast exp_restrict
-                    if not hasattr(_kernel_params, 'exp_restrict'):
+                    if 'exp_restrict' not in _kernel_params:
                         _kernel_params['exp_restrict'] = self.module_config['exp_restrict']
                     self.kernel_list.append(kernel_generator(_kernel_type, _kernel_params))
 

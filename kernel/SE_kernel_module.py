@@ -10,8 +10,8 @@ class SE_kernel(torch.nn.Module):
         scale = torch.tensor(scale)
 
         if exp_restrict is True:
-            self.length_scale = torch.nn.Parameter(torch.log(length_scale))
-            self.scale = torch.nn.Parameter(torch.log(scale))
+            self.length_scale = torch.nn.Parameter(torch.log(torch.tensor(length_scale)))
+            self.scale = torch.nn.Parameter(torch.log(torch.tensor(scale)))
         else:
             self.length_scale = torch.nn.Parameter(length_scale)
             self.scale = torch.nn.Parameter(scale)

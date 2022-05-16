@@ -15,7 +15,22 @@ from module.ind_hogp_multi_fidelity import HOGP_MF_MODULE
 
 interp_data = False
 
+real_dataset = ['FlowMix3D_MF',
+                'MolecularDynamic_MF', 
+                'plasmonic2_MF', 
+                'SOFC_MF',]
+
+gen_dataset = ['poisson_v4_02',
+                'burger_v4_02',
+                'Burget_mfGent_v5',
+                'Burget_mfGent_v5_02',
+                # 'Heat_mfGent_v5',
+                'Piosson_mfGent_v5',
+                'Schroed2D_mfGent_v1',
+                'TopOP_mfGent_v5',]
+
 if __name__ == '__main__':
+<<<<<<< HEAD
     for _seed in [None, 0, 1, 2, 3, 4]:
         with open('record.txt', 'a') as _temp_file:
             _temp_file.write('-'*40 + '\n')
@@ -61,18 +76,37 @@ if __name__ == '__main__':
         ct.rc_file.flush()
 
         for _sample in [4, 8, 16, 32]:
+=======
+    # for _dataset in real_dataset + gen_dataset:
+    for _dataset in ['poisson_v4_02']:
+        for _seed in [None, 0, 1, 2, 3, 4]:
+>>>>>>> 94768bf4833d1a545562c2e49120ece3a90f6ec2
             with open('record.txt', 'a') as _temp_file:
-                _temp_file.write('\n'+ '-'*10 + '>\n')
-                _temp_file.write('SGAR for {} samples\n'.format(_sample))
-                _temp_file.write('-'*3 + '> Training x,yl -> yh part\n\n')
+                _temp_file.write('-'*40 + '\n')
+                _temp_file.write('\n')
+                _temp_file.write('  Demo sGAR \n')
+                _temp_file.write('  seed: {} \n'.format(_seed))
+                _temp_file.write('  interp_data: {} \n'.format(interp_data))
+                _temp_file.write('\n')
+                _temp_file.write('-'*40 + '\n')
+                _temp_file.write('-'*3 + '> Training x -> yl part\n')
                 _temp_file.flush()
 
+<<<<<<< HEAD
             mfct_module_config = {
                 'dataset': {'name': 'plasmonic2_MF',
+=======
+            controller_config = {
+                'max_epoch': 1000
+            } # use defualt config
+
+            ct_module_config = {
+                'dataset': {'name': _dataset,
+>>>>>>> 94768bf4833d1a545562c2e49120ece3a90f6ec2
                             'interp_data': interp_data,
 
-                            # preprocess
                             'seed': _seed,
+<<<<<<< HEAD
                             'train_start_index': 0,
                             'train_sample': _sample, 
                             'eval_start_index': 0, 
@@ -80,6 +114,15 @@ if __name__ == '__main__':
 
                             'inputs_format': ['x[0]', 'y[0]'],
                             'outputs_format': ['y[-1]'],
+=======
+                            'train_start_index': 0, 
+                            'train_sample': 32, 
+                            'eval_start_index': 0,
+                            'eval_sample': 128,
+
+                            'inputs_format': ['x[0]'],
+                            'outputs_format': ['y[0]'],
+>>>>>>> 94768bf4833d1a545562c2e49120ece3a90f6ec2
 
                             'force_2d': False,
                             'x_sample_to_last_dim': False,
@@ -87,6 +130,7 @@ if __name__ == '__main__':
                             'slice_param': [0.6, 0.4],
                             },
             } # only change dataset config, others use default config
+<<<<<<< HEAD
 
             mfct = controller(HOGP_MF_MODULE, controller_config, mfct_module_config)
             
@@ -104,5 +148,59 @@ if __name__ == '__main__':
                             'cp_record_file': True})
             mfct.rc_file.write('---> end\n\n')
             mfct.rc_file.flush()
+=======
+            ct = controller(HOGP_MODULE, controller_config, ct_module_config)
+            ct.start_train()
+            ct.smart_restore_state(-1)
+            ct.rc_file.write('---> final result')
+            ct.rc_file.flush()
+            ct.start_eval({'eval state':'final'})
+            ct.rc_file.write('---> end\n\n')
+            ct.rc_file.flush()
+
+            for _sample in [4,8,16,32]:
+                with open('record.txt', 'a') as _temp_file:
+                    _temp_file.write('\n'+ '-'*10 + '>\n')
+                    _temp_file.write('SGAR for {} samples\n'.format(_sample))
+                    _temp_file.write('-'*3 + '> Training x,yl -> yh part\n\n')
+                    _temp_file.flush()
+
+                mfct_module_config = {
+                    'dataset': {'name': _dataset,
+                                'interp_data': interp_data,
+
+                                # preprocess
+                                'seed': _seed,
+                                'train_start_index': 0,
+                                'train_sample': _sample, 
+                                'eval_start_index': 0, 
+                                'eval_sample':128,
+                                
+                                'inputs_format': ['x[0]', 'y[0]'],
+                                'outputs_format': ['y[-1]'],
+
+                                'force_2d': False,
+                                'x_sample_to_last_dim': False,
+                                'y_sample_to_last_dim': True,
+                                'slice_param': [0.6, 0.4], #only available for dataset, which not seperate train and test before
+                                },
+                } # only change dataset config, others use default config
+
+                mfct = controller(HOGP_MF_MODULE, controller_config, mfct_module_config)
+                
+                with torch.no_grad():
+                    # use x->yl_predict for test x+yl -> yh
+                    mfct.module.inputs_eval[1] = ct.module.predict_y
+
+                mfct.start_train()
+                mfct.smart_restore_state(-1)
+                mfct.rc_file.write('---> final result')
+                mfct.rc_file.flush()
+                mfct.start_eval({'eval state':'final',
+                                'module_name': 'SGAR',
+                                'cp_record_file': True})
+                mfct.rc_file.write('---> end\n\n')
+                mfct.rc_file.flush()
+>>>>>>> 94768bf4833d1a545562c2e49120ece3a90f6ec2
 
     mfct.clear_record()

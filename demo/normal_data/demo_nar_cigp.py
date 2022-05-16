@@ -11,7 +11,7 @@ sys.path.append(realpath)
 from utils.main_controller import controller
 from module.cigp import CIGP_MODULE
 
-interp_data=True
+interp_data=False
 
 if __name__ == '__main__':
     for _seed in [None, 0, 1, 2, 3, 4]:
@@ -31,7 +31,7 @@ if __name__ == '__main__':
 
         controller_config = {} # use defualt config
         module_config = {
-            'dataset': {'name': 'poisson_v4_02',
+            'dataset': {'name': 'FlowMix3D_MF',
                         'interp_data': interp_data,
 
                         'seed': _seed,
@@ -72,7 +72,7 @@ if __name__ == '__main__':
                 'max_epoch': 1000,
             }
             second_module_config = {
-                'dataset': {'name': 'burger_v4_02',
+                'dataset': {'name': 'FlowMix3D_MF',
                             'interp_data': interp_data,
 
                             'seed': _seed,

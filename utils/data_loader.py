@@ -48,20 +48,30 @@ class SP_DataLoader(object):
     def __init__(self, dataset_name, need_interp=False) -> None:
         self.dataset_info = {
             'FlowMix3D_MF': 
-                dict_pattern('data/MF_data/FlowMix3D_MF.mat', self._general, False),
+                dict_pattern('data/MultiFidelity_ReadyData/FlowMix3D_MF.mat', self._general, False),
             'MolecularDynamic_MF': 
-                dict_pattern('data/MF_data/MolecularDynamic_MF.mat', self._general, False),
+                dict_pattern('data/MultiFidelity_ReadyData/MolecularDynamic_MF.mat', self._general, False),
             'plasmonic2_MF': 
-                dict_pattern('data/MF_data/plasmonic2_MF.mat', self._general, False),
+                dict_pattern('data/MultiFidelity_ReadyData/plasmonic2_MF.mat', self._general, False),
             'SOFC_MF': 
-                dict_pattern('data/MF_data/SOFC_MF.mat', self._SOFC_MF, False),
+                dict_pattern('data/MultiFidelity_ReadyData/SOFC_MF.mat', self._SOFC_MF, False),
             'NavierStock_mfGent_v1_02':
                 dict_pattern('data/NavierStock_mfGent_v1_02', self._NavierStock_mfGent_v1_02, False),
-            }
+            } 
+        # self.dataset_info = {
+        #     'FlowMix3D_MF': 
+        #         dict_pattern('data\MF_data\FlowMix3D_MF.mat', self._general, False),
+        #     'MolecularDynamic_MF': 
+        #         dict_pattern('data\MF_data\MolecularDynamic_MF.mat', self._general, False),
+        #     'plasmonic2_MF': 
+        #         dict_pattern('data\MF_data\plasmonic2_MF.mat', self._general, False),
+        #     'SOFC_MF': 
+        #         dict_pattern('data\MF_data\SOFC_MF.mat', self._SOFC_MF, False),
+        #     }
 
         if dataset_name not in self.dataset_info:
             assert False
-        if need_interp and self.dataset_info[self.dataset_name]['interp_available'] is False:
+        if need_interp and self.dataset_info[dataset_name]['interp_available'] is False:
             assert False
         self.dataset_name = dataset_name
         self.need_interp = need_interp

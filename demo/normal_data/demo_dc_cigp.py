@@ -12,7 +12,7 @@ from utils.main_controller import controller
 from module.cigp import CIGP_MODULE
 from module.dc_cigp import DC_CIGP_MODULE
 
-interp_data=True
+interp_data= False
 
 if __name__ == '__main__':
     for _seed in [None, 0, 1, 2, 3, 4]:
@@ -32,7 +32,7 @@ if __name__ == '__main__':
 
         controller_config = {'max_epoch':100} # use defualt config
         module_config = {
-            'dataset': {'name': 'Heat_mfGent_v5',
+            'dataset': {'name': 'FlowMix3D_MF',
                         'interp_data': interp_data,
 
                         'seed': _seed,
@@ -42,7 +42,7 @@ if __name__ == '__main__':
                         'eval_sample': 128,
 
                         'inputs_format': ['x[0]'],
-                        'outputs_format': ['y[1]'],
+                        'outputs_format': ['y[0]'],
 
                         'force_2d': True,
                         'x_sample_to_last_dim': False,
@@ -73,7 +73,7 @@ if __name__ == '__main__':
                 'max_epoch': 1000,
             }
             second_module_config = {
-                'dataset': {'name': 'Heat_mfGent_v5',
+                'dataset': {'name': 'FlowMix3D_MF',
                             'interp_data': interp_data,
 
                             'seed': _seed,
@@ -82,13 +82,8 @@ if __name__ == '__main__':
                             'eval_start_index': 0,
                             'eval_sample': 128,
 
-<<<<<<< HEAD
-                            'inputs_format': ['x[0]','y[1]'],
-                            'outputs_format': ['y[2]'],
-=======
                             'inputs_format': ['x[0]','y[0]'],
                             'outputs_format': ['y[-1]'],
->>>>>>> 6933a50e05cda5da0dd3c7f7cb2ede0ea1df306b
 
                             'force_2d': True,
                             'x_sample_to_last_dim': False,
@@ -114,11 +109,7 @@ if __name__ == '__main__':
             second_ct.rc_file.write('---> final result\n')
             second_ct.rc_file.flush()
             second_ct.start_eval({'eval state':'final',
-<<<<<<< HEAD
-                       'module_name':'DC',
-=======
                        'module_name':'DC_cigp',
->>>>>>> 6933a50e05cda5da0dd3c7f7cb2ede0ea1df306b
                        'cp_record_file': True})
             second_ct.rc_file.write('---> end\n\n')
             second_ct.rc_file.flush()

@@ -9,14 +9,14 @@ realpath = _sep.join(realpath[:realpath.index('ML_gp')+1])
 sys.path.append(realpath)
 
 from utils.main_controller import controller
-from module.hogpp import HOGP_MODULE
-from module.hogpp_multi_fidelity import HOGP_MF_MODULE
+from module.hogp import HOGP_MODULE
+from module.hogp_multi_fidelity import HOGP_MF_MODULE
 
 
 interp_data = False
 
 if __name__ == '__main__':
-    for _seed in [None]:
+    for _seed in [0,1,2,3,4]:
         with open('record.txt', 'a') as _temp_file:
             _temp_file.write('-'*40 + '\n')
             _temp_file.write('\n')
@@ -32,11 +32,11 @@ if __name__ == '__main__':
         # Training x -> yl part
 
         controller_config = {
-            'max_epoch': 100
+            'max_epoch': 1000
         } # use defualt config
 
         module_config = {
-            'dataset': {'name': 'poisson_v4_02',
+            'dataset': {'name': 'FlowMix3D_MF',
                         'interp_data': interp_data,
 
                         'seed': _seed,
@@ -70,12 +70,12 @@ if __name__ == '__main__':
         for _sample in [4, 8, 16, 32]:
             with open('record.txt', 'a') as _temp_file:
                 _temp_file.write('\n'+ '-'*10 + '>\n')
-                _temp_file.write('SGAR for {} samples\n'.format(_sample))
+                _temp_file.write('GAR for {} samples\n'.format(_sample))
                 _temp_file.write('-'*3 + '> Training x,yl -> yh part\n\n')
                 _temp_file.flush()
 
             mfct_module_config = {
-                'dataset': {'name': 'poisson_v4_02',
+                'dataset': {'name': 'FlowMix3D_MF',
                             'interp_data': interp_data,
 
                             # preprocess
@@ -83,7 +83,7 @@ if __name__ == '__main__':
                             'train_start_index': 0,
                             'train_sample': _sample, 
                             'eval_start_index': 0, 
-                            'eval_sample':256,
+                            'eval_sample':128,
                             
                             'inputs_format': ['x[0]', 'y[0]'],
                             'outputs_format': ['y[-1]'],

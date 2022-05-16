@@ -11,11 +11,11 @@ from utils.main_controller import controller
 from nn_net.nn_shibo import DeepMFnet
 
 
-interp_data = True
+interp_data = False
 
 if __name__ == '__main__':
     for _seed in [None, 0, 1, 2, 3, 4]:
-        for _sample in [4, 8, 16, 32, 64, 128]:
+        for _sample in [4, 8, 16, 32]:
             with open('record.txt', 'a') as _temp_file:
                 _temp_file.write('-'*40 + '\n')
                 _temp_file.write('\n')
@@ -27,11 +27,11 @@ if __name__ == '__main__':
                 _temp_file.flush()
 
             module_config = {
-                'dataset' : {'name': 'TopOP_mfGent_v5',
+                'dataset' : {'name': 'FlowMix3D_MF',
                     'fidelity': ['low', 'high'],
                     'type':'x_yl_2_yh',    # x_yl_2_yh, x_2_y
                     'train_start_index': 0, 
-                    'train_sample': [128, _sample], 
+                    'train_sample': [32, _sample], 
                     'eval_start_index': 0, 
                     'eval_sample': [128, 128],
                     'seed': _seed,

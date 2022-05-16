@@ -57,12 +57,13 @@ default_module_config = {
             # 'K4': {'SE': {'exp_restrict':True, 'length_scale':1., 'scale': 1.}},
               },
     'auto_broadcast_kernel': True,
-    'evaluate_method': ['mae', 'rmse', 'r2', 'gaussian_loss'],
+    # 'evaluate_method': ['mae', 'rmse', 'r2', 'gaussian_loss'],
+    'evaluate_method': ['mae', 'rmse', 'r2'],
     'optimizer': 'adam',
     'exp_restrict': False,
     'input_normalzie': True,
     'output_normalize': True,
-    'noise_init' : 0.00001,
+    'noise_init' : 100.0,
     'grid_config': {'grid_size': [-1], 
                     'type': 'fixed', # learnable, fixed
                     'dimension_map': 'identity', # latent space: identity, learnable_identity, learnable_map

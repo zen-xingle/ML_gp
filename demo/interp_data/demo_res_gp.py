@@ -13,10 +13,10 @@ from module.cigp import CIGP_MODULE
 from module.cigp_multi_fidelity import CIGP_MODULE_Multi_Fidelity
 
 
-interp_data = True
+interp_data = False
 
 if __name__ == '__main__':
-    for _seed in [None,0,1,2,3,4]:
+    for _seed in [4]:
         with open('record.txt', 'a') as _temp_file:
             _temp_file.write('-'*40 + '\n')
             _temp_file.write('\n')
@@ -32,7 +32,7 @@ if __name__ == '__main__':
 
         controller_config = {'max_epoch': 1000,} # use defualt config
         module_config = {
-            'dataset': {'name': 'burger_v4_02',
+            'dataset': {'name': 'plasmonic2_MF',
                         'interp_data': interp_data,
 
                         'seed': _seed,
@@ -61,7 +61,7 @@ if __name__ == '__main__':
 
         # ================================================================
         # Training x,yl -> yh part
-        for _sample in [4,8,16,32]:
+        for _sample in [32]:
             with open('record.txt', 'a') as _temp_file:
                 _temp_file.write('\n'+ '-'*10 + '>\n')
                 _temp_file.write('res cigp for {} samples\n'.format(_sample))
@@ -69,10 +69,10 @@ if __name__ == '__main__':
                 _temp_file.flush()
 
             second_controller_config = {
-                'max_epoch': 100,
+                'max_epoch': 1000,
             }
             second_module_config = {
-                'dataset': {'name': 'burger_v4_02',
+                'dataset': {'name': 'plasmonic2_MF',
                             'interp_data': interp_data,
 
                             'seed': _seed,

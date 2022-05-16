@@ -16,7 +16,7 @@ from module.hogp_multi_fidelity import HOGP_MF_MODULE
 interp_data = False
 
 if __name__ == '__main__':
-    for _seed in [0,1,2,3,4]:
+    for _seed in [None,0,1,2,3,4]:
         with open('record.txt', 'a') as _temp_file:
             _temp_file.write('-'*40 + '\n')
             _temp_file.write('\n')
@@ -36,7 +36,7 @@ if __name__ == '__main__':
         } # use defualt config
 
         module_config = {
-            'dataset': {'name': 'FlowMix3D_MF',
+            'dataset': {'name': 'plasmonic2_MF',
                         'interp_data': interp_data,
 
                         'seed': _seed,
@@ -75,7 +75,7 @@ if __name__ == '__main__':
                 _temp_file.flush()
 
             mfct_module_config = {
-                'dataset': {'name': 'FlowMix3D_MF',
+                'dataset': {'name': 'plasmonic2_MF',
                             'interp_data': interp_data,
 
                             # preprocess

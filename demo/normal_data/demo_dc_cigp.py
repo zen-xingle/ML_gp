@@ -32,7 +32,7 @@ if __name__ == '__main__':
 
         controller_config = {'max_epoch':100} # use defualt config
         module_config = {
-            'dataset': {'name': 'FlowMix3D_MF',
+            'dataset': {'name': 'plasmonic2_MF',
                         'interp_data': interp_data,
 
                         'seed': _seed,
@@ -73,7 +73,7 @@ if __name__ == '__main__':
                 'max_epoch': 1000,
             }
             second_module_config = {
-                'dataset': {'name': 'FlowMix3D_MF',
+                'dataset': {'name': 'plasmonic2_MF',
                             'interp_data': interp_data,
 
                             'seed': _seed,

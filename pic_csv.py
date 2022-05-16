@@ -48,20 +48,24 @@ if __name__ == '__main__':
     # ratio = 0.4
     # method = ['GAR','LarGP','SGAR', 'ResGP', 'dmfal'] #对齐数据
     # method = ['GAR', 'LarGP', 'NAR', 'SGAR', 'ResGP']
-    method = ['LarGP', 'ResGP', 'dmfal', 'NAR', 'DC', 'SGAR', 'GAR'] #不对齐数据
+    # method = ['LarGP', 'ResGP', 'NAR', 'DC_cigp', 'SGAR', 'GAR'] #不对齐数据
+
+    method = ['DC_cigp', 'ResGP', 'LarGP', 'NAR', 'SGAR', 'GAR'] #不对齐数据
     # method = ['GAR', 'SGAR', 'NAR']
-    #TopOP_mfGent_v5_Seed[0]_Interp[True]
-    file_name = 'burger_v4_02_l2h_32_int'
-    data_name = 'burger_v4_02'
-    interp = 'Interp[True]'
+    #TopOP_mfGent_v5_Seed[0]_Interp[True] Heat_mfGent_v5_m2h_32 Burget_mfGent_v5_l2h_32
+    file_name = 'plasmonic2_MF'
+    data_name = 'plasmonic2_MF'
+    interp = 'Interp[False]'
     max_num = 32
+
+
 
     dic= {32: 4, 64:5, 128:6}
 
-    color_dic = {'GAR':'#DC143C', 'dmfal':'#2ca02c', 'SGAR':'#1f77b4', 'LarGP':'#ff7f0e', 'ResGP':'#8c564b', 'NAR':'#708090', 'DC':'#17becf'}
-    marker_dic = {'GAR':"o", 'dmfal':"s", 'SGAR':"^", 'LarGP':"v", 'ResGP':"P", 'NAR':"d", 'DC':"h"}
-    ls_dic = {'GAR':'dashed', 'dmfal':'dotted', 'SGAR':'dashed', 'LarGP':'dotted', 'ResGP':'dotted', 'NAR':'dotted', 'DC':'dotted'}
-    label_dic = {'GAR':'GAR', 'dmfal':'MF-BNN', 'SGAR':'CIGAR', 'LarGP':'AR', 'ResGP':'ResGP', 'NAR':'NAR', 'DC':'DC'}
+    color_dic = {'GAR':'#DC143C', 'dmfal':'#2ca02c', 'SGAR':'#1f77b4', 'LarGP':'#ff7f0e', 'ResGP':'#8c564b', 'NAR':'#708090', 'DC_cigp':'#17becf'}
+    marker_dic = {'GAR':"o", 'dmfal':"s", 'SGAR':"^", 'LarGP':"v", 'ResGP':"P", 'NAR':"d", 'DC_cigp':"h"}
+    ls_dic = {'GAR':'dashed', 'dmfal':'dotted', 'SGAR':'dashed', 'LarGP':'dotted', 'ResGP':'dotted', 'NAR':'dotted', 'DC_cigp':'dotted'}
+    label_dic = {'GAR':'GAR', 'dmfal':'MF-BNN', 'SGAR':'CIGAR', 'LarGP':'AR', 'ResGP':'ResGP', 'NAR':'NAR', 'DC_cigp':'DClist'}
 
     marker = ["o", "s", "^", "v", "*", "d", "h", "p", "x", "+"]
     color = ['#DC143C', '#1f77b4', '#2ca02c', '#ff7f0e', '#8c564b', '#708090', '#7f7f7f', '#000000', '#17becf']  # bcbd22
@@ -81,7 +85,7 @@ if __name__ == '__main__':
     ax = plt.gca()
     plt.xticks(orders)
     plt.tick_params(axis='both', labelsize=13)
-    # plt.legend(loc='upper right', fontsize=12)
+    plt.legend(loc='upper right', fontsize=12)
     # plt.title(file_name,fontsize = 12)
     plt.grid()
     # plt.show()

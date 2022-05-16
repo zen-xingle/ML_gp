@@ -44,9 +44,9 @@ default_module_config = {
                  'slice_param': [0.6, 0.4], #only available for dataset, which not seperate train and test before
                  },
 
-    'lr': {'kernel':0.01, 
-           'optional_param':0.01, 
-           'noise':0.01},
+    'lr': {'kernel':0.001, 
+           'optional_param':0.001, 
+           'noise':0.001},
 
     'kernel': {
             'K1': {'SE': {'exp_restrict':False, 'length_scale':1., 'scale': 1.}},
@@ -56,7 +56,7 @@ default_module_config = {
     'exp_restrict': False,
     'input_normalize': True,
     'output_normalize': True,
-    'noise_init' : 100.,
+    'noise_init' : 10.,
 }
 
 

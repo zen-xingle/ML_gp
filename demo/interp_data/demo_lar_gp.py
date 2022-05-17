@@ -12,11 +12,24 @@ from utils.main_controller import controller
 from module.cigp import CIGP_MODULE
 from module.cigp_multi_fidelity import CIGP_MODULE_Multi_Fidelity
 
+real_dataset = ['FlowMix3D_MF',
+                'MolecularDynamic_MF', 
+                'plasmonic2_MF', 
+                'SOFC_MF',]
+
+gen_dataset = ['poisson_v4_02',
+                'burger_v4_02',
+                'Burget_mfGent_v5',
+                'Burget_mfGent_v5_02',
+                # 'Heat_mfGent_v5',
+                'Piosson_mfGent_v5',
+                'Schroed2D_mfGent_v1',
+                'TopOP_mfGent_v5',]
 
 interp_data = False
 
 if __name__ == '__main__':
-    for _seed in [4]:
+    for _seed in [None,0,1,2,3,4]:
         with open('record.txt', 'a') as _temp_file:
             _temp_file.write('-'*40 + '\n')
             _temp_file.write('\n')
@@ -27,9 +40,9 @@ if __name__ == '__main__':
             _temp_file.write('-'*40 + '\n')
             _temp_file.flush()
 
-        controller_config = {} # use defualt config
+        controller_config = {'max_epoch': 1000,} # use defualt config
         module_config = {
-            'dataset': {'name': 'plasmonic2_MF',
+            'dataset': {'name': 'SOFC_MF',
                         'interp_data': interp_data,
 
                         'seed': _seed,
@@ -57,18 +70,22 @@ if __name__ == '__main__':
         ct.rc_file.flush()
 
 
-        for _sample in [16, 32]:
+        for _sample in [4, 8, 16, 32]:
             with open('record.txt', 'a') as _temp_file:
-                _temp_file.write('\n'+ '-'*10 + '>\n')
-                _temp_file.write('lar cigp for {} samples\n'.format(_sample))
-                _temp_file.write('-'*3 + '> Training x,yl -> yh part\n\n')
+                _temp_file.write('-'*40 + '\n')
+                _temp_file.write('\n')
+                _temp_file.write('  Demo lar cigp \n')
+                _temp_file.write('  seed: {} \n'.format(_seed))
+                _temp_file.write('  interp_data: {} \n'.format(interp_data))
+                _temp_file.write('\n')
+                _temp_file.write('-'*40 + '\n')
                 _temp_file.flush()
 
             second_controller_config = {
                 'max_epoch': 100,
             }
             second_module_config = {
-                'dataset': {'name': 'plasmonic2_MF',
+                'dataset': {'name': 'SOFC_MF',
                             'interp_data': interp_data,
 
                             'seed': _seed,

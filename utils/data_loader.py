@@ -126,10 +126,19 @@ class SP_DataLoader(object):
 
     def _SOFC_MF(self):
         _data = loadmat(_smart_path(self.dataset_info[self.dataset_name]['path']))
-        x = [_data['x']]
+        x = [_data['X']]
         y = []
         for i in range(len(_data['Y1'][0])):
+        #     # y.append(_concat_on_new_last_dim([_data['Y1'][0][i], _data['Y2'][0][i]]))
             y.append(_concat_on_new_last_dim([_data['Y1'][0][i], _data['Y2'][0][i]]))
+        #     import matplotlib.pyplot as plt
+        #     for j in range(128):
+        #         fig, axs = plt.subplots(1, 2)
+        #         # axs.plot(list(range(50)),_data['Y1'][0][i][j,::100])
+        #         # axs.plot(list(range(5000)),_data['Y1'][0][i][0,:])
+        #         axs[0].pcolor(_data['Y1'][0][1][j,...])
+        #         axs[1].pcolor(_data['Y2'][0][1][j,...])
+        #         plt.show()
         return x, y, None, None
 
     def _get_distribute(self):

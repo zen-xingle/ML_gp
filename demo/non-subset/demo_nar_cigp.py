@@ -27,38 +27,6 @@ gen_dataset = ['poisson_v4_02',
                 'Schroed2D_mfGent_v1',
                 'TopOP_mfGent_v5',]
 
-
-def non_subset(first_module, second_module):
-    from copy import deepcopy
-    # torch.dist(first_module.inputs_tr[0], second_module.inputs_tr[0][:,0:first_module.inputs_tr[0].shape[1]])
-    f_start_index = first_module.module_config['dataset']['train_start_index']
-    f_sample = first_module.module_config['dataset']['train_sample']
-    f_input = deepcopy(first_module.inputs_tr[0])
-    if first_module.module_config['input_normalize'] is True:
-        f_input = first_module.X_normalizer.denormalize(f_input)
-    s_start_index = second_module.module_config['dataset']['train_start_index']
-    s_sample = second_module.module_config['dataset']['train_sample']
-    # assert s_sample == f_sample
-
-    subset_number = max(f_start_index + f_sample - s_start_index, 0)
-    subset_number = min(subset_number, s_sample)
-
-    subset_start_index = s_start_index
-    s_input = deepcopy(second_module.inputs_tr[0])
-    s_subset_input = s_input[:subset_number,...]
-    if second_module.module_config['input_normalize'] is True:
-        s_subset_input = second_module.X_normalizer.denormalize(s_subset_input)
-    # torch.dist(f_input[subset_start_index:,...], s_subset_input[:, :f_input.shape[-1]]) # -> 0
-    # update non-subset
-    non_subset_input = s_input[subset_number:, :f_input.shape[-1]]
-    predict_u, _ = first_module.predict([non_subset_input])
-    new_input = torch.cat([non_subset_input, predict_u], dim=1)
-    new_input = torch.cat([s_subset_input, new_input], dim=0)
-    second_module.inputs_tr[0] = deepcopy(new_input)
-    if second_module.module_config['input_normalize'] is True:
-        second_module.inputs_tr[0] = second_module.X_normalizer.normalize(second_module.inputs_tr[0])
-
-
 if __name__ == '__main__':
     # for _dataset in real_dataset + gen_dataset:
     for _dataset in ['SOFC_MF']:
@@ -109,11 +77,10 @@ if __name__ == '__main__':
 
             # ================================================================
             # Training x,yl -> yh part
-            total_sample = 32
-            for start_index in [total_sample-4, total_sample-8, total_sample-16, total_sample-32]:
+            for _sample in [4,8,16,32]:
                 with open('record.txt', 'a') as _temp_file:
                     _temp_file.write('\n'+ '-'*10 + '>\n')
-                    _temp_file.write('NAR for {} subset samples\n'.format(total_sample - start_index))
+                    _temp_file.write('NAR for {} samples\n'.format(_sample))
                     _temp_file.write('-'*3 + '> Training x,yl -> yh part\n\n')
                     _temp_file.flush()
 
@@ -125,8 +92,8 @@ if __name__ == '__main__':
                                 'interp_data': interp_data,
 
                                 'seed': _seed,
-                                'train_start_index': start_index, 
-                                'train_sample': total_sample, 
+                                'train_start_index': 0, 
+                                'train_sample': _sample, 
                                 'eval_start_index': 0,
                                 'eval_sample': 128,
 
@@ -149,17 +116,14 @@ if __name__ == '__main__':
                 # check predict y
                 torch.dist(second_ct.module.inputs_eval[0][:,x_dim:], ct.module.predict_y)
                 second_ct.module.inputs_eval[0] = torch.cat([ct.module.inputs_eval[0], ct.module.predict_y],dim=1)
-                non_subset(ct.module, second_ct.module)
 
-                # continue
                 second_ct.start_train()
                 second_ct.smart_restore_state(-1)
                 second_ct.rc_file.write('---> final result\n')
                 second_ct.rc_file.flush()
                 second_ct.start_eval({'eval state':'final',
-                                    'module_name':'NAR',
-                                    'subset': str(total_sample - start_index),
-                                    'cp_record_file': True})
+                        'module_name':'NAR',
+                        'cp_record_file': True})
                 second_ct.rc_file.write('---> end\n\n')
                 second_ct.rc_file.flush()
 

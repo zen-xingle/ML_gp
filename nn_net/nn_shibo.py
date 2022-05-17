@@ -74,6 +74,8 @@ default_module_config = {
                 'slice_param': [0.6, 0.4], #only available for dataset, which not seperate train and test before
                 },
     'second_fidelity_sample': 8,
+    'second_fidelity_start_index': 0,
+    'non_subset': False,
     'lr': {'opt_param': 0.01},
     'evaluate_method': ['mae', 'rmse', 'r2'],
     'optimizer': 'adam',
@@ -206,11 +208,23 @@ class DeepMFnet:
             assert False, 'dataset {} not found in all loader'.format(dataset_config['name'])
 
         dp = Data_preprocess(dataset_config)
-        _inputs_tr, _outputs_tr, _inputs_eval, _outputs_eval = dp.do_preprocess(_data, numpy_to_tensor=True)
-        self.inputs_tr = [_inputs_tr[0], _inputs_tr[0][0:self.module_config['second_fidelity_sample'],...]]
-        self.outputs_tr = [_outputs_tr[0], _outputs_tr[1][0:self.module_config['second_fidelity_sample'],...]]
-        self.inputs_eval = [_inputs_eval[0], _inputs_eval[0]]
-        self.outputs_eval = [_outputs_eval[0], _outputs_eval[1]]
+        _inputs_tr, _outputs_tr, _inputs_eval, _outputs_eval = dp.do_preprocess(deepcopy(_data), numpy_to_tensor=True)
+        if self.module_config['non_subset'] is False:
+            self.inputs_tr = [_inputs_tr[0], _inputs_tr[0][0:self.module_config['second_fidelity_sample'],...]]
+            self.outputs_tr = [_outputs_tr[0], _outputs_tr[1][0:self.module_config['second_fidelity_sample'],...]]
+            self.inputs_eval = [_inputs_eval[0], _inputs_eval[0]]
+            self.outputs_eval = [_outputs_eval[0], _outputs_eval[1]]
+        else:
+            second_dataset_config = deepcopy(dataset_config)
+            second_dataset_config['train_sample'] = self.module_config['second_fidelity_sample']
+            second_dataset_config['train_start_index'] = self.module_config['second_fidelity_start_index']
+            second_dp = Data_preprocess(second_dataset_config)
+            s_inputs_tr, s_outputs_tr, s_inputs_eval, s_outputs_eval = second_dp.do_preprocess(deepcopy(_data), numpy_to_tensor=True)
+            # torch.dist(_inputs_tr[0], s_inputs_tr[0]) != 0
+            self.inputs_tr = [_inputs_tr[0], s_inputs_tr[0]]
+            self.outputs_tr = [_outputs_tr[0], s_outputs_tr[1]]
+            self.inputs_eval = [_inputs_eval[0], _inputs_eval[0]]
+            self.outputs_eval = [_outputs_eval[0], _outputs_eval[1]]
 
     def _optimizer_setup(self):
         opt_params = []

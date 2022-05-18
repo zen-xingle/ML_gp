@@ -61,7 +61,7 @@ default_module_config = {
     'evaluate_method': ['mae', 'rmse', 'r2'],
     'optimizer': 'adam',
     'exp_restrict': False,
-    'input_normalzie': True,
+    'input_normalize': True,
     'output_normalize': True,
     'noise_init' : 100.0,
     'grid_config': {'grid_size': [-1], 
@@ -103,7 +103,7 @@ class HOGP_MODULE:
         self.param_dims = 1
 
         # X - normalize
-        if module_config['input_normalzie'] is True:
+        if module_config['input_normalize'] is True:
             self.X_normalizer = Normalizer(self.inputs_tr[0])
             self.inputs_tr[0] = self.X_normalizer.normalize(self.inputs_tr[0])
         else:
@@ -287,7 +287,7 @@ class HOGP_MODULE:
     def predict(self, input_param):
         input_param = deepcopy(input_param)
         with torch.no_grad():
-            if self.module_config['input_normalzie'] is True:
+            if self.module_config['input_normalize'] is True:
                 input_param[0] = self.X_normalizer.normalize(input_param[0])
             
             #! may needn't?

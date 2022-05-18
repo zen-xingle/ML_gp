@@ -15,30 +15,56 @@ from module.hogp_multi_fidelity import HOGP_MF_MODULE
 
 interp_data = False
 
+real_dataset = ['FlowMix3D_MF',
+                'MolecularDynamic_MF', 
+                'plasmonic2_MF', 
+                'SOFC_MF',]
+
+gen_dataset = ['poisson_v4_02',
+                'burger_v4_02',
+                'Burget_mfGent_v5',
+                'Burget_mfGent_v5_02',
+                # 'Heat_mfGent_v5',
+                'Piosson_mfGent_v5',
+                'Schroed2D_mfGent_v1',
+                'TopOP_mfGent_v5',]
+
 if __name__ == '__main__':
     # for _dataset in real_dataset + gen_dataset:
     for _dataset in ['SOFC_MF']:
-        for _seed in [None, 0, 1, 2, 3, 4]:
+        for _seed in [0,1,2,3,4]:
             with open('record.txt', 'a') as _temp_file:
-                _temp_file.write('\n'+ '-'*10 + '>\n')
-                _temp_file.write('GAR for {} samples\n'.format(_sample))
-                _temp_file.write('-'*3 + '> Training x,yl -> yh part\n\n')
+                _temp_file.write('-'*40 + '\n')
+                _temp_file.write('\n')
+                _temp_file.write('  Demo GAR \n')
+                _temp_file.write('  seed: {} \n'.format(_seed))
+                _temp_file.write('  interp_data: {} \n'.format(interp_data))
+                _temp_file.write('\n')
+                _temp_file.write('-'*40 + '\n')
+                _temp_file.write('-'*3 + '> Training x -> yl part\n')
                 _temp_file.flush()
             
+            # ================================================================
+            # Training x -> yl part
 
-            mfct_module_config = {
-                'dataset': {'name': 'TopOP_mfGent_v5',
+            controller_config = {
+                'max_epoch': 1000
+            } # use defualt config
+            
+
+            module_config = {
+                'dataset': {'name': _dataset,
                             'interp_data': interp_data,
 
                             # preprocess
                             'seed': _seed,
                             'train_start_index': 0,
-                            'train_sample': _sample, 
+                            'train_sample': 32, 
                             'eval_start_index': 0, 
                             'eval_sample':128,
                             
-                            'inputs_format': ['x[0]', 'y[0]'],
-                            'outputs_format': ['y[-1]'],
+                            'inputs_format': ['x[0]'],
+                            'outputs_format': ['y[0]'],
 
                             'force_2d': False,
                             'x_sample_to_last_dim': False,
@@ -59,7 +85,7 @@ if __name__ == '__main__':
                     'exp_restrict': False,
                     'input_normalzie': True,
                     'output_normalize': True,
-                    'noise_init' : 1.,
+                    'noise_init' : 100.,
                     'grid_config': {'grid_size': [-1], 
                                     'type': 'fixed', # learnable, fixed
                                     'dimension_map': 'identity', # latent space: identity, learnable_identity, learnable_map
@@ -81,7 +107,7 @@ if __name__ == '__main__':
             # ================================================================
             # Training x,yl -> yh part
             # exit()
-            for _sample in [4,8,16,32]:
+            for _sample in [4, 8, 16, 32]:
                 with open('record.txt', 'a') as _temp_file:
                     _temp_file.write('\n'+ '-'*10 + '>\n')
                     _temp_file.write('SGAR for {} samples\n'.format(_sample))
@@ -120,7 +146,7 @@ if __name__ == '__main__':
                     'exp_restrict': True,
                     'input_normalzie': True,
                     'output_normalize': True,
-                    'noise_init' : 1.,
+                    'noise_init' : 100.,
                     'grid_config': {'grid_size': [-1], 
                                     'type': 'fixed', # learnable, fixed
                                     'dimension_map': 'identity', # latent space: identity, learnable_identity, learnable_map

@@ -48,13 +48,13 @@ if __name__ == '__main__':
     # ratio = 0.4
     # method = ['GAR','LarGP','SGAR', 'ResGP', 'dmfal'] #对齐数据
     # method = ['GAR', 'LarGP', 'NAR', 'SGAR', 'ResGP']
-    method = ['LarGP', 'ResGP', 'dmfal', 'NAR', 'DC_cigp', 'SGAR', 'GAR'] #不对齐数据
+    # method = ['LarGP', 'ResGP', 'dmfal', 'NAR', 'DC_cigp', 'SGAR', 'GAR'] #不对齐数据
     # 'ResGP', 'LarGP', 'NAR','DC_cigp', 'dmfal', 'SGAR', 'GAR'
     # method = ['dmfal', 'DC_cigp', 'ResGP', 'LarGP', 'NAR'] #不对齐数据
-    # method = ['dmfal', 'DC_cigp', 'NAR', 'SGAR', 'GAR']
-    # method = ['GAR', 'SGAR', 'NAR']
+    # method = ['LarGP', 'ResGP', 'NAR', 'DC_cigp', 'dmfal', 'SGAR', 'GAR']
+    method = ['NAR', 'dmfal', 'DC_cigp', 'GAR', 'SGAR']
     #TopOP_mfGent_v5_Seed[0]_Interp[True] Heat_mfGent_v5_m2h_32 Burget_mfGent_v5_l2h_32
-    file_name = 'SOFC_MF'
+    file_name = 'SOFC_MF_Y2'
     data_name = 'SOFC_MF'
     interp = 'Interp[False]'
     max_num = 32

@@ -48,7 +48,6 @@ class SP_DataLoader(object):
     def __init__(self, dataset_name, need_interp=False) -> None:
         self.dataset_info = {
             'FlowMix3D_MF': 
-<<<<<<< HEAD
                 dict_pattern('data/MultiFidelity_ReadyData/FlowMix3D_MF.mat', self._general, False),
             'MolecularDynamic_MF': 
                 dict_pattern('data/MultiFidelity_ReadyData/MolecularDynamic_MF.mat', self._general, False),
@@ -56,15 +55,6 @@ class SP_DataLoader(object):
                 dict_pattern('data/MultiFidelity_ReadyData/plasmonic2_MF.mat', self._general, False),
             'SOFC_MF': 
                 dict_pattern('data/MultiFidelity_ReadyData/SOFC_MF.mat', self._SOFC_MF, False),
-=======
-                dict_pattern('data/MF_data/FlowMix3D_MF.mat', self._general, True),
-            'MolecularDynamic_MF': 
-                dict_pattern('data/MF_data/MolecularDynamic_MF.mat', self._general, True),
-            'plasmonic2_MF': 
-                dict_pattern('data/MF_data/plasmonic2_MF.mat', self._general, True),
-            'SOFC_MF': 
-                dict_pattern('data/MF_data/SOFC_MF.mat', self._SOFC_MF, True),
->>>>>>> 94768bf4833d1a545562c2e49120ece3a90f6ec2
             'NavierStock_mfGent_v1_02':
                 dict_pattern('data/NavierStock_mfGent_v1_02', self._NavierStock_mfGent_v1_02, False),
             } 
@@ -130,7 +120,11 @@ class SP_DataLoader(object):
         y = []
         for i in range(len(_data['Y1'][0])):
         #     # y.append(_concat_on_new_last_dim([_data['Y1'][0][i], _data['Y2'][0][i]]))
-            y.append(_concat_on_new_last_dim([_data['Y1'][0][i], _data['Y2'][0][i]]))
+            # y.append(_concat_on_new_last_dim([_data['Y1'][0][i], _data['Y2'][0][i]]))
+            if i== 0:
+                y.append(_data['Y2'][0][i].reshape(*_data['Y2'][0][i].shape, 1))
+            else:
+                y.append(_concat_on_new_last_dim([_data['Y1'][0][i], _data['Y2'][0][i]]))
         #     import matplotlib.pyplot as plt
         #     for j in range(128):
         #         fig, axs = plt.subplots(1, 2)

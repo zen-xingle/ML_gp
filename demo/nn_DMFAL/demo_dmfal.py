@@ -25,11 +25,11 @@ gen_dataset = ['poisson_v4_02',
                 'Schroed2D_mfGent_v1',
                 'TopOP_mfGent_v5',]
                 
-interp_data=True
+interp_data=False
 
 if __name__ == '__main__':
     # for _dataset in real_dataset + gen_dataset:
-    for _dataset in ['poisson_v4_02']:
+    for _dataset in ['SOFC_MF']:
         for _seed in [0, 1, 2, 3, 4]:
             for _sample in [4, 8, 16, 32]:
                 with open('record.txt', 'a') as _temp_file:

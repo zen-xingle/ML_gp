@@ -32,12 +32,12 @@ if __name__ == '__main__':
 
         controller_config = {'max_epoch':100} # use defualt config
         module_config = {
-            'dataset': {'name': 'NavierStock_mfGent_v1_02',
+            'dataset': {'name': 'SOFC_MF',
                         'interp_data': interp_data,
 
                         'seed': _seed,
                         'train_start_index': 0, 
-                        'train_sample': 128, 
+                        'train_sample': 32, 
                         'eval_start_index': 0,
                         'eval_sample': 128,
 
@@ -62,7 +62,7 @@ if __name__ == '__main__':
 
         # ================================================================
         # Training x,yl -> yh part
-        for _sample in [4,8,16,32,64,128]:
+        for _sample in [4,8,16,32]:
             with open('record.txt', 'a') as _temp_file:
                 _temp_file.write('\n'+ '-'*10 + '>\n')
                 _temp_file.write('NAR for {} samples\n'.format(_sample))
@@ -73,7 +73,7 @@ if __name__ == '__main__':
                 'max_epoch': 1000,
             }
             second_module_config = {
-                'dataset': {'name': 'NavierStock_mfGent_v1_02',
+                'dataset': {'name': 'SOFC_MF',
                             'interp_data': interp_data,
 
                             'seed': _seed,

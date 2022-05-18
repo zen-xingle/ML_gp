@@ -47,12 +47,12 @@ if __name__ == '__main__':
         } # use defualt config
 
         ct_module_config = {
-            'dataset': {'name': 'TopOP_mfGent_v5',
+            'dataset': {'name': 'SOFC_MF',
                         'interp_data': interp_data,
 
                         'seed': _seed,
                         'train_start_index': 0, 
-                        'train_sample': 128, 
+                        'train_sample': 32, 
                         'eval_start_index': 0,
                         'eval_sample': 128,
 
@@ -74,7 +74,7 @@ if __name__ == '__main__':
         ct.rc_file.write('---> end\n\n')
         ct.rc_file.flush()
 
-        for _sample in [4, 8, 16, 32, 64, 128]:
+        for _sample in [4, 8, 16, 32]:
             with open('record.txt', 'a') as _temp_file:
                 _temp_file.write('-'*40 + '\n')
                 _temp_file.write('\n')
@@ -87,7 +87,7 @@ if __name__ == '__main__':
                 _temp_file.flush()
 
             mfct_module_config = {
-                'dataset': {'name': 'TopOP_mfGent_v5',
+                'dataset': {'name': 'SOFC_MF',
                             'interp_data': interp_data,
 
                             'seed': _seed,

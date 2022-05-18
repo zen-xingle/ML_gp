@@ -47,7 +47,7 @@ if __name__ == '__main__':
 
                         'seed': _seed,
                         'train_start_index': 0, 
-                        'train_sample': 32, 
+                        'train_sample': 128, 
                         'eval_start_index': 0,
                         'eval_sample': 128,
 
@@ -70,7 +70,7 @@ if __name__ == '__main__':
         ct.rc_file.flush()
 
 
-        for _sample in [4, 8, 16, 32]:
+        for _sample in [4, 8, 16, 32, 64, 128]:
             with open('record.txt', 'a') as _temp_file:
                 _temp_file.write('-'*40 + '\n')
                 _temp_file.write('\n')

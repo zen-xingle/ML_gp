@@ -48,14 +48,14 @@ if __name__ == '__main__':
     # ratio = 0.4
     # method = ['GAR','LarGP','SGAR', 'ResGP', 'dmfal'] #对齐数据
     # method = ['GAR', 'LarGP', 'NAR', 'SGAR', 'ResGP']
-    # method = ['LarGP', 'ResGP', 'dmfal', 'NAR', 'DC_cigp', 'SGAR', 'GAR'] #不对齐数据
+    # method = ['LarGP', 'ResGP', 'dmfal', 'NAR', 'SGAR', 'GAR'] #不对齐数据
     # 'ResGP', 'LarGP', 'NAR','DC_cigp', 'dmfal', 'SGAR', 'GAR'
     # method = ['dmfal', 'DC_cigp', 'ResGP', 'LarGP', 'NAR'] #不对齐数据
     # method = ['LarGP', 'ResGP', 'NAR', 'DC_cigp', 'dmfal', 'SGAR', 'GAR']
     method = ['NAR', 'dmfal', 'DC_cigp', 'GAR', 'SGAR']
     #TopOP_mfGent_v5_Seed[0]_Interp[True] Heat_mfGent_v5_m2h_32 Burget_mfGent_v5_l2h_32
-    file_name = 'SOFC_MF_Y2'
-    data_name = 'SOFC_MF'
+    file_name = 'TopOP_mfGent_v5_32'
+    data_name = 'TopOP_mfGent_v5'
     interp = 'Interp[False]'
     max_num = 32
 
@@ -63,7 +63,7 @@ if __name__ == '__main__':
 
     color_dic = {'GAR':'#DC143C', 'dmfal':'#2ca02c', 'SGAR':'#1f77b4', 'LarGP':'#ff7f0e', 'ResGP':'#8c564b', 'NAR':'#708090', 'DC_cigp':'#17becf'}
     marker_dic = {'GAR':"o", 'dmfal':"s", 'SGAR':"^", 'LarGP':"v", 'ResGP':"P", 'NAR':"d", 'DC_cigp':"h"}
-    ls_dic = {'GAR':'dashed', 'dmfal':'solid', 'SGAR':'dashed', 'LarGP':'solid', 'ResGP':'solid', 'NAR':'solid', 'DC_cigp':'solid'}
+    ls_dic = {'GAR':'solid', 'dmfal':(0,(3,1,1,1)), 'SGAR':'solid', 'LarGP':(0,(3,1,1,1)), 'ResGP':(0,(3,1,1,1)), 'NAR':(0,(3,1,1,1)), 'DC_cigp':(0,(3,1,1,1))}
     label_dic = {'GAR':'GAR', 'dmfal':'MF-BNN', 'SGAR':'CIGAR', 'LarGP':'AR', 'ResGP':'ResGP', 'NAR':'NAR', 'DC_cigp':'DC-A'}
 
     marker = ["o", "s", "^", "v", "*", "d", "h", "p", "x", "+"]
@@ -75,7 +75,7 @@ if __name__ == '__main__':
         m, s = get_mean_and_std(method[i], file_name, data_name , interp, 'rmse', dic[max_num])
         vals.append(m)
         vars.append(s)
-        plt.errorbar(orders, vals[i], yerr = vars[i], ls = ls_dic[method[i]], linewidth=5, color=color_dic[method[i]], label= label_dic[method[i]], marker=MarkerStyle(marker_dic[method[i]], fillstyle='full'), elinewidth = 3 ,capsize = 3, markersize = 10, alpha = 0.8)
+        plt.errorbar(orders, vals[i], yerr = vars[i], ls = ls_dic[method[i]], linewidth=4.3, color=color_dic[method[i]], label= label_dic[method[i]], marker=MarkerStyle(marker_dic[method[i]], fillstyle='full'), elinewidth = 3 ,capsize = 3, markersize = 10, alpha = 0.8)
         # plt.plot(orders, vals[i], linewidth=2, color=color[i], label=method[i], marker=marker[i])
         # plt.fill_between(orders, vals[i] - vars[i] * ratio, vals[i] + vars[i] * ratio, alpha=0.001, color=color[i])
 

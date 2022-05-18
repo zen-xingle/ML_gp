@@ -13,7 +13,7 @@ from module.hogp import HOGP_MODULE
 from module.hogp_multi_fidelity import HOGP_MF_MODULE
 
 
-interp_data = False
+interp_data = True
 
 real_dataset = ['FlowMix3D_MF',
                 'MolecularDynamic_MF', 
@@ -65,8 +65,8 @@ def non_subset(first_module, second_module):
 
 if __name__ == '__main__':
     # for _dataset in real_dataset + gen_dataset:
-    for _dataset in ['poisson_v4_02']:
-        for _seed in [None, 0, 1, 2, 3, 4]:
+    for _dataset in ['burger_v4_02']:
+        for _seed in [0,1,2,3,4]:
             first_fidelity_sample = 32
             with open('record.txt', 'a') as _temp_file:
                 _temp_file.write('-'*40 + '\n')
@@ -118,7 +118,7 @@ if __name__ == '__main__':
                 #     'exp_restrict': False,
                 #     'input_normalize': True,
                 #     'output_normalize': True,
-                    'noise_init' : 10.,
+                    'noise_init' : 100.,
                 #     'grid_config': {'grid_size': [-1], 
                 #                     'type': 'fixed', # learnable, fixed
                 #                     'dimension_map': 'identity', # latent space: identity, learnable_identity, learnable_map
@@ -140,14 +140,17 @@ if __name__ == '__main__':
             # ================================================================
             # Training x,yl -> yh part
             # exit()
-            second_fidelity_sample = 32
-            for subset in [1, 2, 4, 8, 16, 32]:
+            
+            for second_fidelity_sample in [4, 8, 16, 32]:
+                subset = 0.5 *  second_fidelity_sample
+
                 with open('record.txt', 'a') as _temp_file:
                     _temp_file.write('\n'+ '-'*10 + '>\n')
                     _temp_file.write('GAR for {} subset samples\n'.format(subset))
                     _temp_file.write('-'*3 + '> Training x,yl -> yh part\n\n')
                     _temp_file.flush()
 
+                
                 mfct_module_config = {
                     'dataset': {'name': _dataset,
                                 'interp_data': interp_data,
@@ -181,7 +184,7 @@ if __name__ == '__main__':
                     # 'exp_restrict': True,
                     # 'input_normalize': True,
                     # 'output_normalize': True,
-                    'noise_init' : 10.,
+                    'noise_init' : 100.,
                     # 'grid_config': {'grid_size': [-1], 
                     #                 'type': 'fixed', # learnable, fixed
                     #                 'dimension_map': 'identity', # latent space: identity, learnable_identity, learnable_map

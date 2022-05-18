@@ -13,7 +13,7 @@ from utils.main_controller import controller
 from module.ind_hogp import HOGP_MODULE
 from module.ind_hogp_multi_fidelity import HOGP_MF_MODULE
 
-interp_data=False
+interp_data=True
 
 real_dataset = ['FlowMix3D_MF',
                 'MolecularDynamic_MF', 
@@ -65,8 +65,8 @@ def non_subset(first_module, second_module):
 
 if __name__ == '__main__':
     # for _dataset in real_dataset + gen_dataset:
-    for _dataset in ['poisson_v4_02']:
-        for _seed in [None, 0, 1, 2, 3, 4]:
+    for _dataset in ['burger_v4_02']:
+        for _seed in [0, 1, 2, 3, 4]:
             first_fidelity_sample = 32
             with open('record.txt', 'a') as _temp_file:
                 _temp_file.write('-'*40 + '\n')
@@ -111,8 +111,9 @@ if __name__ == '__main__':
             ct.rc_file.write('---> end\n\n')
             ct.rc_file.flush()
 
-            second_fidelity_sample = 32
-            for subset in [1, 2, 4, 8, 16, 32]:
+            # second_fidelity_sample = 32
+            for second_fidelity_sample in [4, 8, 16, 32]:
+                subset = 0.5 * second_fidelity_sample
                 with open('record.txt', 'a') as _temp_file:
                     _temp_file.write('\n'+ '-'*10 + '>\n')
                     _temp_file.write('SGAR for {} subset samples\n'.format(subset))

@@ -24,16 +24,18 @@ gen_dataset = ['poisson_v4_02',
                 'Piosson_mfGent_v5',
                 'Schroed2D_mfGent_v1',
                 'TopOP_mfGent_v5',]
-interp_data=False
+
+interp_data=True
 
 if __name__ == '__main__':
     # for _dataset in real_dataset + gen_dataset:
-    for _dataset in ['SOFC_MF']:
-        for _seed in [None, 0, 1, 2, 3, 4]:
+    for _dataset in ['burger_v4_02']:
+        for _seed in [0,1,2,3,4]:
             first_fidelity_sample = 32
-            second_fidelity_sample = 32
-            for subset in [1, 2, 4, 8, 16, 32]:
+            
+            for second_fidelity_sample in [4, 8, 16, 32]:
             # for start_index in [total_sample-1, total_sample-4, total_sample-8, total_sample-16, total_sample-32]:
+                subset = 0.5 * second_fidelity_sample
                 with open('record.txt', 'a') as _temp_file:
                     _temp_file.write('-'*40 + '\n')
                     _temp_file.write('\n')

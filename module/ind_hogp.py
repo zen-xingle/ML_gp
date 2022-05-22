@@ -174,8 +174,7 @@ class HOGP_MODULE:
         self.kernel_list = []
         if len(kernel_config) == 1 and self.module_config['auto_broadcast_kernel'] is True:
             print('auto broadcast kernel')
-            kernel_need = len(self.inputs_tr[0].shape) - 1 +\
-                          len(self.outputs_tr[0].shape) - 1
+            kernel_need = len(self.inputs_tr[0].shape) - 1
             for key, value in kernel_config.items():
                 for _kernel_type, _kernel_params in value.items():
                     # get base _kernel_type, _kernel_params
@@ -227,18 +226,8 @@ class HOGP_MODULE:
         self.K.clear()
         self.K_eigen.clear()
 
-        # update grid
-        for i in range(len(self.grid)):
-            _in = tensorly.tenalg.mode_dot(self.grid[i], self.mapping_vector[i], 0)
-            self.K.append(self.kernel_list[i](_in, _in))
-            # nn = self.grid[i].shape[0]
-            # self.K.append(torch.eye(nn))
-            self.K_eigen.append(eigen_pairs(self.K[i]))
-
         # update x
-        _index = len(self.grid)
-        # for i in range(len(self.inputs_tr)):
-        self.K.append(self.kernel_list[_index](self.inputs_tr[0], self.inputs_tr[0]))
+        self.K.append(self.kernel_list[0](self.inputs_tr[0], self.inputs_tr[0]))
         self.K_eigen.append(eigen_pairs(self.K[-1]))
 
     '''
@@ -259,29 +248,24 @@ class HOGP_MODULE:
         _init_value = torch.tensor([1.0]).reshape(*[1 for i in self.K])
         lambda_list = [eigen.value.reshape(-1, 1) for eigen in self.K_eigen]
         A = tucker_to_tensor((_init_value, lambda_list))
+        A = A.expand_as(self.outputs_tr[0])
 
         if self.module_config['exp_restrict'] is True:
             _noise = self.noise.exp()
         else:
             _noise = self.noise
-        # A = A + _noise * tensorly.ones(A.shape)
         A = A + _noise.pow(-1)* tensorly.ones(A.shape)
         # TODO: add jitter limite here?
-        
-        # vec(z).T@ S.inverse @ vec(z) = b.T @ b,  b = S.pow(-1/2) @ vec(z)
-        T_1 = tensorly.tenalg.multi_mode_dot(self.outputs_tr[0], [eigen.vector.T for eigen in self.K_eigen])
-        T_2 = T_1 * A.pow(-1/2)
-        T_3 = tensorly.tenalg.multi_mode_dot(T_2, [eigen.vector for eigen in self.K_eigen])
-        b = tensorly.tensor_to_vec(T_3)
 
-        # g = S.inverse@vec(z)
-        g = tensorly.tenalg.multi_mode_dot(T_1 * A.pow(-1), [eigen.vector for eigen in self.K_eigen])
-        # g_vec = tensorly.tensor_to_vec(g)
+        T_1 = tensorly.tenalg.mode_dot(self.outputs_tr[0], self.K_eigen[-1].vector.T, -1)
+        T_2 = T_1 * A.pow(-1/2)
+        T_3 = tensorly.tenalg.mode_dot(T_2, self.K_eigen[-1].vector, -1)
+        b = tensorly.tensor_to_vec(T_3)
+        g = tensorly.tenalg.mode_dot(T_1 * A.pow(-1), self.K_eigen[-1].vector, -1)
 
         self.b = b
         self.A = A
         self.g = g
-        # self.g_vec = g_vec
 
 
     def predict(self, input_param):
@@ -304,8 +288,7 @@ class HOGP_MODULE:
             predict_u = tensorly.tenalg.kronecker(K_predict)@self.g_vec #-> memory error
             so we use tensor.tenalg.multi_mode_dot instead
             '''
-            predict_u = tensorly.tenalg.multi_mode_dot(self.g, K_predict)
-            # predict_u = predict_u.reshape_as(self.outputs_eval[:,:,0])
+            predict_u = tensorly.tenalg.mode_dot(self.g, K_star, -1)
             if self.module_config['output_normalize'] is True:
                 predict_u = self.Y_normalizer.denormalize(predict_u)
 

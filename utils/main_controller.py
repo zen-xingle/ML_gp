@@ -38,8 +38,10 @@ class result_discriptor:
                 others = others + '{} : {};'.format(key,_value)
             elif isinstance(_value, int):
                 _value_list[self._keys.index(key)] = str(_value)
-            else:
+            elif isinstance(_value, float):
                 _value_list[self._keys.index(key)] = '%.{}f'.format(self.decimal_reserve) % _value
+            else:
+                _value_list[self._keys.index(key)] = _value
 
         word = self.fmt.format(*_value_list)
         if others != '':
@@ -81,7 +83,7 @@ class controller(object):
         self.time = _now
         return period
 
-    def start_train(self):
+    def start_train(self, record_checkpoint=False, module_name=None):
         for i in range(self.controller_config['max_epoch']):
             self.module.train()
 
@@ -107,7 +109,13 @@ class controller(object):
 
             # 达到check_point时, 在验证集上测试效果
             if (i+1) in self.controller_config['check_point']:
-                _result = self.start_eval({'epoch':i+1})
+                if record_checkpoint is False:
+                    _result = self.start_eval({'epoch':i+1})
+                else:
+                    _result = self.start_eval({'eval state':'checkpoint',
+                                            'module_name': module_name,
+                                            'epoch': str(i+1),
+                                            'cp_record_file': True})
                 self.result_list['checkpoint' + str(i+1)] = _result
                 self.record_state()
                 self.param_record_list_for_epoch.append(deepcopy(self.param_record_list[-1]))
@@ -135,8 +143,10 @@ class controller(object):
                 if key not in additional_dict:
                     save_to_csv = False
                     break
-            if additional_dict['eval state'] != 'final':
+            if additional_dict['eval state'] not in ['final','checkpoint']:
                 save_to_csv = False
+            # if additional_dict['eval state'] != 'final':
+            #     save_to_csv = False
             if save_to_csv == True:
                 dir_name = './exp/{}'.format(additional_dict['module_name'])
                 dataset_name = self.module.module_config['dataset']['name']
@@ -169,6 +179,9 @@ class controller(object):
                         result_line.append(str(value))
                     _keys_line.append('train_sample')
                     result_line.append(str(self.module.module_config['dataset']['train_sample']))
+                    if 'second_fidelity_sample' in self.module.module_config:
+                        _keys_line.append('second_fidelity_sample')
+                        result_line.append(str(self.module.module_config['second_fidelity_sample']))
                     if init_csv is True:
                         f.write(','.join(_keys_line) + '\n')
                     f.write(','.join(result_line) + '\n')

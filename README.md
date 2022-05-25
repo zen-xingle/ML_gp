@@ -10,14 +10,16 @@ We recommend using anaconda to setup the python environment. The following are t
 
 ```
 conda create -n ML_GP python=3.8
-conda install pytorch==1.10.1
-conda install tensorly
+conda activate ML_GP
 conda install numpy
+conda install -c pytorch pytorch
+conda install -c conda-forge tensorly
 conda install scipy
+conda install -c conda-forge scikit-learn
 ```
 
 
 
 ## Demo
 
-[see here](./demo)
+[see here](./demo/README.md)

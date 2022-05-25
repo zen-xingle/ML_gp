@@ -60,15 +60,15 @@ def get_mean_and_std(method, data, interp, type, n):
 
 
 if __name__ == '__main__':
-    data_name = "Heat"
+    data_name = "SOFC_MF"
     max_num = 32
     vals = []
     vars = []
-    typ = ["NAR", "LarGP", "ResGP"] #方法类型
-    gar_m, gar_s = get_mean_and_std('GAR', 'Heat_mfGent_v5', 'Interp[True]', 'rmse', 4)
+    typ = ["GAR", "SGAR", "dmfal"] #方法类型
+    gar_m, gar_s = get_mean_and_std('GAR', 'SOFC_MF', 'Interp[False]', 'rmse', 4)
     vals.append(gar_m)
     vars.append(gar_s)
-    sgar_m, sgar_s = get_mean_and_std('SGAR', 'Heat_mfGent_v5', 'Interp[True]', 'rmse', 4)
+    sgar_m, sgar_s = get_mean_and_std('SGAR', 'SOFC_MF', 'Interp[False]', 'rmse', 4)
     vals.append(sgar_m)
     vars.append(sgar_s)
     for i in typ:

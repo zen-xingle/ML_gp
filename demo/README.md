@@ -1,37 +1,105 @@
-## DEMO
+# DEMO
 
-### TIPS:
+## TIPS:
 
-in all the demo, controller got three inputs.
+In all the demo, controller got three inputs.
 
-- first one determine module, now support cigp, for new module we can add here
-- second one is controller config. Got the follow parameters. (check default value in [main_controller.py](../utils/main_controller.py))
-  - batch_size, eval_batch_size
-  - check_point
-  - record_step
-  - max_epoch
-- third on is module config. Got parameters depending on module type. For cigp, default value check [here](../module/cigp.py)
+- First one determine module, now support 
+
+  - [x] cigp
+
+  - [x] hogp
+
+  - [x] GAR
+
+  - [x] CIGAR
+
+  - [x] NAR
+
+  - [x] MF-BNN
+
+  - [x] DC
+
+  - [x] ResGP
+
+  - [x] AR
+
+    
+
+- Second one is controller config. Got the follow parameters. (check default value in [main_controller.py](../utils/main_controller.py))
+
+  - [x] check_point(list): while epoch reach checkpoint, controller will eval at that epoch
+  - [x] record_step(int): while epoch%record_step==0, controller save module parameters, when training meet nan error, try to reload record parameters.
+  - [x] max_epoch(int): max training epoch
+
+  
+
+- Third on is module config. Got parameters depending on module type. The module has its own default config defined, most of then are the same. The parameters always contain the follows:
+
+  - learning rate
+  - kernel define 
+  - input normalize
+  - output normalize
+  - param exp_restrict
+  - noise init value
 
 
 
-After running the demo, there should be a record.txt file generate. Like [this](../record.txt)
+## Demo available
+
+After running the demo, the result will be saved in ["../exp"](../exp) folder.
+
+#### 1.GAR
+
+```
+python demo/normal_data/demo_multi-fidelity_hogp.py
+```
 
 
 
+#### 2.CIGAR
 
-
-### 1.Cigp
-
-demo_cigp (run with testdata/burger/poisson)
-
-
-
-### 2.NAR Cigp
-
-demo_nar_cigp (run with burger/possion data)
+```
+python demo/normal_data/demo_ind_multi_fidelity_hogp.py
+```
 
 
 
+#### 3.NAR
+
+```
+python demo/normal_data/demo_nar_cigp.py
+```
 
 
-### 
+
+#### 4.MF-BNN
+
+```
+python demo/normal_data/demo_dmfal.py
+```
+
+
+
+#### 5.DC
+
+```
+python demo/normal_data/demo_dc_cigp.py
+```
+
+
+
+#### 6.ResGP
+
+```
+python demo/interp_data/demo_res_gp.py
+```
+
+
+
+#### 7.AR
+
+```
+python demo/interp_data/demo_lar_gp.py
+```
+

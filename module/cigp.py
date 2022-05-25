@@ -44,19 +44,19 @@ default_module_config = {
                  'slice_param': [0.6, 0.4], #only available for dataset, which not seperate train and test before
                  },
 
-    'lr': {'kernel':0.001, 
-           'optional_param':0.001, 
-           'noise':0.001},
+    'lr': {'kernel':0.01, 
+           'optional_param':0.01, 
+           'noise':0.01},
 
     'kernel': {
-            'K1': {'SE': {'exp_restrict':False, 'length_scale':1., 'scale': 1.}},
+            'K1': {'SE': {'exp_restrict':True, 'length_scale':1., 'scale': 1.}},
               },
     'evaluate_method': ['mae', 'rmse', 'r2'],
     'optimizer': 'adam',
     'exp_restrict': False,
     'input_normalize': True,
     'output_normalize': True,
-    'noise_init' : 10.,
+    'noise_init' : 1.,
 }
 
 

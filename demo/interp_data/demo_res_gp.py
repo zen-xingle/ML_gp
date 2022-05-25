@@ -91,9 +91,6 @@ if __name__ == '__main__':
                             },
 
                 'res_cigp': {'type_name': 'res_standard'},
-                'lr': {'kernel':0.01, 
-                        'optional_param':0.01, 
-                        'noise':0.01},
             }
             second_ct = controller(CIGP_MODULE_Multi_Fidelity, second_controller_config, second_module_config)
 

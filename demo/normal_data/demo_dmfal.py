@@ -30,7 +30,7 @@ interp_data=False
 if __name__ == '__main__':
     # for _dataset in real_dataset + gen_dataset:
     for _dataset in ['burger_v4_02']:
-        for _seed in [0, 1, 2, 3, 4]:
+        for _seed in [None, 0, 1, 2, 3, 4]:
             for _sample in [4, 8, 16, 32]:
                 with open('record.txt', 'a') as _temp_file:
                     _temp_file.write('-'*40 + '\n')

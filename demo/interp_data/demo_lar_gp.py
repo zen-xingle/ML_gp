@@ -103,9 +103,6 @@ if __name__ == '__main__':
                             'slice_param': [0.6, 0.4], #only available for dataset, which not seperate train and test before
                             },
                 'res_cigp': {'type_name': 'res_rho'},
-                'lr': {'kernel':0.01, 
-                        'optional_param':0.01, 
-                        'noise':0.01},
             }
             second_ct = controller(CIGP_MODULE_Multi_Fidelity, second_controller_config, second_module_config)
 

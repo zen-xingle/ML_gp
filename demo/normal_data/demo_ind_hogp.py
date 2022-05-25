@@ -30,7 +30,7 @@ gen_dataset = ['poisson_v4_02',
 
 if __name__ == '__main__':
     # for _dataset in real_dataset + gen_dataset:
-    for _dataset in ['poisson_v4_02']:
+    for _dataset in ['SOFC_MF']:
         for _seed in [None, 0, 1, 2, 3, 4]:
             with open('record.txt', 'a') as _temp_file:
                 _temp_file.write('-'*40 + '\n')
@@ -49,7 +49,7 @@ if __name__ == '__main__':
 
                             'seed': _seed,
                             'train_start_index': 0, 
-                            'train_sample': 64, 
+                            'train_sample': 32, 
                             'eval_start_index': 0,
                             'eval_sample': 128,
 

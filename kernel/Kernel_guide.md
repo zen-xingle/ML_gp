@@ -1,23 +1,26 @@
 
 
-## Kernel类说明
+## Kernel Guide
+
+All the kernel is define as follow:
 
 ```
 Class kernel(torch.nn.Module):
-#继承torch.nn.Module,便于反向传播
+#inheritance from torch.nn.Module, thus we can easy to do back propagation
 	def __init__(self)
-	#有初始需求时，加输入参数
+	#add new param if need
 		...
+		
 	def forward(self,x1,x2)
-	#目前暂规定kernel的输入为x1,x2
 		...
+
 	def get_param(self)
-	#返回可训练参数
+	#return param, using to save/check nan.
 ```
 
 
 
-## 参考文档
+## Refererence
 
 doc refer: https://www.cs.toronto.edu/~duvenaud/cookbook/
 

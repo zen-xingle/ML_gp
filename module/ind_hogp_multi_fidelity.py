@@ -322,7 +322,6 @@ class HOGP_MF_MODULE:
             _init_value = torch.tensor([1.0]).reshape(*[1 for i in self.K])
             diag_K = tucker_to_tensor(( _init_value, [K.diag().reshape(-1,1) for K in self.K[:-1]]))
 
-            # var则为0, 怎么利用该信息更新输入？
             S = self.A * self.A.pow(-1/2)
             S_2 = S.pow(2)
             # S_product = tensorly.tenalg.multi_mode_dot(S_2, [eigen_vector_d1.pow(2), eigen_vector_d2.pow(2), (K_star@K_p.inverse()@eigen_vector_p).pow(2)])

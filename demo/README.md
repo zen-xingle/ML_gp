@@ -16,7 +16,7 @@ In all the demo, controller got three inputs.
 
   - [x] NAR
 
-  - [x] MF-BNN
+  - [x] MF-BNN (refer to https://github.com/shib0li/DMFAL)
 
   - [x] DC
 

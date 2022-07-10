@@ -10,7 +10,16 @@ class mlgp_log:
         print('\033[1;41m' + 'ERROR: ' + meg + '\033[0m')
 
     @staticmethod
+    def e(*args):
+        meg = ' '.join(args)
+        print('\033[1;41m' + 'ERROR: ' + meg + '\033[0m')   
+
+    @staticmethod
     def info(*args):
+        meg = ' '.join(args)
+        print('\033[1;40m' + 'INFO: ' + meg + '\033[0m')
+
+    def i(*args):
         meg = ' '.join(args)
         print('\033[1;40m' + 'INFO: ' + meg + '\033[0m')
 
@@ -19,7 +28,15 @@ class mlgp_log:
         meg = ' '.join(args)
         print('\033[1;33m' + 'WARNING: ' + meg + '\033[0m')
 
+    def w(*args):
+        meg = ' '.join(args)
+        print('\033[1;33m' + 'WARNING: ' + meg + '\033[0m')
+
     @staticmethod
     def debug(*args):
+        meg = ' '.join(args)
+        print('\033[1;45m' + 'DEBUG: ' + meg + '\033[0m')
+
+    def d(*args):
         meg = ' '.join(args)
         print('\033[1;45m' + 'DEBUG: ' + meg + '\033[0m')

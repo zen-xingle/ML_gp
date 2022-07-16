@@ -17,10 +17,8 @@ realpath = _sep.join(realpath[:realpath.index('ML_gp')+1])
 sys.path.append(realpath)
 
 from utils import *
-
-JITTER = 1e-6
-EPS = 1e-10
-PI = 3.1415
+from kernel import kernel_utils
+from utils.data_utils import data_register
 
 tensorly.set_backend('pytorch')
 
@@ -73,7 +71,7 @@ class CIGP_MODULE_Multi_Fidelity(object):
         assert module_config['optimizer'] in ['adam'], 'now optimizer only support adam, but get {}'.format(module_config['optimizer'])
 
         # load_data
-        self._load_data(module_config['dataset'])
+        data_register.data_regist(self, module_config['dataset'])
         self._select_connection_kernel(module_config['res_cigp']['type_name'])
 
         # X - normalize
@@ -93,7 +91,7 @@ class CIGP_MODULE_Multi_Fidelity(object):
             self.Y_normalizer = None
 
         # init kernel
-        self._init_kernel(module_config['kernel'])
+        kernel_utils.register_kernel(self, module_config['kernel'])
 
         # init noise
         if module_config['exp_restrict'] is True:
@@ -103,21 +101,6 @@ class CIGP_MODULE_Multi_Fidelity(object):
 
         # init optimizer
         self._optimizer_setup()
-
-    def _load_data(self, dataset_config):
-        print('dataset_config name:', dataset_config['name'])
-        loaded = False
-        for _loader in [SP_DataLoader, Standard_mat_DataLoader]:
-            if dataset_config['name'] in _loader.dataset_available:
-                self.data_loader = _loader(dataset_config['name'], dataset_config['interp_data'])
-                _data = self.data_loader.get_data()
-                loaded = True
-                break
-        if loaded is False:
-            assert False, 'dataset {} not found in all loader'.format(dataset_config['name'])
-
-        dp = Data_preprocess(dataset_config)
-        self.inputs_tr, self.outputs_tr, self.inputs_eval, self.outputs_eval = dp.do_preprocess(_data, numpy_to_tensor=True)
 
 
     def _select_connection_kernel(self, type_name):
@@ -131,27 +114,6 @@ class CIGP_MODULE_Multi_Fidelity(object):
             self.target_connection = mapping_connection(self.target_list[0][:,:,0].shape, 
                                                         self.target_list[1][:,:,0].shape,
                                                         self.module_config['mapping'])
-
-
-    def _init_kernel(self, kernel_config):
-        from kernel.kernel_generator import kernel_generator
-        self.kernel_list = []
-        for key, value in kernel_config.items():
-            for _kernel_type, _kernel_params in value.items():
-                # broadcast exp_restrict
-                if 'exp_restrict' not in _kernel_params:
-                    _kernel_params['exp_restrict'] = self.module_config['exp_restrict']
-                self.kernel_list.append(kernel_generator(_kernel_type, _kernel_params))
-
-    def get_params_need_check(self):
-        params_need_check = []
-        for i in range(len(self.kernel_list)):
-            params_need_check.extend(self.kernel_list[i].get_params_need_check())
-        params_need_check.append(self.noise)
-        
-        if hasattr(self, 'mapping_param'):
-            params_need_check.append(self.mapping_param)
-        return params_need_check
 
 
     def _optimizer_setup(self):
@@ -241,30 +203,6 @@ class CIGP_MODULE_Multi_Fidelity(object):
         self.optimizer.step()
         # print('loss_nll:', loss.item())
 
-
-    def save_state(self):
-        state_dict = []
-        for i, _kernel in enumerate(self.kernel_list):
-            state_dict.extend(_kernel.get_param([]))
-
-        state_dict.append(self.noise)
-        if self.module_config['res_cigp'] is True:
-            state_dict.extend(self.target_connection.get_param([]))
-        return state_dict
-
-
-    def load_state(self, params_list):
-        index = 0
-        for i, _kernel in enumerate(self.kernel_list):
-            _temp_list = _kernel.get_param([])
-            _kernel.set_param(params_list[index: index + len(_temp_list)])
-            index += len(_temp_list)
-        
-        with torch.no_grad():
-            self.noise.copy_(params_list[index])
-            index += 1
-            if self.module_config['res_cigp'] is True:
-                self.target_connection.set_param(params_list[index:])
 
     def eval(self):
         print('---> start eval')

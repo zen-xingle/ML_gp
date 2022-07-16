@@ -1,5 +1,16 @@
 import torch
 import os
+import sys
+
+realpath=os.path.abspath(__file__)
+_sep = os.path.sep
+realpath = realpath.split(_sep)
+realpath = _sep.join(realpath[:realpath.index('ML_gp')+1])
+sys.path.append(realpath)
+
+from utils.py_decorator import *
+
+@class_init_param_check
 class SE_kernel(torch.nn.Module):
     # Squared Exponential Kernel
     def __init__(self, exp_restrict, length_scale=1., scale=1.) -> None:
@@ -10,8 +21,8 @@ class SE_kernel(torch.nn.Module):
         scale = torch.tensor(scale)
 
         if exp_restrict is True:
-            self.length_scale = torch.nn.Parameter(torch.log(torch.tensor(length_scale)))
-            self.scale = torch.nn.Parameter(torch.log(torch.tensor(scale)))
+            self.length_scale = torch.nn.Parameter(torch.log(length_scale))
+            self.scale = torch.nn.Parameter(torch.log(scale))
         else:
             self.length_scale = torch.nn.Parameter(length_scale)
             self.scale = torch.nn.Parameter(scale)
@@ -72,3 +83,14 @@ class SE_kernel(torch.nn.Module):
         with torch.no_grad():
             self.length_scale.copy_(self.length_scale.clamp_(min=0))
             self.scale.copy_(self.scale.clamp_(min=0))
+
+
+if __name__ == '__main__':
+    print('test1')
+    ke = SE_kernel(True)
+
+    print('test2')
+    ke = SE_kernel(False, 2.)
+
+    print('test3')
+    ke = SE_kernel(False, 2., 3.)

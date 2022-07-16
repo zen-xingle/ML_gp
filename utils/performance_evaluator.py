@@ -38,9 +38,9 @@ def _gaussian_loss(inputs, target, var):
 
 def performance_evaluator(A, B, method_list, sample_last_dim=False):
     if hasattr(A, 'numpy'):
-        A = A.detach().numpy()
+        A = A.cpu().detach().numpy()
     if hasattr(B, 'numpy'):
-        B = B.detach().numpy()
+        B = B.cpu().detach().numpy()
     A = _reshape_as_2D(A, sample_last_dim)
     B = _reshape_as_2D(B, sample_last_dim)
 

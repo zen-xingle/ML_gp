@@ -53,13 +53,7 @@ class controller(object):
         # self.discriptor = None
         # pass
 
-    def _get_time(self):
-        _now = time.time()
-        period = _now - self.time
-        self.time = _now
-        return period
-
-    def start_train(self, record_checkpoint=False, module_name=None):
+    def start_train(self):
         for i in range(self.controller_config['max_epoch']):
             self.module.train()
 

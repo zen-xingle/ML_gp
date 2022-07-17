@@ -1,4 +1,10 @@
 import os
+import sys
+realpath=os.path.abspath(__file__)
+_sep = os.path.sep
+realpath = realpath.split(_sep)
+realpath = _sep.join(realpath[:realpath.index('ML_gp')+1])
+sys.path.append(realpath)
 
 from utils.mlgp_log import mlgp_log
 from copy import deepcopy
@@ -54,6 +60,9 @@ class MLGP_recorder:
             _str = _dict_to_str(info)
             for _s in _str:
                 self._f.write(_s)
+        elif isinstance(info, list):
+            for _s in info:
+                self._f.write(str(_s))
         else:
             self._f.write(str(info))
         self._f.write('@append_info@\n')
@@ -88,3 +97,18 @@ class MLGP_recorder:
 
         self._f.write(','.join(_single_record))
         self._f.flush()
+
+
+if __name__ == '__main__':
+    import datetime
+    rc = MLGP_recorder('./record_test.txt', {'Function': 'A', 
+                                             'Purpose': 'Test',
+                                             'time': {
+                                                'now': datetime.datetime.today(),
+                                                'weekdata': datetime.datetime.today().isoweekday(),
+                                             }
+                                             })
+    rc.register(['epoch','result'])
+    rc.record([0, 0.5])
+    rc.record({'epoch': 1, 'result': 0.6})
+    rc.record({'result': 0.7, 'epoch': 2})

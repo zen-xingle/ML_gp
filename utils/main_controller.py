@@ -30,7 +30,7 @@ class controller(object):
         self.controller_config = smart_update(default_controller_config, controller_config)
         
         self.module = module(module_config)
-        if False:
+        if self.module.module_config['cuda']:
             self.module.cuda()
             inputs_name = ['inputs_eval', 'inputs_tr', 'outputs_eval','outputs_tr']
             for _key in inputs_name:
@@ -40,7 +40,7 @@ class controller(object):
 
         self.result_list = {}
 
-        self.rc_file = mlgp_result_record.MLGP_recorder('./record_txt',
+        self.rc_file = mlgp_result_record.MLGP_recorder('./record.txt',
                                                         overlap=True, 
                                                         append_info={
                                                             'module': str(module),

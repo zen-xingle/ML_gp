@@ -56,15 +56,17 @@ default_module_config = {
     'output_normalize': True,
     'noise_init' : 1.,
     'pca': {'type': 'listPCA', 
-            'r': 0.99, } # listPCA, resPCA_mf,
+            'r': 0.99, }, # listPCA, resPCA_mf,
+    'cuda': False,
 }
 
 pca_map = {'listPCA': listPCA, 'resPCA_mf': resPCA_mf}
 
 
-class DC_CIGP_MODULE:
+class DC_CIGP_MODULE(torch.nn.Module):
     # def __init__(self, grid_params_list, kernel_list, target_list, normalize=True, restrict_method= 'exp') -> None:
     def __init__(self, module_config) -> None:
+        super().__init__()
         _final_config = smart_update(default_module_config, module_config)
         self.module_config = deepcopy(_final_config)
         module_config = deepcopy(_final_config)
@@ -73,7 +75,7 @@ class DC_CIGP_MODULE:
         assert module_config['optimizer'] in ['adam'], 'now optimizer only support adam, but get {}'.format(module_config['optimizer'])
 
         # load_data
-        data_register.data_regist(self, module_config['dataset'])
+        data_register.data_regist(self, module_config['dataset'], module_config['cuda'])
 
         # X - normalize
         if module_config['input_normalize'] is True:
@@ -147,12 +149,12 @@ class DC_CIGP_MODULE:
         # x: [num, vector_dims]
         # y: [num, vector_dims]
 
-        Sigma = self.kernel_list[0](self.inputs_tr[0], self.inputs_tr[0]) + JITTER * torch.eye(self.inputs_tr[0].size(0))
+        Sigma = self.kernel_list[0](self.inputs_tr[0], self.inputs_tr[0]) + JITTER * torch.eye(self.inputs_tr[0].size(0), device=list(self.parameters())[0].device)
         if self.module_config['exp_restrict'] is True:
             _noise = self.noise.exp()
         else:
             _noise = self.noise
-        Sigma = Sigma + _noise.pow(-1) * torch.eye(self.inputs_tr[0].size(0))
+        Sigma = Sigma + _noise.pow(-1) * torch.eye(self.inputs_tr[0].size(0), device=list(self.parameters())[0].device)
 
         L = torch.linalg.cholesky(Sigma)
         #option 1 (use this if torch supports)
@@ -163,7 +165,7 @@ class DC_CIGP_MODULE:
 
         y_num, y_dimension = self.outputs_tr[0].shape
         nll =  0.5 * (gamma ** 2).sum() +  L.diag().log().sum() * y_dimension  \
-            + 0.5 * y_num * torch.log(2 * torch.tensor(PI)) * y_dimension
+            + 0.5 * y_num * torch.log(2 * torch.tensor(PI, device=list(self.parameters())[0].device)) * y_dimension
 
         return nll
 
@@ -182,12 +184,12 @@ class DC_CIGP_MODULE:
                 # input_param[1] = self.pca_model.project([input_param[1], self.outputs_eval[0]])[0]
             input_param = [torch.cat(input_param, dim=1)]
 
-            Sigma = self.kernel_list[0](self.inputs_tr[0], self.inputs_tr[0]) + JITTER * torch.eye(self.inputs_tr[0].size(0))
+            Sigma = self.kernel_list[0](self.inputs_tr[0], self.inputs_tr[0]) + JITTER * torch.eye(self.inputs_tr[0].size(0), device=list(self.parameters())[0].device)
             if self.module_config['exp_restrict'] is True:
                 _noise = self.noise.exp()
             else:
                 _noise = self.noise
-            Sigma = Sigma + _noise.pow(-1) * torch.eye(self.inputs_tr[0].size(0))
+            Sigma = Sigma + _noise.pow(-1) * torch.eye(self.inputs_tr[0].size(0), device=list(self.parameters())[0].device)
 
             kx = self.kernel_list[0](self.inputs_tr[0], input_param[0])
             L = torch.cholesky(Sigma)

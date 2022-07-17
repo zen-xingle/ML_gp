@@ -53,6 +53,7 @@ if __name__ == '__main__':
                 'lr': {'kernel':0.01, 
                 'optional_param':0.01, 
                 'noise':0.01},
+                'cuda': True,
             } # only change dataset config, others use default config
             ct = controller(CIGP_MODULE, controller_config, module_config)
             ct.start_train()
@@ -61,12 +62,6 @@ if __name__ == '__main__':
             # ================================================================
             # Training x,yl -> yh part
             for _sample in [4,8,16,32]:
-                with open('record.txt', 'a') as _temp_file:
-                    _temp_file.write('\n'+ '-'*10 + '>\n')
-                    _temp_file.write('NAR for {} samples\n'.format(_sample))
-                    _temp_file.write('-'*3 + '> Training x,yl -> yh part\n\n')
-                    _temp_file.flush()
-
                 second_controller_config = {
                     'max_epoch': 1000,
                 }
@@ -91,6 +86,7 @@ if __name__ == '__main__':
                     'pca': {'type': 'listPCA', 
                             'r': 0.99, }, # listPCA, resPCA_mf,
                     'noise_init' : 10.,
+                    'cuda': True,
                 }
                 second_ct = controller(DC_CIGP_MODULE, controller_config, second_module_config)
                 # replace ground truth eval data with low fidelity predict

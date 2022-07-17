@@ -67,6 +67,7 @@ default_module_config = {
                     'auto_broadcast_grid_size': True,
                     'squeeze_to_01': False,
                     },
+    'cuda': False,
 }
 
 def _last_dim_to_fist(_tensor):
@@ -93,7 +94,7 @@ class HOGP_MODULE(torch.nn.Module):
         assert module_config['optimizer'] in ['adam'], 'now optimizer only support adam, but get {}'.format(module_config['optimizer'])
 
         # load_data
-        data_register.data_regist(self, module_config['dataset'])
+        data_register.data_regist(self, module_config['dataset'], module_config['cuda'])
         self._grid_setup(module_config['grid_config'])
 
         # TODO if param allow more than single kernel, optimize code here
@@ -162,6 +163,10 @@ class HOGP_MODULE(torch.nn.Module):
                 # TODO add init function
                 self.mapping_vector.append(torch.nn.Parameter(torch.randn(_value, self.outputs_tr[0].shape[i])))
 
+        if self.module_config['cuda']:
+            for _params in [self.grid, self.mapping_vector]:
+                for i, _v in enumerate(_params):
+                    _params[i] = _v.cuda()
 
     def _optimizer_setup(self):
         optional_params = []
@@ -220,7 +225,7 @@ class HOGP_MODULE(torch.nn.Module):
 
         # Kruskal operator
         # compute log(|S|) = sum over the logarithm of all the elements in A. O(nd) complexity.
-        _init_value = torch.tensor([1.0]).reshape(*[1 for i in self.K])
+        _init_value = torch.tensor([1.0],  device=list(self.parameters())[0].device).reshape(*[1 for i in self.K])
         lambda_list = [eigen.value.reshape(-1, 1) for eigen in self.K_eigen]
         A = tucker_to_tensor((_init_value, lambda_list))
 
@@ -229,7 +234,7 @@ class HOGP_MODULE(torch.nn.Module):
         else:
             _noise = self.noise
         # A = A + _noise * tensorly.ones(A.shape)
-        A = A + _noise.pow(-1)* tensorly.ones(A.shape)
+        A = A + _noise.pow(-1)* tensorly.ones(A.shape,  device=list(self.parameters())[0].device)
         # TODO: add jitter limite here?
         
         # vec(z).T@ S.inverse @ vec(z) = b.T @ b,  b = S.pow(-1/2) @ vec(z)
@@ -277,7 +282,7 @@ class HOGP_MODULE(torch.nn.Module):
             '''
             '''
             # NOTE: now only work for the normal predict
-            _init_value = torch.tensor([1.0]).reshape(*[1 for i in self.K])
+            _init_value = torch.tensor([1.0], device=list(self.parameters())[0].device).reshape(*[1 for i in self.K])
             diag_K = tucker_to_tensor(( _init_value, [K.diag().reshape(-1,1) for K in self.K[:-1]]))
 
             S = self.A * self.A.pow(-1/2)
@@ -337,7 +342,7 @@ class HOGP_MODULE(torch.nn.Module):
         self.update_product()
         #! loss = -1/2* torch.log(abs(self.A)).mean()
         nd = torch.prod(torch.tensor([value for value in self.A.shape]))
-        loss = -1/2* nd * torch.log(torch.tensor(2 * math.pi))
+        loss = -1/2* nd * torch.log(torch.tensor(2 * math.pi, device=list(self.parameters())[0].device))
         loss += -1/2* torch.log(self.A).sum()
         loss += -1/2* self.b.t() @ self.b
 

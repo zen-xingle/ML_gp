@@ -54,6 +54,7 @@ if __name__ == '__main__':
                         'noise':1},
 
                     'noise_init' : 0.0001,
+                    'cuda': True,
                 }
 
             ct = controller(CIGP_MODULE, {}, module_config)

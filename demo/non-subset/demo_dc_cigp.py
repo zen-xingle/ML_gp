@@ -81,6 +81,7 @@ if __name__ == '__main__':
                             'y_sample_to_last_dim': False,
                             'slice_param': [0.6, 0.4], #only available for dataset, which not seperate train and test before
                             },
+                'cuda': True,
             } # only change dataset config, others use default config
             ct = controller(CIGP_MODULE, controller_config, module_config)
             ct.start_train()
@@ -111,6 +112,7 @@ if __name__ == '__main__':
                     'pca': {'type': 'listPCA', 
                             'r': 0.99, }, # listPCA, resPCA_mf,
                     'noise_init' : 1000.,
+                    'cuda': True,
                 }
                 second_ct = controller(DC_CIGP_MODULE, controller_config, second_module_config)
                 # replace ground truth eval data with low fidelity predict

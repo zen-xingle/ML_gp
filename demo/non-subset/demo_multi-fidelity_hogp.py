@@ -93,7 +93,7 @@ if __name__ == '__main__':
                             },
 
                     'noise_init' : 100.,
-                
+                    'cuda': True,
                 } # only change dataset config, others use default config
             
             ct = controller(HOGP_MODULE, controller_config, module_config)
@@ -122,6 +122,7 @@ if __name__ == '__main__':
                                 },
 
                     'noise_init' : 100.,
+                    'cuda': True,
                 } # only change dataset config, others use default config
 
                 mfct = controller(HOGP_MF_MODULE, controller_config, mfct_module_config)

@@ -50,6 +50,7 @@ if __name__ == '__main__':
                             'y_sample_to_last_dim': False,
                             'slice_param': [0.6, 0.4], #only available for dataset, which not seperate train and test before
                             },
+                'cuda': True,
             } # only change dataset config, others use default config
             ct = controller(CIGP_MODULE, controller_config, module_config)
             ct.start_train()
@@ -77,6 +78,7 @@ if __name__ == '__main__':
                                 'slice_param': [0.6, 0.4], #only available for dataset, which not seperate train and test before
                                 },
                     'res_cigp': {'type_name': 'res_rho'},
+                    'cuda': True,
                 }
                 second_ct = controller(CIGP_MODULE_Multi_Fidelity, second_controller_config, second_module_config)
 

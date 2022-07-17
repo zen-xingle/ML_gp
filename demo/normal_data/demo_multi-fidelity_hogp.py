@@ -56,6 +56,7 @@ if __name__ == '__main__':
                             'y_sample_to_last_dim': True,
                             'slice_param': [0.6, 0.4], #only available for dataset, which not seperate train and test before
                             },
+                    'cuda': True,
                 } # only change dataset config, others use default config
             
             ct = controller(HOGP_MODULE, controller_config, module_config)
@@ -81,6 +82,7 @@ if __name__ == '__main__':
                                 'y_sample_to_last_dim': True,
                                 'slice_param': [0.6, 0.4], #only available for dataset, which not seperate train and test before
                                 },
+                    'cuda': True,
                 } # only change dataset config, others use default config
 
                 mfct = controller(HOGP_MF_MODULE, controller_config, mfct_module_config)

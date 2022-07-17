@@ -54,6 +54,7 @@ default_module_config = {
     'input_normalize': True,
     'output_normalize': True,
     'noise_init' : 1.,
+    'cuda': False,
 }
 
 
@@ -69,12 +70,7 @@ class CIGP_MODULE(torch.nn.Module):
         assert module_config['optimizer'] in ['adam'], 'now optimizer only support adam, but get {}'.format(module_config['optimizer'])
 
         # load_data
-        data_register.data_regist(self, module_config['dataset'])
-        # self.inputs_tr[0] = self.inputs_tr[0].cuda()
-        # self.outputs_tr[0] = self.outputs_tr[0].cuda()
-
-        self.inputs_tr[0] = self.inputs_tr[0]
-        self.outputs_tr[0] = self.outputs_tr[0]
+        data_register.data_regist(self, module_config['dataset'], module_config['cuda'])
 
         # X - normalize
         if module_config['input_normalize'] is True:
@@ -121,12 +117,12 @@ class CIGP_MODULE(torch.nn.Module):
         # x: [num, vector_dims]
         # y: [num, vector_dims]
 
-        Sigma = self.kernel_list[0](self.inputs_tr[0], self.inputs_tr[0]) + JITTER * torch.eye(self.inputs_tr[0].size(0), device=self.inputs_tr[0].device)
+        Sigma = self.kernel_list[0](self.inputs_tr[0], self.inputs_tr[0]) + JITTER * torch.eye(self.inputs_tr[0].size(0), device=list(self.parameters())[0].device)
         if self.module_config['exp_restrict'] is True:
             _noise = self.noise.exp()
         else:
             _noise = self.noise
-        Sigma = Sigma + _noise.pow(-1) * torch.eye(self.inputs_tr[0].size(0), device=self.inputs_tr[0].device)
+        Sigma = Sigma + _noise.pow(-1) * torch.eye(self.inputs_tr[0].size(0), device=list(self.parameters())[0].device)
 
         L = torch.linalg.cholesky(Sigma)
         #option 1 (use this if torch supports)
@@ -137,7 +133,7 @@ class CIGP_MODULE(torch.nn.Module):
 
         y_num, y_dimension = self.outputs_tr[0].shape
         nll =  0.5 * (gamma ** 2).sum() +  L.diag().log().sum() * y_dimension  \
-            + 0.5 * y_num * torch.log(2 * torch.tensor(PI, device=self.inputs_tr[0].device)) * y_dimension
+            + 0.5 * y_num * torch.log(2 * torch.tensor(PI, device=list(self.parameters())[0].device)) * y_dimension
 
         return nll
 
@@ -150,12 +146,12 @@ class CIGP_MODULE(torch.nn.Module):
             if self.module_config['input_normalize'] is True:
                 input_param[0] = self.X_normalizer.normalize(input_param[0])
 
-            Sigma = self.kernel_list[0](self.inputs_tr[0], self.inputs_tr[0]) + JITTER * torch.eye(self.inputs_tr[0].size(0), device=self.inputs_tr[0].device)
+            Sigma = self.kernel_list[0](self.inputs_tr[0], self.inputs_tr[0]) + JITTER * torch.eye(self.inputs_tr[0].size(0), device=list(self.parameters())[0].device)
             if self.module_config['exp_restrict'] is True:
                 _noise = self.noise.exp()
             else:
                 _noise = self.noise
-            Sigma = Sigma + _noise.pow(-1) * torch.eye(self.inputs_tr[0].size(0), device=self.inputs_tr[0].device)
+            Sigma = Sigma + _noise.pow(-1) * torch.eye(self.inputs_tr[0].size(0), device=list(self.parameters())[0].device)
 
             kx = self.kernel_list[0](self.inputs_tr[0], input_param[0])
             L = torch.cholesky(Sigma)

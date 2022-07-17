@@ -33,25 +33,10 @@ if __name__ == '__main__':
     # for _dataset in real_dataset + gen_dataset:
     for _dataset in ['SOFC_MF']:
         for _seed in [None,0,1,2,3,4]:
-            with open('record.txt', 'a') as _temp_file:
-                _temp_file.write('-'*40 + '\n')
-                _temp_file.write('\n')
-                _temp_file.write('  Demo GAR \n')
-                _temp_file.write('  seed: {} \n'.format(_seed))
-                _temp_file.write('  interp_data: {} \n'.format(interp_data))
-                _temp_file.write('\n')
-                _temp_file.write('-'*40 + '\n')
-                _temp_file.write('-'*3 + '> Training x -> yl part\n')
-                _temp_file.flush()
-            
-            # ================================================================
-            # Training x -> yl part
-
             controller_config = {
-                'max_epoch': 1000
+                'max_epoch': 100
             } # use defualt config
             
-
             module_config = {
                 'dataset': {'name': _dataset,
                             'interp_data': interp_data,
@@ -73,25 +58,10 @@ if __name__ == '__main__':
                             },
                 } # only change dataset config, others use default config
             
-            ct = controller(HOGP_MODULE, {}, module_config)
+            ct = controller(HOGP_MODULE, controller_config, module_config)
             ct.start_train()
-            ct.smart_restore_state(-1)
-            ct.rc_file.write('---> final result')
-            ct.rc_file.flush()
-            ct.start_eval({'eval state':'final'})
-            ct.rc_file.write('-'*10 + '> finish x-yl training\n\n')
-            ct.rc_file.flush()
 
-            # ================================================================
-            # Training x,yl -> yh part
-            # exit()
             for _sample in [4, 8, 16, 32]:
-                with open('record.txt', 'a') as _temp_file:
-                    _temp_file.write('\n'+ '-'*10 + '>\n')
-                    _temp_file.write('GAR for {} samples\n'.format(_sample))
-                    _temp_file.write('-'*3 + '> Training x,yl -> yh part\n\n')
-                    _temp_file.flush()
-
                 mfct_module_config = {
                     'dataset': {'name': _dataset,
                                 'interp_data': interp_data,
@@ -121,13 +91,5 @@ if __name__ == '__main__':
                     pass
 
                 mfct.start_train()
-                mfct.smart_restore_state(-1)
-                mfct.rc_file.write('---> final result\n')
-                mfct.rc_file.flush()
-                mfct.start_eval({'eval state':'final',
-                                'module_name': 'GAR',
-                                'cp_record_file': True})
-                mfct.rc_file.write('---> end\n\n')
-                mfct.rc_file.flush()
 
     mfct.clear_record()

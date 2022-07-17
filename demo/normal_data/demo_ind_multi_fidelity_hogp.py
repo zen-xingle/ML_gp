@@ -32,17 +32,6 @@ gen_dataset = ['poisson_v4_02',
 if __name__ == '__main__':
     for _dataset in ['SOFC_MF']:
         for _seed in [None, 0, 1, 2, 3, 4]:
-            with open('record.txt', 'a') as _temp_file:
-                _temp_file.write('-'*40 + '\n')
-                _temp_file.write('\n')
-                _temp_file.write('  Demo sGAR \n')
-                _temp_file.write('  seed: {} \n'.format(_seed))
-                _temp_file.write('  interp_data: {} \n'.format(interp_data))
-                _temp_file.write('\n')
-                _temp_file.write('-'*40 + '\n')
-                _temp_file.write('-'*3 + '> Training x -> yl part\n')
-                _temp_file.flush()
-
             controller_config = {
                 'max_epoch': 1000
             } # use defualt config
@@ -68,25 +57,8 @@ if __name__ == '__main__':
             } # only change dataset config, others use default config
             ct = controller(HOGP_MODULE, controller_config, ct_module_config)
             ct.start_train()
-            ct.smart_restore_state(-1)
-            ct.rc_file.write('---> final result')
-            ct.rc_file.flush()
-            ct.start_eval({'eval state':'final'})
-            ct.rc_file.write('---> end\n\n')
-            ct.rc_file.flush()
 
             for _sample in [4, 8, 16, 32]:
-                with open('record.txt', 'a') as _temp_file:
-                    _temp_file.write('-'*40 + '\n')
-                    _temp_file.write('\n')
-                    _temp_file.write('  Demo sGAR \n')
-                    _temp_file.write('  seed: {} \n'.format(_seed))
-                    _temp_file.write('  interp_data: {} \n'.format(interp_data))
-                    _temp_file.write('\n')
-                    _temp_file.write('-'*40 + '\n')
-                    _temp_file.write('-'*3 + '> Training x -> yl part\n')
-                    _temp_file.flush()
-
                 mfct_module_config = {
                     'dataset': {'name': 'SOFC_MF',
                                 'interp_data': interp_data,
@@ -115,13 +87,5 @@ if __name__ == '__main__':
                     pass
 
                 mfct.start_train()
-                mfct.smart_restore_state(-1)
-                mfct.rc_file.write('---> final result')
-                mfct.rc_file.flush()
-                mfct.start_eval({'eval state':'final',
-                                'module_name': 'SGAR',
-                                'cp_record_file': True})
-                mfct.rc_file.write('---> end\n\n')
-                mfct.rc_file.flush()
 
-    mfct.clear_record()
+    # mfct.clear_record()

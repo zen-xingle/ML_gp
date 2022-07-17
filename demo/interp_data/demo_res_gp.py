@@ -31,19 +31,6 @@ interp_data = False
 if __name__ == '__main__':
     for _dataset in ['SOFC_MF']:
         for _seed in [None, 0, 1, 2, 3, 4]:
-            with open('record.txt', 'a') as _temp_file:
-                _temp_file.write('-'*40 + '\n')
-                _temp_file.write('\n')
-                _temp_file.write('  Demo res cigp \n')
-                _temp_file.write('  seed: {} \n'.format(_seed))
-                _temp_file.write('  interp_data: {} \n'.format(interp_data))
-                _temp_file.write('\n')
-                _temp_file.write('-'*40 + '\n')
-                _temp_file.flush()
-
-            # ================================================================
-            # Training x -> yl part
-
             controller_config = {'max_epoch': 1000,} # use defualt config
             module_config = {
                 'dataset': {'name': 'SOFC_MF',
@@ -66,22 +53,10 @@ if __name__ == '__main__':
             } # only change dataset config, others use default config
             ct = controller(CIGP_MODULE, controller_config, module_config)
             ct.start_train()
-            ct.smart_restore_state(-1)
-            ct.rc_file.write('---> final result\n')
-            ct.rc_file.flush()
-            ct.start_eval({'eval state':'final'})
-            ct.rc_file.write('-'*10 + '> finish x-yl training\n\n')
-            ct.rc_file.flush()
 
             # ================================================================
             # Training x,yl -> yh part
             for _sample in [4, 8, 16, 32]:
-                with open('record.txt', 'a') as _temp_file:
-                    _temp_file.write('\n'+ '-'*10 + '>\n')
-                    _temp_file.write('res cigp for {} samples\n'.format(_sample))
-                    _temp_file.write('-'*3 + '> Training x,yl -> yh part\n\n')
-                    _temp_file.flush()
-
                 second_controller_config = {
                     'max_epoch': 1000,
                 }
@@ -118,13 +93,5 @@ if __name__ == '__main__':
                 second_ct.module.inputs_eval[1] = deepcopy(ct.module.predict_y)
 
                 second_ct.start_train()
-                second_ct.smart_restore_state(-1)
-                second_ct.rc_file.write('---> final result\n')
-                second_ct.rc_file.flush()
-                second_ct.start_eval({'eval state':'final',
-                                    'module_name':'ResGP',
-                                    'cp_record_file': True})
-                second_ct.rc_file.write('---> end\n\n')
-                second_ct.rc_file.flush()
 
     second_ct.clear_record()

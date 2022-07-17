@@ -36,16 +36,6 @@ if __name__ == '__main__':
             for second_fidelity_sample in [4, 8, 16, 32]:
             # for start_index in [total_sample-1, total_sample-4, total_sample-8, total_sample-16, total_sample-32]:
                 subset = 0.5 * second_fidelity_sample
-                with open('record.txt', 'a') as _temp_file:
-                    _temp_file.write('-'*40 + '\n')
-                    _temp_file.write('\n')
-                    _temp_file.write('  Demo DMFAL \n')
-                    _temp_file.write('  seed: {} \n'.format(_seed))
-                    _temp_file.write('  interp_data: {} \n'.format(interp_data))
-                    _temp_file.write('\n')
-                    _temp_file.write('-'*40 + '\n')
-                    _temp_file.flush()
-
                 module_config = {
                     'dataset': {'name': _dataset,
                     'interp_data': interp_data,
@@ -70,14 +60,5 @@ if __name__ == '__main__':
                 }
                 ct = controller(DeepMFnet, {}, module_config)
                 ct.start_train()
-                ct.smart_restore_state(-1)
-                ct.rc_file.write('---> final result\n')
-                ct.rc_file.flush()
-                ct.start_eval({'eval state':'final',
-                            'module_name':'dmfal',
-                            'subset': str(subset),
-                            'cp_record_file': True})
-                ct.rc_file.write('---> end\n\n')
-                ct.rc_file.flush()
 
     ct.clear_record()

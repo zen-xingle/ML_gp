@@ -82,6 +82,7 @@ class mapping_connection(torch.nn.Module):
             elif distribution_name == 'new':
                 _init_tensor = _new_distribution((yl_shape[i], yh_shape[i]))
             self.mapping_list.append(torch.nn.Parameter(_init_tensor))
+        self.mapping_list = torch.nn.ParameterList(self.mapping_list)
 
     def forward(self, yl, yh):
         map_y = tensorly.tenalg.multi_mode_dot(yl, self.mapping_list)

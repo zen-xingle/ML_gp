@@ -6,6 +6,8 @@ realpath = realpath.split(_sep)
 realpath = _sep.join(realpath[:realpath.index('ML_gp')+1])
 sys.path.append(realpath)
 
+import yaml
+
 from utils.mlgp_log import mlgp_log
 from copy import deepcopy
 
@@ -76,6 +78,7 @@ class MLGP_recorder:
         self._key = deepcopy(key_list)
         self._register_len = len(key_list)
         self._register_state = True
+        self._f.write('@record_result@\n')
         self.record(key_list)
 
 
@@ -99,6 +102,127 @@ class MLGP_recorder:
         self._f.flush()
 
 
+class MLGP_record_parser:
+    def __init__(self, path) -> None:
+        self._f = open(path, 'rb')
+        self._f.seek(0, 2)
+        self.file_len = self._f.tell()
+        self._f.seek(0, 0)
+
+        self.start_pattern = '@MLGP_recorder@'
+        self.ex_pattern = ['@append_info@', '@record_result@']
+        assert len(self.ex_pattern) == len(set(self.ex_pattern)), "repeat pattern is not allow"
+
+        self._d = '\r\n'
+
+        # general matching, working for every case
+        self._pattrn_list = []
+        self._match_pattern()
+
+        # only work for mlgp
+        self.reformat_list = []
+        self._reformat_pattern()
+
+    def _match_pattern(self):
+        _len_bf = len(self._pattrn_list)
+        while self._f.tell() < self.file_len:
+            _l = self._f.readline().decode('utf-8')
+            if _l.rstrip(self._d) == self.start_pattern:
+                ex_pattern_dict = self._match_ex_pattern()
+                self._pattrn_list.append(deepcopy(ex_pattern_dict))
+        mlgp_log.i('Got {} valid data after match pattern'.format(len(self._pattrn_list) - _len_bf))
+        return
+
+    def _match_ex_pattern(self):
+        _ex_pattern_dict = {}
+        _single_list = []
+        _pattern_now = None
+        while self._f.tell() < self.file_len:
+            _l = self._f.readline().decode('utf-8')
+
+            # meet start parttern, jumpout
+            if _l.rstrip(self._d) == self.start_pattern:
+                self._f.seek(self._f.tell()- len(self.start_pattern+'\r\n'))
+                break
+
+            if _l.rstrip(self._d) in self.ex_pattern and \
+                _l.rstrip(self._d) != _pattern_now:
+                if _pattern_now is not None:
+                    _ex_pattern_dict[_pattern_now] = deepcopy(_single_list)
+                _pattern_now = _l.rstrip(self._d)
+                _single_list = []
+            elif _pattern_now is not None and \
+                _l.strip(self._d) != _pattern_now:
+                _single_list.append(_l)
+            # print(self._f.tell())
+
+        if _pattern_now not in _ex_pattern_dict:
+            _ex_pattern_dict[_pattern_now] = deepcopy(_single_list)
+
+        return _ex_pattern_dict
+
+    def _match_record(self):
+        _record_list = []
+        while True:
+            _l = self._f.readline()
+            if _l == '' or \
+               _l == '\n':
+                break
+            elif _l == self.start_pattern + '\n':
+                self._f.seek(self._f.tell()-1)
+                break
+            else:
+                _record_list.append(_l)
+        return _record_list
+
+    def _reformat_pattern(self):
+        for i in range(len(self._pattrn_list)):
+            _rl = {}
+            _rl[self.ex_pattern[0]] = self._str_list_to_yaml(self._pattrn_list[i][self.ex_pattern[0]])
+            _rl[self.ex_pattern[0] + '_ref'] = self._resolve_sub_dict(_rl[self.ex_pattern[0]])
+            _rl[self.ex_pattern[1]] =(self._record_as_num(self._pattrn_list[i][self.ex_pattern[1]]))
+            self.reformat_list.append(deepcopy(_rl))
+        return
+
+    def _str_list_to_yaml(self, _list):
+        with open('./tmp.yaml', 'w') as f:
+            for _l in _list:
+                f.write(_l)
+        with open('./tmp.yaml','r') as f:
+            yaml_data = yaml.load(f)
+        # os.system('rm ./tmp.yaml')
+        return yaml_data
+
+    def _resolve_sub_dict(self, _dict):
+        new_dict = {}
+        def _resolve_dict(_dict, father, _nd):
+            father = father + '.' if father is not '' else father
+            for key, item in _dict.items():
+                if isinstance(item, dict):
+                    _resolve_dict(item, father + key, _nd)
+                else:
+                    _nd[father + key] = item
+        _resolve_dict(_dict, '', new_dict)
+        return new_dict
+
+    def _record_as_num(self, _list):
+        _list = deepcopy(_list)
+        while _list[-1] == self._d:
+            _list.pop()
+
+        for i, _l in enumerate(_list):
+            _list[i] = _l.rstrip(self._d)
+
+        for i, _l in enumerate(_list):
+            _list[i] = _list[i].split(',')
+            if i>0:
+                _list[i] = [float(_v) for _v in _list[i]]
+        return _list
+
+    def get_data(self):
+        return self.reformat_list
+
+
 if __name__ == '__main__':
     import datetime
     rc = MLGP_recorder('./record_test.txt', {'Function': 'A', 
@@ -112,3 +236,5 @@ if __name__ == '__main__':
     rc.record([0, 0.5])
     rc.record({'epoch': 1, 'result': 0.6})
     rc.record({'result': 0.7, 'epoch': 2})
+
+    # MLGP_record_parser('./record.txt')

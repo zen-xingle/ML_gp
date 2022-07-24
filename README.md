@@ -275,7 +275,7 @@ preprocess_default_config_dict = {
 
 ### 6.Record error status on determine function
 
-​	Please refer here [how_to_apply_utils_on_your_code\README.md](how_to_apply_utils_on_your_code\README.md).
+​	Please refer here [./how_to_apply_utils_on_your_code/README.md](./how_to_apply_utils_on_your_code/README.md).
 
 
 

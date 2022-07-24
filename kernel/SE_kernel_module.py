@@ -8,7 +8,7 @@ realpath = realpath.split(_sep)
 realpath = _sep.join(realpath[:realpath.index('ML_gp')+1])
 sys.path.append(realpath)
 
-from utils.py_decorator import *
+from utils.mlgp_decorator import *
 
 @class_init_param_check
 class SE_kernel(torch.nn.Module):

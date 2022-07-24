@@ -4,7 +4,7 @@ from utils.performance_evaluator import performance_evaluator, high_level_evalua
 from utils.ResPCA import listPCA, resPCA_mf
 from utils.dict_tools import smart_update
 from utils.mlgp_log import mlgp_log
-from utils.mglp_hook import register_nan_hook
+from utils.mlgp_hook import register_nan_hook
 
 JITTER = 1e-6
 EPS = 1e-10

@@ -110,7 +110,7 @@ class MLGP_record_parser:
         self._f.seek(0, 0)
 
         self.start_pattern = '@MLGP_recorder@'
-        self.ex_pattern = ['@append_info@', '@record_result@']
+        self.ex_pattern = ['@append_info@', '@record_result@', '@exception_catch_log@']
         assert len(self.ex_pattern) == len(set(self.ex_pattern)), "repeat pattern is not allow"
 
         self._d = '\r\n'
@@ -154,7 +154,6 @@ class MLGP_record_parser:
             elif _pattern_now is not None and \
                 _l.strip(self._d) != _pattern_now:
                 _single_list.append(_l)
-            # print(self._f.tell())
 
         if _pattern_now not in _ex_pattern_dict:
             _ex_pattern_dict[_pattern_now] = deepcopy(_single_list)

@@ -13,6 +13,7 @@ sys.path.append(realpath)
 
 from utils import mlgp_result_record
 from utils.dict_tools import smart_update
+from utils.mlgp_hook import register_nan_hook
 
 
 default_controller_config = {
@@ -21,6 +22,7 @@ default_controller_config = {
     'eval_batch_size': 1, # not implement
     'record_step': 50,
     'max_epoch': 1000,
+    'record_file_path': './record.txt',
 }
 
 
@@ -37,10 +39,9 @@ class controller(object):
                 _p_list = getattr(self.module, _key)
                 for i, _p in enumerate(_p_list):
                     _p_list[i] = _p.cuda()
+        register_nan_hook(self.module)
 
-        self.result_list = {}
-
-        self.rc_file = mlgp_result_record.MLGP_recorder('./record.txt',
+        self.rc_file = mlgp_result_record.MLGP_recorder(self.controller_config['record_file_path'],
                                                         overlap=True, 
                                                         append_info={
                                                             'module': str(module),
@@ -48,13 +49,12 @@ class controller(object):
                                                             'module_config':self.module.module_config
                                                             })
         self.rc_file.register(['epoch', *self.module.module_config['evaluate_method'], 'time'])
-
-        self.init_time = time.time()
-        # self.discriptor = None
-        # pass
+        os.environ['mlgp_record_file'] = self.controller_config['record_file_path']
 
     def start_train(self):
+        self.init_time = time.time()
         for i in range(self.controller_config['max_epoch']):
+            os.environ['mlgp_epoch'] = str(i)
             self.module.train()
 
             print('train {}/{}'.format(i, self.controller_config['max_epoch']), end='\r')
@@ -72,22 +72,10 @@ class controller(object):
                 _result['epoch'] = i+1
                 self.rc_file.record(_result)
 
-        
-        # if 'quite_reason' not in self.result_list:
-        #     self.result_list['quite_reason'] = 'reach max_epoch'
-        # print_result(self.result_list)
 
     def start_eval(self):
         result = self.module.eval()
         return result
-
-    def check_nan_inf(self):
-        for _data in self.module.get_params_need_check():
-            if torch.isnan(_data).any():
-                return True
-            if torch.isinf(_data).any():
-                return True
-        return False
 
     def record_state(self):
         pass

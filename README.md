@@ -273,6 +273,14 @@ preprocess_default_config_dict = {
 
 
 
-### 6.plot result.
+### 6.Record error status on determine function
 
-​	TODO.
+​	Please refer here [how_to_apply_utils_on_your_code\README.txt](how_to_apply_utils_on_your_code\README.txt).
+
+
+
+### 7.plot result.
+
+​	Parse the mlgp_record.txt file and plot. [plot.py](plot.py)
+
+​	This demo only show how to get data fomr mlgp_record.txt file. The ploting using the most simple method.

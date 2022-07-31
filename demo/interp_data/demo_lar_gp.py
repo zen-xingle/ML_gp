@@ -17,23 +17,24 @@ real_dataset = ['FlowMix3D_MF',
                 'plasmonic2_MF', 
                 'SOFC_MF',]
 
-gen_dataset = ['poisson_v4_02',
+gen_dataset = [
+                'poisson_v4_02',
                 'burger_v4_02',
                 'Burget_mfGent_v5',
                 'Burget_mfGent_v5_02',
-                # 'Heat_mfGent_v5',
+                'Heat_mfGent_v5',
                 'Piosson_mfGent_v5',
                 'Schroed2D_mfGent_v1',
                 'TopOP_mfGent_v5',]
 
-interp_data = False
+interp_data = True
 
 if __name__ == '__main__':
-    for _dataset in ['SOFC_MF']:
+    for _dataset in gen_dataset:
         for _seed in [None,0,1,2,3,4]:
             controller_config = {'max_epoch': 1000,} # use defualt config
             module_config = {
-                'dataset': {'name': 'SOFC_MF',
+                'dataset': {'name': _dataset,
                             'interp_data': interp_data,
 
                             'seed': _seed,
@@ -51,16 +52,18 @@ if __name__ == '__main__':
                             'slice_param': [0.6, 0.4], #only available for dataset, which not seperate train and test before
                             },
                 'cuda': True,
+                'evaluate_method': ['mae', 'rmse', 'r2', 'gaussian_loss'],
+                'noise_init': 10.0
             } # only change dataset config, others use default config
             ct = controller(CIGP_MODULE, controller_config, module_config)
             ct.start_train()
 
             for _sample in [4, 8, 16, 32]:
                 second_controller_config = {
-                    'max_epoch': 100,
+                    'max_epoch': 1000,
                 }
                 second_module_config = {
-                    'dataset': {'name': 'SOFC_MF',
+                    'dataset': {'name': _dataset,
                                 'interp_data': interp_data,
 
                                 'seed': _seed,
@@ -79,6 +82,8 @@ if __name__ == '__main__':
                                 },
                     'res_cigp': {'type_name': 'res_rho'},
                     'cuda': True,
+                    'evaluate_method': ['mae', 'rmse', 'r2', 'gaussian_loss'],
+                    'noise_init': 10.0
                 }
                 second_ct = controller(CIGP_MODULE_Multi_Fidelity, second_controller_config, second_module_config)
 
@@ -90,7 +95,9 @@ if __name__ == '__main__':
                 # check predict yh, as lower as better.
                 torch.dist(second_ct.module.inputs_eval[1], ct.module.predict_y)
                 second_ct.module.inputs_eval[1] = deepcopy(ct.module.predict_y)
+                if hasattr(ct.module, 'predict_var'):
+                        second_ct.module.base_var = ct.module.predict_var
 
                 second_ct.start_train()
 
-    second_ct.clear_record()
+    # second_ct.clear_record()

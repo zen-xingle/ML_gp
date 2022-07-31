@@ -13,7 +13,7 @@ from module.hogp import HOGP_MODULE
 from module.hogp_multi_fidelity import HOGP_MF_MODULE
 
 
-interp_data = False
+interp_data = True
 
 real_dataset = ['FlowMix3D_MF',
                 'MolecularDynamic_MF', 
@@ -24,17 +24,17 @@ gen_dataset = ['poisson_v4_02',
                 'burger_v4_02',
                 'Burget_mfGent_v5',
                 'Burget_mfGent_v5_02',
-                # 'Heat_mfGent_v5',
+                'Heat_mfGent_v5',
                 'Piosson_mfGent_v5',
-                'Schroed2D_mfGent_v1',
-                'TopOP_mfGent_v5',]
+                # 'Schroed2D_mfGent_v1',
+                # 'TopOP_mfGent_v5',
+                ]
 
 if __name__ == '__main__':
-    # for _dataset in real_dataset + gen_dataset:
-    for _dataset in ['SOFC_MF']:
-        for _seed in [None,0,1,2,3,4]:
+    for _dataset in gen_dataset:
+        for _seed in [None, 0, 1, 2, 3, 4]:
             controller_config = {
-                'max_epoch': 100
+                'max_epoch': 1000
             } # use defualt config
             
             module_config = {
@@ -57,6 +57,8 @@ if __name__ == '__main__':
                             'slice_param': [0.6, 0.4], #only available for dataset, which not seperate train and test before
                             },
                     'cuda': True,
+                    'evaluate_method': ['mae', 'rmse', 'r2', 'gaussian_loss'],
+                    'noise_init' : 10.,
                 } # only change dataset config, others use default config
             
             ct = controller(HOGP_MODULE, controller_config, module_config)
@@ -83,6 +85,8 @@ if __name__ == '__main__':
                                 'slice_param': [0.6, 0.4], #only available for dataset, which not seperate train and test before
                                 },
                     'cuda': True,
+                    'noise_init' : 10.,
+                    'evaluate_method': ['mae', 'rmse', 'r2', 'gaussian_loss'],
                 } # only change dataset config, others use default config
 
                 mfct = controller(HOGP_MF_MODULE, controller_config, mfct_module_config)
@@ -90,8 +94,10 @@ if __name__ == '__main__':
                 with torch.no_grad():
                     # use x->yl_predict for test x+yl -> yh
                     mfct.module.inputs_eval[1] = ct.module.predict_y
+                    if hasattr(ct.module, 'predict_var'):
+                        mfct.module.base_var = ct.module.predict_var
                     pass
 
                 mfct.start_train()
 
-    mfct.clear_record()
+    # mfct.clear_record()

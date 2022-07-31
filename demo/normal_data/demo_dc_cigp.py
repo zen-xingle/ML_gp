@@ -12,7 +12,7 @@ from utils.main_controller import controller
 from module.cigp import CIGP_MODULE
 from module.dc_cigp import DC_CIGP_MODULE
 
-interp_data= False
+interp_data= True
 real_dataset = ['FlowMix3D_MF',
                 'MolecularDynamic_MF', 
                 'plasmonic2_MF', 
@@ -22,15 +22,14 @@ gen_dataset = ['poisson_v4_02',
                 'burger_v4_02',
                 'Burget_mfGent_v5',
                 'Burget_mfGent_v5_02',
-                # 'Heat_mfGent_v5',
+                'Heat_mfGent_v5',
                 'Piosson_mfGent_v5',
-                'Schroed2D_mfGent_v1',
+                # 'Schroed2D_mfGent_v1',
                 'TopOP_mfGent_v5',]
 
 if __name__ == '__main__':
-    for _dataset in ['poisson_v4_02']:
+    for _dataset in gen_dataset:
         for _seed in [None, 0, 1, 2, 3, 4]:
-
             controller_config = {'max_epoch':1000} # use defualt config
             module_config = {
                 'dataset': {'name': _dataset,
@@ -54,6 +53,8 @@ if __name__ == '__main__':
                 'optional_param':0.01, 
                 'noise':0.01},
                 'cuda': True,
+                'evaluate_method': ['mae', 'rmse', 'r2', 'gaussian_loss'],
+                'noise_init' : 100.0,
             } # only change dataset config, others use default config
             ct = controller(CIGP_MODULE, controller_config, module_config)
             ct.start_train()
@@ -85,8 +86,9 @@ if __name__ == '__main__':
                                 },
                     'pca': {'type': 'listPCA', 
                             'r': 0.99, }, # listPCA, resPCA_mf,
-                    'noise_init' : 10.,
+                    'noise_init' : 100.,
                     'cuda': True,
+                    'evaluate_method': ['mae', 'rmse', 'r2', 'gaussian_loss'],
                 }
                 second_ct = controller(DC_CIGP_MODULE, controller_config, second_module_config)
                 # replace ground truth eval data with low fidelity predict

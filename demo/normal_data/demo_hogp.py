@@ -10,7 +10,7 @@ sys.path.append(realpath)
 from utils.main_controller import controller
 from module.hogp import HOGP_MODULE
 
-interp_data = False
+interp_data = True
 
 real_dataset = ['FlowMix3D_MF',
                 'MolecularDynamic_MF', 
@@ -21,15 +21,15 @@ gen_dataset = ['poisson_v4_02',
                 'burger_v4_02',
                 'Burget_mfGent_v5',
                 'Burget_mfGent_v5_02',
-                # 'Heat_mfGent_v5',
+                'Heat_mfGent_v5',
                 'Piosson_mfGent_v5',
                 'Schroed2D_mfGent_v1',
                 'TopOP_mfGent_v5',]
 
 if __name__ == '__main__':
     # for _dataset in real_dataset + gen_dataset:
-    for _dataset in ['SOFC_MF']:
-        for _seed in [None, 0, 1, 2, 3, 4]:
+    for _dataset in ['poisson_v4_02']:
+        for _seed in [None]:
             module_config = {
                 'dataset': {
                             'name': _dataset,
@@ -51,9 +51,15 @@ if __name__ == '__main__':
                             'slice_param': [0.6, 0.4], #only available for dataset, which not seperate train and test before
                             },
                     'cuda': True,
+                    'evaluate_method': ['mae', 'rmse', 'r2', 'gaussian_loss'],
+                    'noise_init' : 10.0,
+
+                    'lr': {'kernel':0.01, 
+                    'optional_param':0.01, 
+                    'noise':0.01},
                 }
 
-            ct = controller(HOGP_MODULE, {'max_epoch': 1000}, module_config)
+            ct = controller(HOGP_MODULE, {'max_epoch': 10000}, module_config)
             # print(ct.module.module_config['dataset']['seed'])
             ct.start_train()
 

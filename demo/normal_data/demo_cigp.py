@@ -23,11 +23,11 @@ gen_dataset = ['poisson_v4_02',
                 'Schroed2D_mfGent_v1',
                 'TopOP_mfGent_v5',]
 
-interp_data = False
+interp_data = True
 
 if __name__ == '__main__':
     # for _dataset in real_dataset + gen_dataset:
-    for _dataset in ['poisson_v4_02']:
+    for _dataset in gen_dataset:
         for _seed in [None, 0, 1, 2, 3, 4]:
 
             module_config = {
@@ -55,6 +55,8 @@ if __name__ == '__main__':
 
                     'noise_init' : 0.0001,
                     'cuda': True,
+
+                     'evaluate_method': ['mae', 'rmse', 'r2', 'gaussian_loss'],
                 }
 
             ct = controller(CIGP_MODULE, {}, module_config)

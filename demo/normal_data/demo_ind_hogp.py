@@ -12,7 +12,7 @@ from utils.main_controller import controller
 # from module.hogp import HOGP_MODULE
 from module.ind_hogp import HOGP_MODULE
 
-interp_data = False
+interp_data = True
 
 real_dataset = ['FlowMix3D_MF',
                 'MolecularDynamic_MF', 
@@ -52,6 +52,7 @@ if __name__ == '__main__':
                             'slice_param': [0.6, 0.4], #only available for dataset, which not seperate train and test before
                             },
                 'cuda': True,
+                'evaluate_method': ['mae', 'rmse', 'r2', 'gaussian_loss'],
             }
             ct = controller(HOGP_MODULE, {}, module_config)
             ct.start_train()

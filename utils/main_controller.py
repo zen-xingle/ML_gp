@@ -18,7 +18,7 @@ from utils.mlgp_hook import register_nan_hook
 
 default_controller_config = {
     'batch_size': 1, # not implement
-    'check_point': [1, 10, 100, 300, 500, 1000, 2500, 5000, 7500, 10000],
+    'check_point': [1, 10, 100, 300, 500, 1000, 1500,2500,3000,4000, 5000,6000,7000,8000,9000,10000],
     'eval_batch_size': 1, # not implement
     'record_step': 50,
     'max_epoch': 1000,
@@ -32,14 +32,14 @@ class controller(object):
         self.controller_config = smart_update(default_controller_config, controller_config)
         
         self.module = module(module_config)
-        if self.module.module_config['cuda']:
+        if self.module.module_config.get('cuda',False):
             self.module.cuda()
             inputs_name = ['inputs_eval', 'inputs_tr', 'outputs_eval','outputs_tr']
             for _key in inputs_name:
                 _p_list = getattr(self.module, _key)
                 for i, _p in enumerate(_p_list):
                     _p_list[i] = _p.cuda()
-        register_nan_hook(self.module)
+        # register_nan_hook(self.module)
 
         self.rc_file = mlgp_result_record.MLGP_recorder(self.controller_config['record_file_path'],
                                                         overlap=True, 

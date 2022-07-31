@@ -188,7 +188,7 @@ class MLGP_record_parser:
             for _l in _list:
                 f.write(_l)
         with open('./tmp.yaml','r') as f:
-            yaml_data = yaml.load(f)
+            yaml_data = yaml.load(f, Loader=yaml.FullLoader)
         # os.system('rm ./tmp.yaml')
         return yaml_data
 

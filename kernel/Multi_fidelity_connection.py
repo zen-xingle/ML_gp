@@ -94,6 +94,14 @@ class mapping_connection(torch.nn.Module):
         yh = map_y + res.reshape_as(map_y)
         return yh
 
+    def low_2_high_double_mapping(self, yl_var, res):
+        yl_var = yl_var.sqrt()
+        map_y = tensorly.tenalg.multi_mode_dot(yl_var, self.mapping_list)
+        # map_y = tensorly.tenalg.multi_mode_dot(map_y, [_v.T for _v in self.mapping_list])
+        map_y = torch.pow(map_y, 2)
+        yh_var = map_y + res.reshape_as(map_y)
+        return yh_var
+
     def high_2_low(self, yh, res):
         raise NotImplemented
 

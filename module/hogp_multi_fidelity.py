@@ -299,6 +299,7 @@ class HOGP_MF_MODULE(torch.nn.Module):
                 # NOTE: now only work for the normal predict
                 _init_value = torch.tensor([1.0],  device=list(self.parameters())[0].device).reshape(*[1 for i in self.K])
                 diag_K = tucker_to_tensor(( _init_value, [K.diag().reshape(-1,1) for K in self.K[:-1]]))
+                diag_K = self.kernel_list[-1](input_param[0], input_param[0]).diag()* diag_K
 
                 S = self.A * self.A.pow(-1/2)
                 S_2 = S.pow(2)
@@ -306,11 +307,11 @@ class HOGP_MF_MODULE(torch.nn.Module):
                 S_product = tensorly.tenalg.multi_mode_dot(S_2, [self.K_eigen[i].vector.pow(2) for i in range(len(self.K_eigen)-1)]+[(K_star@self.K[-1].inverse()@self.K_eigen[-1].vector).pow(2)])
                 M = diag_K + S_product
                 if self.module_config['output_normalize'] is True:
-                    # base_var = input_param[2]/(self.Y_normalizer.std ** 2)
+                    base_var = input_param[2]/(self.Y_normalizer.std ** 2 + JITTER)
+                    M = self.target_connection.low_2_high_double_mapping(base_var, M)
                     M = M * (self.Y_normalizer.std ** 2)
-                    M = self.target_connection.low_2_high(input_param[2], M)
                 else:
-                    M = self.target_connection.low_2_high(input_param[2], M)
+                    M = self.target_connection.low_2_high_double_mapping(input_param[2], M)
                 M = torch.clip(M, JITTER)
             else:
                 M = None
@@ -339,20 +340,20 @@ class HOGP_MF_MODULE(torch.nn.Module):
 
 
 
-    def get_params_need_check(self):
-        params_need_check = []
-        for i in range(len(self.kernel_list)):
-            params_need_check.extend(self.kernel_list[i].get_params_need_check())
-        params_need_check.append(self.noise)
-        params_need_check.extend(self.target_connection.get_params_need_check())
+    # def get_params_need_check(self):
+    #     params_need_check = []
+    #     for i in range(len(self.kernel_list)):
+    #         params_need_check.extend(self.kernel_list[i].get_params_need_check())
+    #     params_need_check.append(self.noise)
+    #     params_need_check.extend(self.target_connection.get_params_need_check())
         
-        if self.module_config['grid_config']['type'] == 'learnable':
-            params_need_check.extend(self.grid)
+    #     if self.module_config['grid_config']['type'] == 'learnable':
+    #         params_need_check.extend(self.grid)
 
-        if self.module_config['grid_config']['dimension_map'] not in ['identity']:
-            params_need_check.extend(self.mapping_vector)
+    #     if self.module_config['grid_config']['dimension_map'] not in ['identity']:
+    #         params_need_check.extend(self.mapping_vector)
 
-        return params_need_check
+    #     return params_need_check
 
 
     def eval(self):

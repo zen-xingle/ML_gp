@@ -16,8 +16,14 @@ sys.path.append(realpath)
 
 
 from nn_net.BaseNet import AdaptiveBaseNet
-from scipy.io import loadmat
+
+from tensorly.decomposition import tucker
+from tensorly import tucker_to_tensor
 from utils import *
+from kernel import kernel_utils
+from utils.data_utils import data_register
+from utils.data_utils.data_preprocess import Data_preprocess
+from utils.data_utils.data_loader import SP_DataLoader, Standard_mat_DataLoader
 
 
 # optimize for main_controller

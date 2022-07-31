@@ -177,8 +177,8 @@ class CIGP_MODULE_Multi_Fidelity(torch.nn.Module):
             Sigma = Sigma + _noise.pow(-1) * torch.eye(self.inputs_tr[0].size(0),  device=list(self.parameters())[0].device)
 
             kx = self.kernel_list[0](self.inputs_tr[0], input_param[0])
-            L = torch.cholesky(Sigma)
-            # LinvKx,_ = torch.triangular_solve(kx, L, upper = False)
+            L = torch.linalg.cholesky(Sigma)
+            LinvKx,_ = torch.triangular_solve(kx, L, upper = False)
 
             if self.module_config['res_cigp'] is not None:
                 u = kx.t() @ torch.cholesky_solve(self.target_connection(self.inputs_tr[1], self.outputs_tr[0]), L)
@@ -190,12 +190,31 @@ class CIGP_MODULE_Multi_Fidelity(torch.nn.Module):
             else:
                 u = kx.t() @ torch.cholesky_solve(self.outputs_tr[0], L)
 
+            if len(input_param)>2:
+                var_diag = self.kernel_list[0](input_param[0], input_param[0]).diag().view(-1, 1) - (LinvKx**2).sum(dim = 0).view(-1, 1)
+                if self.module_config['exp_restrict'] is True:
+                    var_diag = var_diag + self.noise.exp().pow(-1)
+                else:
+                    var_diag = var_diag + self.noise.pow(-1)
+
+                if self.module_config['output_normalize'] is True:
+                    # base_var = input_param[2]/(self.Y_normalizer.std ** 2)
+                    # var_diag = self.target_connection.low_2_high(input_param[2], var_diag)
+                    # var_diag = var_diag * (self.Y_normalizer.std ** 2)
+
+                    var_diag = var_diag * (self.Y_normalizer.std ** 2)
+                    var_diag = self.target_connection.low_2_high(input_param[2], var_diag)
+                else:
+                    var_diag = self.target_connection.low_2_high(input_param[2], var_diag)
+                
+                var_diag = var_diag * self.Y_normalizer.std**2
+            else:
+                var_diag = None
+            
             if self.module_config['output_normalize'] is True:
                 u = self.Y_normalizer.denormalize(u)
-            # TODO var
-            # if self.module_config['exp_restrict'] is True:
-            #     var_diag = self.log_scale.exp() - (LinvKx**2).sum(dim = 0).view(-1,1)
-            return u, None
+
+            return u, var_diag
 
 
     def train(self):
@@ -208,9 +227,12 @@ class CIGP_MODULE_Multi_Fidelity(torch.nn.Module):
 
     def eval(self):
         print('---> start eval')
-        predict_y, _var = self.predict(self.inputs_eval)
-        result = performance_evaluator(predict_y, self.outputs_eval[0], self.module_config['evaluate_method'], sample_last_dim=False)
-        self.predict_y = predict_y
+        if hasattr(self, 'base_var'):
+            predict_y, predict_var = self.predict(self.inputs_eval + [self.base_var])
+        else:
+            predict_y, predict_var = self.predict(self.inputs_eval)
+        self.predict_y = deepcopy(predict_y)
+        result = high_level_evaluator([predict_y, predict_var], self.outputs_eval[0], self.module_config['evaluate_method'], sample_last_dim=False)
         print(result)
         return result
 

@@ -118,19 +118,6 @@ class DC_CIGP_MODULE(torch.nn.Module):
         # init optimizer
         self._optimizer_setup()
 
-    def _select_connection_kernel(self, type_name):
-        from kernel.Multi_fidelity_connection import rho_connection, mapping_connection
-        assert type_name in ['res_standard', 'res_rho', 'res_mapping']
-        if type_name == 'res_standard':
-            self.target_connection = rho_connection(rho=1., trainable=False)
-        elif type_name in ['res_rho']:
-            self.target_connection = rho_connection(rho=1., trainable=True)
-        elif type_name in ['res_mapping']:
-            self.target_connection = mapping_connection(self.target_list[0][:,:,0].shape, 
-                                                        self.target_list[1][:,:,0].shape,
-                                                        self.module_config['mapping'])
-
-
     def _optimizer_setup(self):
         optional_params = []
 
@@ -192,20 +179,28 @@ class DC_CIGP_MODULE(torch.nn.Module):
             Sigma = Sigma + _noise.pow(-1) * torch.eye(self.inputs_tr[0].size(0), device=list(self.parameters())[0].device)
 
             kx = self.kernel_list[0](self.inputs_tr[0], input_param[0])
-            L = torch.cholesky(Sigma)
-            # LinvKx,_ = torch.triangular_solve(kx, L, upper = False)
+            L = torch.linalg.cholesky(Sigma)
+            LinvKx,_ = torch.triangular_solve(kx, L, upper = False)
 
+            var_diag = self.kernel_list[0](input_param[0], input_param[0]).diag().view(-1, 1) - (LinvKx**2).sum(dim = 0).view(-1, 1)
+            if self.module_config['exp_restrict'] is True:
+                var_diag = var_diag + self.noise.exp().pow(-1)
+            else:
+                var_diag = var_diag + self.noise.pow(-1)
+            
             u = kx.t() @ torch.cholesky_solve(self.outputs_tr[0], L)
 
             if self.pca_model is not None:
+                var_diag = var_diag.expand_as(u)
+                var_diag = self.pca_model.recover([_temp_record[0],var_diag])[1]
+                var_diag = torch.clip(var_diag, EPS)
                 u = self.pca_model.recover([_temp_record[0],u])[1]
 
             if self.module_config['output_normalize'] is True:
                 u = self.Y_normalizer.denormalize(u)
-            # TODO var
-            # if self.module_config['exp_restrict'] is True:
-            #     var_diag = self.log_scale.exp() - (LinvKx**2).sum(dim = 0).view(-1,1)
-            return u, None
+                var_diag = var_diag * self.Y_normalizer.std**2
+
+            return u, var_diag
 
 
     def train(self):
@@ -218,9 +213,10 @@ class DC_CIGP_MODULE(torch.nn.Module):
 
     def eval(self):
         print('---> start eval')
-        predict_y, _var = self.predict(self.inputs_eval)
-        result = performance_evaluator(predict_y, self.outputs_eval[0], self.module_config['evaluate_method'], sample_last_dim=False)
+        predict_y, predict_var = self.predict(self.inputs_eval)
+        result = high_level_evaluator([predict_y, predict_var], self.outputs_eval[0], self.module_config['evaluate_method'], sample_last_dim=False)
         self.predict_y = predict_y
+        self.predict_var = predict_var
         print(result)
         return result
 

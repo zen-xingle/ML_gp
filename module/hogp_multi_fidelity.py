@@ -295,64 +295,28 @@ class HOGP_MF_MODULE(torch.nn.Module):
                 predict_u = self.target_connection.low_2_high(input_param[1], predict_u)
 
             # /*** Get predict var***/
-            '''
-            '''
-            # NOTE: now only work for the normal predict
-            _init_value = torch.tensor([1.0],  device=list(self.parameters())[0].device).reshape(*[1 for i in self.K])
-            diag_K = tucker_to_tensor(( _init_value, [K.diag().reshape(-1,1) for K in self.K[:-1]]))
+            if len(input_param) > 2:
+                # NOTE: now only work for the normal predict
+                _init_value = torch.tensor([1.0],  device=list(self.parameters())[0].device).reshape(*[1 for i in self.K])
+                diag_K = tucker_to_tensor(( _init_value, [K.diag().reshape(-1,1) for K in self.K[:-1]]))
 
-            S = self.A * self.A.pow(-1/2)
-            S_2 = S.pow(2)
-            # S_product = tensorly.tenalg.multi_mode_dot(S_2, [eigen_vector_d1.pow(2), eigen_vector_d2.pow(2), (K_star@K_p.inverse()@eigen_vector_p).pow(2)])
-            S_product = tensorly.tenalg.multi_mode_dot(S_2, [self.K_eigen[i].vector.pow(2) for i in range(len(self.K_eigen)-1)]+[(K_star@self.K[-1].inverse()@self.K_eigen[-1].vector).pow(2)])
-            M = diag_K + S_product
-            # if self.module_config['output_normalize'] is True:
-            #     M = M * self.Y_normalizer.std ** 2
+                S = self.A * self.A.pow(-1/2)
+                S_2 = S.pow(2)
+                # S_product = tensorly.tenalg.multi_mode_dot(S_2, [eigen_vector_d1.pow(2), eigen_vector_d2.pow(2), (K_star@K_p.inverse()@eigen_vector_p).pow(2)])
+                S_product = tensorly.tenalg.multi_mode_dot(S_2, [self.K_eigen[i].vector.pow(2) for i in range(len(self.K_eigen)-1)]+[(K_star@self.K[-1].inverse()@self.K_eigen[-1].vector).pow(2)])
+                M = diag_K + S_product
+                if self.module_config['output_normalize'] is True:
+                    # base_var = input_param[2]/(self.Y_normalizer.std ** 2)
+                    M = M * (self.Y_normalizer.std ** 2)
+                    M = self.target_connection.low_2_high(input_param[2], M)
+                else:
+                    M = self.target_connection.low_2_high(input_param[2], M)
+                M = torch.clip(M, JITTER)
+            else:
+                M = None
 
         return predict_u, M
 
-    '''
-    def predict_postprior(self, input_param, target_y, target_mask, method):
-        # method 0 - 
-        # method 1 - direct gp
-
-        if len(input_param.shape) != len(self.grid_params_list[-1].shape):
-                input_param = input_param.reshape(1, *input_param.shape)
-        
-        if method == '0':
-            # get predict_u for init
-            predict_u, _ = self.predict(input_param)
-
-            # method 0
-            new_param = torch.cat([self.grid_params_list[-1],input_param], 0)
-            new_k = [*self.K[:-1], self.kernel_list[-1](new_param, new_param)]
-            pod = posterior_output_decorator(new_k, predict_u, target_y, target_mask, self.target_list)
-            pod.noise = deepcopy(self.noise.data)
-            pod_train_number = 100
-            for i in range(pod_train_number):
-                pod.train()
-                print("posterior_output_decorator finish {}/{}".format(i+1, pod_train_number), end='\r')
-            output = pod.eval()
-
-        # method 1
-        # /*** not implement yet***/
-        # y_known = torch.stack(self.target_list, dim=1)
-        # predict_direct_gp = K_star@(torch.inverse(self.K[0])@y_known).T
-
-        return output
-    '''
-
-    '''
-    def train_l2_loss(self, params, target):
-        # no used anymore
-        self.update_product()
-        mean, var = self.predict(params)
-
-        loss = (mean.reshape(target.shape)-target).pow(2).sum()/mean.size()[0]
-        loss *= -1
-        loss.backward()
-        self.optimizer.step()
-    '''
 
     def train(self):
         self.update_product()
@@ -393,9 +357,11 @@ class HOGP_MF_MODULE(torch.nn.Module):
 
     def eval(self):
         print('---> start eval')
-        predict_y, predict_var = self.predict(self.inputs_eval)
+        if hasattr(self, 'base_var'):
+            predict_y, predict_var = self.predict(self.inputs_eval + [self.base_var])
+        else:
+            predict_y, predict_var = self.predict(self.inputs_eval)
         self.predict_y = deepcopy(predict_y)
-        # result = performance_evaluator(predict_y, self.outputs_eval[0], self.module_config['evaluate_method'])
         predict_y = _last_dim_to_fist(predict_y)
         predict_var = _last_dim_to_fist(predict_var)
         target = _last_dim_to_fist(self.outputs_eval[0])

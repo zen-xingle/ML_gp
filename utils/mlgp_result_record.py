@@ -215,8 +215,18 @@ class MLGP_record_parser:
         for i, _l in enumerate(_list):
             _list[i] = _list[i].split(',')
             if i>0:
+                if not isinstance(_list[i], list) or \
+                    _list[i] == ['']:
+                    continue
                 _list[i] = [float(_v) for _v in _list[i]]
-        return _list
+
+        # hack for mac. wait for optimize
+        _new_list = []
+        for _l in _list:
+            if _l != ['']:
+                _new_list.append(_l)
+
+        return _new_list
 
     def get_data(self):
         return self.reformat_list

@@ -59,5 +59,5 @@ if __name__ == '__main__':
                      'evaluate_method': ['mae', 'rmse', 'r2', 'gaussian_loss'],
                 }
 
-            ct = controller(CIGP_MODULE, {}, module_config)
+            ct = controller(CIGP_MODULE, {'record_file_path': 'CIGP.txt'}, module_config)
             ct.start_train()

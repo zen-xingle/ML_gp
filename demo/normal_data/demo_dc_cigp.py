@@ -30,7 +30,8 @@ gen_dataset = ['poisson_v4_02',
 if __name__ == '__main__':
     for _dataset in gen_dataset:
         for _seed in [None, 0, 1, 2, 3, 4]:
-            controller_config = {'max_epoch':1000} # use defualt config
+            controller_config = {'max_epoch':1000, 
+                                 'record_file_path': 'DC.txt'} # use defualt config
             module_config = {
                 'dataset': {'name': _dataset,
                             'interp_data': interp_data,
@@ -63,9 +64,6 @@ if __name__ == '__main__':
             # ================================================================
             # Training x,yl -> yh part
             for _sample in [4,8,16,32]:
-                second_controller_config = {
-                    'max_epoch': 1000,
-                }
                 second_module_config = {
                     'dataset': {'name': _dataset,
                                 'interp_data': interp_data,

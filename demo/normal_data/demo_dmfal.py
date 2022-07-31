@@ -63,7 +63,7 @@ if __name__ == '__main__':
                     'second_fidelity_sample': _sample,
                 }
 
-                ct = controller(DeepMFnet, {}, module_config)
+                ct = controller(DeepMFnet, {'record_file_path': 'dmfal.txt'}, module_config)
                 ct.start_train()
                 ct.smart_restore_state(-1)
                 ct.rc_file.write('---> final result\n')

@@ -34,7 +34,8 @@ if __name__ == '__main__':
     for _dataset in gen_dataset:
         for _seed in [None, 0, 1, 2, 3, 4]:
             controller_config = {
-                'max_epoch': 1000
+                'max_epoch': 1000,
+                'record_file_path': 'GAR.txt'
             } # use defualt config
             
             module_config = {

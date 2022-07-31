@@ -59,7 +59,7 @@ if __name__ == '__main__':
                     'noise':0.01},
                 }
 
-            ct = controller(HOGP_MODULE, {'max_epoch': 10000}, module_config)
+            ct = controller(HOGP_MODULE, {'max_epoch': 1000, 'record_file_path': 'hogp.txt'}, module_config)
             # print(ct.module.module_config['dataset']['seed'])
             ct.start_train()
 

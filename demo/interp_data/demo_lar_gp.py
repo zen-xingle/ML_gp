@@ -32,7 +32,8 @@ interp_data = True
 if __name__ == '__main__':
     for _dataset in gen_dataset:
         for _seed in [None,0,1,2,3,4]:
-            controller_config = {'max_epoch': 1000,} # use defualt config
+            controller_config = {'max_epoch': 1000,
+                                 'record_file_path': 'LAR.txt'} # use defualt config
             module_config = {
                 'dataset': {'name': _dataset,
                             'interp_data': interp_data,
@@ -59,9 +60,6 @@ if __name__ == '__main__':
             ct.start_train()
 
             for _sample in [4, 8, 16, 32]:
-                second_controller_config = {
-                    'max_epoch': 1000,
-                }
                 second_module_config = {
                     'dataset': {'name': _dataset,
                                 'interp_data': interp_data,
@@ -85,7 +83,7 @@ if __name__ == '__main__':
                     'evaluate_method': ['mae', 'rmse', 'r2', 'gaussian_loss'],
                     'noise_init': 10.0
                 }
-                second_ct = controller(CIGP_MODULE_Multi_Fidelity, second_controller_config, second_module_config)
+                second_ct = controller(CIGP_MODULE_Multi_Fidelity, controller_config, second_module_config)
 
                 # replace ground truth eval data with low fidelity predict
                 # check inputs x, this should be 0

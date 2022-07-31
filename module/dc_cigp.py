@@ -79,9 +79,12 @@ class DC_CIGP_MODULE(torch.nn.Module):
 
         # X - normalize
         if module_config['input_normalize'] is True:
-            self.X_normalizer_0 = Normalizer(self.inputs_tr[0])
+            # self.X_normalizer_0 = Normalizer(self.inputs_tr[0])
+            self.X_normalizer_0 = Normalizer(self.inputs_tr[0],  dim=[i for i in range(len(self.inputs_tr[0].shape))])
             self.inputs_tr[0] = self.X_normalizer_0.normalize(self.inputs_tr[0])
-            self.X_normalizer_1 = Normalizer(self.inputs_tr[1])
+
+            # self.X_normalizer_1 = Normalizer(self.inputs_tr[1])
+            self.X_normalizer_1 = Normalizer(self.inputs_tr[0],  dim=[i for i in range(len(self.inputs_tr[0].shape))])
             self.inputs_tr[1] = self.X_normalizer_1.normalize(self.inputs_tr[1])
         else:
             self.X_normalizer = None

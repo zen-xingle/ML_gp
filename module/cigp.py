@@ -76,14 +76,16 @@ class CIGP_MODULE(torch.nn.Module):
 
         # X - normalize
         if module_config['input_normalize'] is True:
-            self.X_normalizer = Normalizer(self.inputs_tr[0])
+            # self.X_normalizer = Normalizer(self.inputs_tr[0])
+            self.X_normalizer = Normalizer(self.inputs_tr[0],  dim=[i for i in range(len(self.inputs_tr[0].shape))])
             self.inputs_tr[0] = self.X_normalizer.normalize(self.inputs_tr[0])
         else:
             self.X_normalizer = None
 
         # Y - normalize
         if module_config['output_normalize'] is True:
-            self.Y_normalizer = Normalizer(self.outputs_tr[0])
+            # self.Y_normalizer = Normalizer(self.outputs_tr[0], dim=[0,1])
+            self.Y_normalizer = Normalizer(self.outputs_tr[0], dim=[i for i in range(len(self.outputs_tr[0].shape))])
             self.outputs_tr[0] = self.Y_normalizer.normalize(self.outputs_tr[0])
         else:
             self.Y_normalizer = None
@@ -191,6 +193,27 @@ class CIGP_MODULE(torch.nn.Module):
     def eval(self):
         print('---> start eval')
         predict_y, predict_var = self.predict(self.inputs_eval)
+
+        if hasattr(self, 'base_cigp') and False:
+            from torch.distributions import Normal
+            sample_time = 100
+            data_number = self.base_cigp.inputs_eval[0].shape[0]
+            _dim_len = self.base_cigp.inputs_eval[0].shape[1]
+            _base_mean, _base_var = self.base_cigp.predict([self.inputs_eval[0][:, :_dim_len]])
+            for i in range(data_number):
+                # sample
+                sampler = Normal(_base_mean[i:i+1,:], torch.clip(_base_var[i:i+1,:].sqrt(), 1e-6))
+                sample_input = torch.cat([sampler.sample() for i in range(sample_time)], dim=0)
+                base_input = self.inputs_eval[0][:, :_dim_len][i:i+1, :].tile(sample_time, 1)
+
+                # real_input
+                sample_input = torch.cat([base_input, sample_input], dim=1)
+                _, sample_var = self.predict([sample_input])
+
+                # replace var
+                sample_var = sample_var.mean(0, keepdim=True)
+                predict_var[i:i+1, :] = sample_var
+
         result = high_level_evaluator([predict_y, predict_var], self.outputs_eval[0], self.module_config['evaluate_method'], sample_last_dim=False)
         self.predict_y = predict_y
         self.predict_var = predict_var

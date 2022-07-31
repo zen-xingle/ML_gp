@@ -19,8 +19,8 @@ class Normalizer:
     #     # it should be auto broadcast
     #     return inputs * self.std + self.mean
             # default dim is 0, which means the first dim is sample_num dim.
-        self.mean = inputs.mean(dim=dim)
-        self.std = inputs.std(dim=dim)
+        self.mean = inputs.mean(dim=dim, keepdim=True)
+        self.std = inputs.std(dim=dim, keepdim=True)
         self.dim = dim
 
     def normalize(self, inputs):

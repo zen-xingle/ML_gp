@@ -78,14 +78,16 @@ class CIGP_MODULE_Multi_Fidelity(torch.nn.Module):
 
         # X - normalize
         if module_config['input_normalize'] is True:
-            self.X_normalizer = Normalizer(self.inputs_tr[0])
+            # self.X_normalizer = Normalizer(self.inputs_tr[0])
+            self.X_normalizer = Normalizer(self.inputs_tr[0],  dim=[i for i in range(len(self.inputs_tr[0].shape))])
             self.inputs_tr[0] = self.X_normalizer.normalize(self.inputs_tr[0])
         else:
             self.X_normalizer = None
 
         # Y - normalize
         if module_config['output_normalize'] is True:
-            self.Y_normalizer = Normalizer(self.outputs_tr[0])
+            # self.Y_normalizer = Normalizer(self.outputs_tr[0])
+            self.Y_normalizer = Normalizer(self.outputs_tr[0], dim=[i for i in range(len(self.outputs_tr[0].shape))])
             self.outputs_tr[0] = self.Y_normalizer.normalize(self.outputs_tr[0])
             if self.module_config['res_cigp'] is not None:
                 self.inputs_tr[1] = self.Y_normalizer.normalize(self.inputs_tr[1])

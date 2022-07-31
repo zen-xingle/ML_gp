@@ -192,8 +192,9 @@ class DC_CIGP_MODULE(torch.nn.Module):
 
             if self.pca_model is not None:
                 var_diag = var_diag.expand_as(u)
+                var_diag = torch.rsqrt(var_diag)
                 var_diag = self.pca_model.recover([_temp_record[0],var_diag])[1]
-                var_diag = torch.clip(var_diag, EPS)
+                var_diag = torch.pow(var_diag, 2)
                 u = self.pca_model.recover([_temp_record[0],u])[1]
 
             if self.module_config['output_normalize'] is True:

@@ -25,9 +25,14 @@ def _smooth_mapping_matrix(_shape):
     return _init_tensor
 
 
-def _new_distribution(_shape):
-    pass
-
+def _eye_distribution(_shape):
+    if _shape[0] < _shape[1]:
+        init_tensor = torch.eye(_shape[0])
+        init_tensor = torch.nn.functional.interpolate(init_tensor.reshape(1, 1, *init_tensor.shape), _shape, mode='bilinear')
+        init_tensor = init_tensor.squeeze().T
+    elif _shape[0] == _shape[1]:
+        init_tensor = torch.eye(_shape[0])
+    return init_tensor
 
 class rho_connection(torch.nn.Module):
     # rho connection between yl/yh
@@ -67,39 +72,54 @@ class rho_connection(torch.nn.Module):
 
 class mapping_connection(torch.nn.Module):
     # mapping connection between yl/yh
-    def __init__(self, yl_shape, yh_shape, distribution_name='smooth_mapping_matrix'):
+    def __init__(self, yl_shape, yh_shape, distribution_name='smooth_mapping_matrix',  sample_last_dim=True):
         # assume 10,20 -> 35, 50
         super().__init__()
         assert len(yl_shape) == len(yh_shape), "yl and yh should have same dims, but got {} and {}".format(yl_shape, yh_shape)
         
         self.yl_shape = yl_shape
         self.yh_shape = yh_shape
+        self.sample_last_dim = sample_last_dim
 
         self.mapping_list = []
         for i in range(len(yl_shape)):
             if distribution_name == 'smooth_mapping_matrix':
                 _init_tensor = _smooth_mapping_matrix((yl_shape[i], yh_shape[i]))
-            elif distribution_name == 'new':
-                _init_tensor = _new_distribution((yl_shape[i], yh_shape[i]))
+            elif distribution_name == 'eye':
+                _init_tensor = _eye_distribution((yl_shape[i], yh_shape[i]))
             self.mapping_list.append(torch.nn.Parameter(_init_tensor))
         self.mapping_list = torch.nn.ParameterList(self.mapping_list)
 
     def forward(self, yl, yh):
-        map_y = tensorly.tenalg.multi_mode_dot(yl, self.mapping_list)
+        if self.sample_last_dim:
+            map_y = tensorly.tenalg.multi_mode_dot(yl, self.mapping_list)
+        else:
+            _perm = [i+1 for i in range(yl.dim()-1)] + [0]
+            _back_perm = [yl.dim()-1] + [i for i in range(yl.dim()-1)]
+            map_y = tensorly.tenalg.multi_mode_dot(yl.permute(_perm), self.mapping_list).permute(_back_perm)
         res = yh - map_y
         return res
 
     def low_2_high(self, yl, res):
-        map_y = tensorly.tenalg.multi_mode_dot(yl, self.mapping_list)
+        if self.sample_last_dim:
+            map_y = tensorly.tenalg.multi_mode_dot(yl, self.mapping_list)
+        else:
+            _perm = [i+1 for i in range(yl.dim()-1)] + [0]
+            _back_perm = [yl.dim()-1] + [i for i in range(yl.dim()-1)]
+            map_y = tensorly.tenalg.multi_mode_dot(yl.permute(_perm), self.mapping_list).permute(_back_perm)
         yh = map_y + res.reshape_as(map_y)
         return yh
 
     def low_2_high_double_mapping(self, yl_var, res):
         yl_var = yl_var.sqrt()
-        map_y = tensorly.tenalg.multi_mode_dot(yl_var, self.mapping_list)
-        # map_y = tensorly.tenalg.multi_mode_dot(map_y, [_v.T for _v in self.mapping_list])
+        if self.sample_last_dim:
+            map_y = tensorly.tenalg.multi_mode_dot(yl_var, self.mapping_list)
+        else:
+            _perm = [i+1 for i in range(yl_var.dim()-1)] + [0]
+            _back_perm = [yl_var.dim()-1] + [i for i in range(yl_var.dim()-1)]
+            map_y = tensorly.tenalg.multi_mode_dot(yl_var.permute(_perm), self.mapping_list).permute(_back_perm)
         map_y = torch.pow(map_y, 2)
-        yh_var = map_y + res.reshape_as(map_y)
+        yh_var = map_y + res
         return yh_var
 
     def high_2_low(self, yh, res):

@@ -116,9 +116,10 @@ class CIGP_MODULE_Multi_Fidelity(torch.nn.Module):
         elif type_name in ['res_rho']:
             self.target_connection = rho_connection(rho=1., trainable=True)
         elif type_name in ['res_mapping']:
-            self.target_connection = mapping_connection(self.target_list[0][:,:,0].shape, 
-                                                        self.target_list[1][:,:,0].shape,
-                                                        self.module_config['mapping'])
+            self.target_connection = mapping_connection(self.inputs_tr[1][0,...].shape, 
+                                                        self.outputs_tr[0][0,...].shape,
+                                                        distribution_name='eye',
+                                                        sample_last_dim=False)
 
 
     def _optimizer_setup(self):
@@ -202,14 +203,11 @@ class CIGP_MODULE_Multi_Fidelity(torch.nn.Module):
                     var_diag = var_diag + self.noise.pow(-1)
 
                 if self.module_config['output_normalize'] is True:
-                    # base_var = input_param[2]/(self.Y_normalizer.std ** 2)
-                    # var_diag = self.target_connection.low_2_high(input_param[2], var_diag)
-                    # var_diag = var_diag * (self.Y_normalizer.std ** 2)
-
+                    base_var = input_param[2]/(self.Y_normalizer.std ** 2)
+                    var_diag = self.target_connection.low_2_high_double_mapping(base_var, var_diag)
                     var_diag = var_diag * (self.Y_normalizer.std ** 2)
-                    var_diag = self.target_connection.low_2_high(input_param[2], var_diag)
                 else:
-                    var_diag = self.target_connection.low_2_high(input_param[2], var_diag)
+                    var_diag = self.target_connection.low_2_high_double_mapping(input_param[2], var_diag)
                 
                 var_diag = var_diag * self.Y_normalizer.std**2
             else:

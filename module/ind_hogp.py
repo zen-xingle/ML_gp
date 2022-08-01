@@ -46,6 +46,7 @@ default_module_config = {
     'lr': {'kernel':0.01, 
            'optional_param':0.01, 
            'noise':0.01},
+    'weight_decay': 1e-3,
     # kernel number as dim + 1
     'kernel': {
             'K1': {'SE': {'exp_restrict':True, 'length_scale':1., 'scale': 1.}},
@@ -184,7 +185,8 @@ class HOGP_MODULE(torch.nn.Module):
         # module_config['lr'] = {'kernel':0.01, 'optional_param':0.01, 'noise':0.01}
         self.optimizer = torch.optim.Adam([{'params': optional_params, 'lr': self.module_config['lr']['optional_param']}, 
                                            {'params': [self.noise], 'lr': self.module_config['lr']['noise']},
-                                           {'params': kernel_learnable_param , 'lr': self.module_config['lr']['kernel']}]) # 改了lr从0.01 改成0.0001
+                                           {'params': kernel_learnable_param , 'lr': self.module_config['lr']['kernel']}],
+                                           weight_decay = self.module_config['weight_decay']) # 改了lr从0.01 改成0.0001
 
     def compute_var(self):
         # init in first time
@@ -267,6 +269,7 @@ class HOGP_MODULE(torch.nn.Module):
             # NOTE: now only work for the normal predict
             _init_value = torch.tensor([1.0], device=list(self.parameters())[0].device).reshape(*[1 for i in self.K])
             diag_K = tucker_to_tensor(( _init_value, [K.diag().reshape(-1,1) for K in self.K[:-1]]))
+            diag_K = self.kernel_list[-1](input_param[0], input_param[0]).diag()* diag_K
 
             S = self.A * self.A.pow(-1/2)
             S_2 = S.pow(2)

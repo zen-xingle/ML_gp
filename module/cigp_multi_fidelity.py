@@ -46,6 +46,7 @@ default_module_config = {
     'lr': {'kernel':0.01, 
            'optional_param':0.01, 
            'noise':0.01},
+    'weight_decay': 1e-3,
 
     'kernel': {
             'K1': {'SE': {'exp_restrict':True, 'length_scale':1., 'scale': 1.}},
@@ -133,7 +134,8 @@ class CIGP_MODULE_Multi_Fidelity(torch.nn.Module):
         # module_config['lr'] = {'kernel':0.01, 'optional_param':0.01, 'noise':0.01}
         self.optimizer = torch.optim.Adam([{'params': optional_params, 'lr': self.module_config['lr']['optional_param']}, 
                                            {'params': [self.noise], 'lr': self.module_config['lr']['noise']},
-                                           {'params': kernel_learnable_param , 'lr': self.module_config['lr']['kernel']}]) # 改了lr从0.01 改成0.0001
+                                           {'params': kernel_learnable_param , 'lr': self.module_config['lr']['kernel']}],
+                                           weight_decay = self.module_config['weight_decay']) # 改了lr从0.01 改成0.0001
         
     def negative_log_likelihood(self):
         # inputs / outputs

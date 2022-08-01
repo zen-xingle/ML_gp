@@ -1,5 +1,6 @@
 # import gpytorch
 import math
+from sklearn import semi_supervised
 import torch
 import tensorly
 import numpy as np
@@ -46,6 +47,7 @@ default_module_config = {
     'lr': {'kernel':0.01, 
            'optional_param':0.01, 
            'noise':0.01},
+    'weight_decay': 1e-3,
 
     'kernel': {
             'K1': {'SE': {'exp_restrict':True, 'length_scale':1., 'scale': 1.}},
@@ -117,7 +119,8 @@ class CIGP_MODULE(torch.nn.Module):
         # module_config['lr'] = {'kernel':0.01, 'optional_param':0.01, 'noise':0.01}
         self.optimizer = torch.optim.Adam([{'params': optional_params, 'lr': self.module_config['lr']['optional_param']}, 
                                            {'params': [self.noise], 'lr': self.module_config['lr']['noise']},
-                                           {'params': kernel_learnable_param , 'lr': self.module_config['lr']['kernel']}]) # 改了lr从0.01 改成0.0001
+                                           {'params': kernel_learnable_param , 'lr': self.module_config['lr']['kernel']}],
+                                           weight_decay = self.module_config['weight_decay']) # 改了lr从0.01 改成0.0001
         
     def negative_log_likelihood(self):
         # inputs / outputs
@@ -195,24 +198,32 @@ class CIGP_MODULE(torch.nn.Module):
         predict_y, predict_var = self.predict(self.inputs_eval)
 
         if hasattr(self, 'base_cigp') and False:
+            predict_var = None
             from torch.distributions import Normal
             sample_time = 100
             data_number = self.base_cigp.inputs_eval[0].shape[0]
             _dim_len = self.base_cigp.inputs_eval[0].shape[1]
             _base_mean, _base_var = self.base_cigp.predict([self.inputs_eval[0][:, :_dim_len]])
-            for i in range(data_number):
+            for i in range(sample_time):
                 # sample
-                sampler = Normal(_base_mean[i:i+1,:], torch.clip(_base_var[i:i+1,:].sqrt(), 1e-6))
-                sample_input = torch.cat([sampler.sample() for i in range(sample_time)], dim=0)
-                base_input = self.inputs_eval[0][:, :_dim_len][i:i+1, :].tile(sample_time, 1)
+                # sampler = Normal(_base_mean[i:i+1,:], torch.clip(_base_var[i:i+1,:].sqrt(), 1e-6))
+                sampler = Normal(_base_mean, torch.clip(_base_var.sqrt(), 1e-6))
+                
+                # sample_input = torch.cat([sampler.sample() for i in range(sample_time)], dim=0)
+                sample_input = sampler.sample()
+                base_input = self.inputs_eval[0][:, :_dim_len]
 
                 # real_input
                 sample_input = torch.cat([base_input, sample_input], dim=1)
                 _, sample_var = self.predict([sample_input])
 
                 # replace var
-                sample_var = sample_var.mean(0, keepdim=True)
-                predict_var[i:i+1, :] = sample_var
+                # sample_var = sample_var.mean(0, keepdim=True)
+                if predict_var is None:
+                    predict_var = sample_var.clone().reshape(1, *sample_var.shape)
+                else:
+                    predict_var = torch.cat([predict_var, sample_var.clone().reshape(1, *sample_var.shape)], dim=0)
+            predict_var = predict_var.mean(0)
 
         result = high_level_evaluator([predict_y, predict_var], self.outputs_eval[0], self.module_config['evaluate_method'], sample_last_dim=False)
         self.predict_y = predict_y

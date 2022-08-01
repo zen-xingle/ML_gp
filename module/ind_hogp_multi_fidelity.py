@@ -291,6 +291,7 @@ class HOGP_MF_MODULE(torch.nn.Module):
                 # NOTE: now only work for the normal predict
                 _init_value = torch.tensor([1.0],  device=list(self.parameters())[0].device).reshape(*[1 for i in self.K])
                 diag_K = tucker_to_tensor(( _init_value, [K.diag().reshape(-1,1) for K in self.K[:-1]]))
+                diag_K = self.kernel_list[-1](input_param[0], input_param[0]).diag()* diag_K
 
                 S = self.A * self.A.pow(-1/2)
                 S_2 = S.pow(2)

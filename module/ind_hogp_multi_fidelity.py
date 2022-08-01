@@ -297,11 +297,11 @@ class HOGP_MF_MODULE(torch.nn.Module):
                 S_product = tensorly.tenalg.mode_dot(S_2, (K_star@self.K[-1].inverse()@self.K_eigen[-1].vector).pow(2), -1)
                 M = diag_K + S_product
                 if self.module_config['output_normalize'] is True:
-                    # base_var = input_param[2]/(self.Y_normalizer.std ** 2)
+                    base_var = input_param[2]/(self.Y_normalizer.std ** 2 + JITTER)
+                    M = self.target_connection.low_2_high_double_mapping(base_var, M)
                     M = M * (self.Y_normalizer.std ** 2)
-                    M = self.target_connection.low_2_high(input_param[2], M)
                 else:
-                    M = self.target_connection.low_2_high(input_param[2], M)
+                    M = self.target_connection.low_2_high_double_mapping(input_param[2], M)
                 M = torch.clip(M, JITTER)
             else:
                 M = None

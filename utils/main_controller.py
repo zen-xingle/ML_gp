@@ -48,7 +48,7 @@ class controller(object):
                                                             'controller_config': self.controller_config, 
                                                             'module_config':self.module.module_config
                                                             })
-        if self.module.module_config['BayeSTA'] is True:
+        if 'BayeSTA' in self.module.module_config and self.module.module_config['BayeSTA'] is True:
             BayeSTA_method = [_s + '_STA' for _s in self.module.module_config['evaluate_method']]
             self.rc_file.register(['epoch', *self.module.module_config['evaluate_method'], *BayeSTA_method,'time'])
         else:

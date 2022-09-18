@@ -10,13 +10,13 @@ sys.path.append(realpath)
 
 from utils.mlgp_log import mlgp_log
 from utils.data_utils.data_preprocess import Data_preprocess
-from utils.data_utils.data_loader import SP_DataLoader, Standard_mat_DataLoader
+from utils.data_utils.data_loader import SP_DataLoader, Standard_mat_DataLoader, Custom_mat_DataLoader
 
 
 def data_regist(module_calsee, dataset_config, cuda=False):
     mlgp_log.i('dataset_config name:', dataset_config['name'])
     loaded = False
-    for _loader in [SP_DataLoader, Standard_mat_DataLoader]:
+    for _loader in [SP_DataLoader, Standard_mat_DataLoader, Custom_mat_DataLoader]:
         if dataset_config['name'] in _loader.dataset_available:
             _data_loader = _loader(dataset_config['name'], dataset_config['interp_data'])
             _data = _data_loader.get_data()

@@ -190,6 +190,38 @@ class Standard_mat_DataLoader(object):
         return outputs
 
 
+class Custom_mat_DataLoader(object):
+    dataset_available = ['b17_VTL1x5',
+                        'b17_VTL2x5',
+                        'b17_VTL3x5']
+
+    def __init__(self, dataset_name, need_interp=False) -> None:
+        self.dataset_info = {
+            'b17_VTL1x5': dict_pattern( 'data/BayeSTA/b17_VTL1x5.npy', self._general, False),
+            'b17_VTL2x5': dict_pattern( 'data/BayeSTA/b17_VTL2x5.npy', self._general, False),
+            'b17_VTL3x5': dict_pattern( 'data/BayeSTA/b17_VTL3x5.npy', self._general, False),
+        }
+        if dataset_name not in self.dataset_info:
+            assert False
+        if need_interp and self.dataset_info[dataset_name]['interp_available'] is False:
+            assert False
+        self.dataset_name = dataset_name
+        self.need_interp = need_interp
+
+    def _general(self):
+        _data = np.load(_smart_path(self.dataset_info[self.dataset_name]['path']))
+        _data = _data.astype(np.float32)
+        x_tr = [_data[:,1]]
+        x_te = None
+        y_tr = [_data[:,2:]]
+        y_te = None
+        return x_tr, y_tr, x_te, y_te
+
+    def get_data(self):
+        outputs = self.dataset_info[self.dataset_name]['function']()
+        return outputs
+
+
 
 if __name__ == '__main__':
     sp_data = SP_DataLoader('NavierStock_mfGent_v1_02', None)

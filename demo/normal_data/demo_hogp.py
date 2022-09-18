@@ -10,7 +10,7 @@ sys.path.append(realpath)
 from utils.main_controller import controller
 from module.hogp import HOGP_MODULE
 
-interp_data = True
+interp_data = False
 
 real_dataset = ['FlowMix3D_MF',
                 'MolecularDynamic_MF', 
@@ -57,6 +57,7 @@ if __name__ == '__main__':
                     'lr': {'kernel':0.01, 
                     'optional_param':0.01, 
                     'noise':0.01},
+                    'BayeSTA': True,
                 }
 
             ct = controller(HOGP_MODULE, {'max_epoch': 1000, 'record_file_path': 'hogp.txt'}, module_config)

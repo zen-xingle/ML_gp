@@ -48,7 +48,11 @@ class controller(object):
                                                             'controller_config': self.controller_config, 
                                                             'module_config':self.module.module_config
                                                             })
-        self.rc_file.register(['epoch', *self.module.module_config['evaluate_method'], 'time'])
+        if self.module.module_config['BayeSTA'] is True:
+            BayeSTA_method = [_s + '_STA' for _s in self.module.module_config['evaluate_method']]
+            self.rc_file.register(['epoch', *self.module.module_config['evaluate_method'], *BayeSTA_method,'time'])
+        else:
+            self.rc_file.register(['epoch', *self.module.module_config['evaluate_method'], 'time'])
         os.environ['mlgp_record_file'] = self.controller_config['record_file_path']
 
     def start_train(self):

@@ -69,6 +69,7 @@ default_module_config = {
                     'squeeze_to_01': False,
                     },
     'cuda': False,
+    'BayeSTA': False,
 }
 
 def _last_dim_to_fist(_tensor):
@@ -328,4 +329,24 @@ class HOGP_MODULE(torch.nn.Module):
         target = _last_dim_to_fist(self.outputs_eval[0])
         result = high_level_evaluator([predict_y, predict_var], target, self.module_config['evaluate_method'])
         print(result)
+
+        if self.module_config['BayeSTA'] is True:
+            from utils.gp_output_decorator import posterior_output_decorator
+            if not hasattr(self, 'random_mask'):
+                # gen mask only once
+                self.random_mask = []
+                mask_number_per_sample = 0.1
+                sample_size = self.outputs_eval[0][...,0].numel()
+                for i in range(self.outputs_eval[0].shape[-1]):
+                    self.random_mask.append(torch.randint(sample_size, (int(mask_number_per_sample* sample_size),)).tolist())
+
+            pod = posterior_output_decorator(self, 'hogp', self.random_mask, lr=0.001)
+            for i in range(100):
+                pod.train()
+                print('pod epoch {}/{}'.format(i+1, 100),end='\r')
+            pod_result = high_level_evaluator([_last_dim_to_fist(pod.eval()), predict_var], target, self.module_config['evaluate_method'])
+            print(pod_result, '<-- posterior output optimize')
+            for _k, _v in pod_result.items():
+                result[_k + '_STA'] = _v
+
         return result

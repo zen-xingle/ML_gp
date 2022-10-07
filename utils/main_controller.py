@@ -4,6 +4,8 @@ import os
 import shutil
 from copy import deepcopy
 import sys
+import datetime
+
 
 realpath=os.path.abspath(__file__)
 _sep = os.path.sep
@@ -14,7 +16,7 @@ sys.path.append(realpath)
 from utils import mlgp_result_record
 from utils.dict_tools import smart_update
 from utils.mlgp_hook import register_nan_hook
-
+from utils.path_tools import get_available_name, deep_mkdir
 
 default_controller_config = {
     'batch_size': 1, # not implement
@@ -22,7 +24,7 @@ default_controller_config = {
     'eval_batch_size': 1, # not implement
     'record_step': 50,
     'max_epoch': 1000,
-    'record_file_path': './record.txt',
+    'record_file_dir': './exp/'
 }
 
 
@@ -30,7 +32,11 @@ class controller(object):
     def __init__(self, module, controller_config, module_config) -> None:
         self.module_config = module_config
         self.controller_config = smart_update(default_controller_config, controller_config)
-        
+        if self.controller_config['record_file_dir'] == default_controller_config['record_file_dir']:
+            self.controller_config['record_file_dir'] = os.path.join(self.controller_config['record_file_dir'], module.__name__, module_config['dataset']['name'], datetime.datetime.now().strftime('%Y-%m-%d'))
+        deep_mkdir(self.controller_config['record_file_dir'])
+        self.controller_config['record_file_path'] = get_available_name(self.controller_config['record_file_dir'], 'txt')
+
         self.module = module(module_config)
         if self.module.module_config.get('cuda',False):
             self.module.cuda()
@@ -71,6 +77,7 @@ class controller(object):
 
             # 达到check_point时, 在验证集上测试效果
             if (i+1) in self.controller_config['check_point']:
+                print("\nepoch: {}".format(i+1))
                 _result = self.start_eval()
                 _result['time'] = int(time.time() - self.init_time)
                 _result['epoch'] = i+1

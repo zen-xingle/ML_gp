@@ -338,6 +338,7 @@ class HOGP_MF_MODULE(torch.nn.Module):
         else:
             predict_y, predict_var = self.predict(self.inputs_eval)
         self.predict_y = deepcopy(predict_y)
+        self.predict_var = predict_var
         predict_y = _last_dim_to_fist(predict_y)
         predict_var = _last_dim_to_fist(predict_var)
         target = _last_dim_to_fist(self.outputs_eval[0])

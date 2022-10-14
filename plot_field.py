@@ -69,7 +69,7 @@ class plot_container:
                 if self.min_max_base_on_all_sample is True:
                     pcm = ax.pcolormesh(_d, cmap=self.map_type, shading=self.shading_method, vmin=self.min_list.min(), vmax=self.max_list.max())
                 else:
-                    pcm = ax.pcolormesh(_d, cmap=self.map_type, shading=self.shading_method, vmin=self.min_list[i], vmax=self.max_list[i])
+                    pcm = ax.pcolormesh(_d, cmap=self.map_type, shading=self.shading_method, vmin=self.min_list[j], vmax=self.max_list[j])
                 ax.tick_params(labelsize = 8)
                 ax.set_title(str(self.label_list[i]), fontsize = 8)
 
@@ -86,7 +86,8 @@ class plot_container:
 
 
 if __name__ == '__main__':
-    a = np.load('groundtrue.npy')
-    b = np.load('result.npy')
-    pc = plot_container([a,b,abs(a-b)], ['groundtrue', 'gar', 'diff'], 2)
+    a = np.load('data/sample/output_fidelity_0.npy')
+    b = np.load('data/sample/output_fidelity_2.npy')
+    pc =plot_container([a,b,abs(a-b)], ['fidelity-0', 'fidelity-2', 'diff'], 0)
+    
     pc.plot()

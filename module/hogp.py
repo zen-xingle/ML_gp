@@ -85,7 +85,7 @@ def _first_dim_to_last(_tensor):
 
 class HOGP_MODULE(torch.nn.Module):
     # def __init__(self, grid_params_list, kernel_list, target_list, normalize=True, restrict_method= 'exp') -> None:
-    def __init__(self, module_config) -> None:
+    def __init__(self, module_config, data=None) -> None:
         super().__init__()
         # default_module_config.update(module_config)
         _final_config = smart_update(default_module_config, module_config)
@@ -96,7 +96,17 @@ class HOGP_MODULE(torch.nn.Module):
         assert module_config['optimizer'] in ['adam'], 'now optimizer only support adam, but get {}'.format(module_config['optimizer'])
 
         # load_data
+        if data == None:
+        # load_data
         data_register.data_regist(self, module_config['dataset'], module_config['cuda'])
+        else:
+            mlgp_log.i("Data is given, directly using input data. Notice data should be given as list, order is [input_x, output_y, eval_input_x, eval_input_y]")
+            self.module_config['dataset'] = 'custom asigned, tracking source failed'
+            self.inputs_tr = data[0]
+            self.outputs_tr = data[1]
+            self.inputs_eval = data[2]
+            self.outputs_eval = data[3]
+
         self._grid_setup(module_config['grid_config'])
 
         # TODO if param allow more than single kernel, optimize code here
@@ -290,7 +300,7 @@ class HOGP_MODULE(torch.nn.Module):
             S = self.A * self.A.pow(-1/2)
             S_2 = S.pow(2)
             # S_product = tensorly.tenalg.multi_mode_dot(S_2, [eigen_vector_d1.pow(2), eigen_vector_d2.pow(2), (K_star@K_p.inverse()@eigen_vector_p).pow(2)])
-            S_product = tensorly.tenalg.multi_mode_dot(S_2, [self.K_eigen[i].vector.pow(2) for i in range(len(self.K_eigen)-1)]+[(K_star@self.K[-1].inverse()@self.K_eigen[-1].vector).pow(2)])
+            S_product = tensorly.tenalg.multi_mode_dot(S_2, [self.K_eigen[i].vector.pow(2) for i in range(len(self.K_eigen)-1)]+[(K_star@(self.K[-1]+JITTER*torch.eye(self.K[-1].shape[0], device=list(self.parameters())[0].device)).inverse()@self.K_eigen[-1].vector).pow(2)])
             M = diag_K + S_product
             if self.module_config['output_normalize'] is True:
                 M = M * self.Y_normalizer.std ** 2
@@ -350,3 +360,35 @@ class HOGP_MODULE(torch.nn.Module):
                 result[_k + '_STA'] = _v
 
         return result
+
+if __name__ == '__main__':
+    module_config = {}
+
+    x = np.load('./data/sample/input.npy')
+    y0 = np.load('./data/sample/output_fidelity_1.npy')
+    y2 = np.load('./data/sample/output_fidelity_2.npy')
+
+    x = torch.tensor(x).float()
+    y0 = torch.tensor(y0).float()
+    y2 = torch.tensor(y2).float()
+
+    train_x = [x[:128,:],]      # permute for sample to last dim
+    train_y = [y2[:128,...].permute(1,2,0)]
+    
+    eval_x = [x[128:,:]]
+    eval_y = [y2[128:,...].permute(1,2,0)]
+    source_shape = y0[128:,...].shape
+
+    cigp = HOGP_MODULE(module_config, [train_x, train_y, eval_x, eval_y])
+    for epoch in range(300):
+        print('epoch {}/{}'.format(epoch+1, 300), end='\r')
+        cigp.train()
+    print('\n')
+    cigp.eval()
+
+    from plot_field import plot_container
+    data_list = [cigp.outputs_eval[0].numpy(), cigp.predict_y.numpy()]
+    data_list.append(abs(data_list[0] - data_list[1]))
+    label_list = ['groundtruth','predict', 'diff']
+    pc = plot_container(data_list, label_list, sample_dim=2)
+    pc.plot()

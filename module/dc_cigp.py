@@ -66,7 +66,7 @@ pca_map = {'listPCA': listPCA, 'resPCA_mf': resPCA_mf}
 
 class DC_CIGP_MODULE(torch.nn.Module):
     # def __init__(self, grid_params_list, kernel_list, target_list, normalize=True, restrict_method= 'exp') -> None:
-    def __init__(self, module_config) -> None:
+    def __init__(self, module_config, data=None) -> None:
         super().__init__()
         _final_config = smart_update(default_module_config, module_config)
         self.module_config = deepcopy(_final_config)
@@ -76,7 +76,16 @@ class DC_CIGP_MODULE(torch.nn.Module):
         assert module_config['optimizer'] in ['adam'], 'now optimizer only support adam, but get {}'.format(module_config['optimizer'])
 
         # load_data
-        data_register.data_regist(self, module_config['dataset'], module_config['cuda'])
+        if data == None:
+        # load_data
+            data_register.data_regist(self, module_config['dataset'], module_config['cuda'])
+        else:
+            mlgp_log.i("Data is given, directly using input data. Notice data should be given as list, order is [input_x, output_y, eval_input_x, eval_input_y]")
+            self.module_config['dataset'] = 'custom asigned, tracking source failed'
+            self.inputs_tr = data[0]
+            self.outputs_tr = data[1]
+            self.inputs_eval = data[2]
+            self.outputs_eval = data[3]
 
         # X - normalize
         if module_config['input_normalize'] is True:
@@ -228,5 +237,47 @@ class DC_CIGP_MODULE(torch.nn.Module):
 
 
 if __name__ == '__main__':
-    module_config = {}
-    cigp = DC_CIGP_MODULE(module_config)
+    module_config  = {
+    'lr': {'kernel':0.1, 
+           'optional_param':0.1, 
+           'noise':0.1},
+    'weight_decay': 1e-3,
+
+    'kernel': {
+            'K1': {'SE': {'exp_restrict':True, 'length_scale':.1, 'scale': .1}},
+              },
+    'noise_init' : 10000.,
+    'pca': {'type': 'listPCA', 
+            'r': 0.99, }, # listPCA, resPCA_mf,
+}
+
+    x = np.load('./data/sample/input.npy')
+    y0 = np.load('./data/sample/output_fidelity_0.npy')
+    y2 = np.load('./data/sample/output_fidelity_2.npy')
+
+    x = torch.tensor(x)
+    y0 = torch.tensor(y0)
+    y2 = torch.tensor(y2)
+
+    train_x = [x[:128,:], y0[:128,...].reshape(128, -1)]
+    train_y = [y2[:128,...].reshape(128, -1)]
+    
+    eval_x = [x[128:,:], y0[128:,...].reshape(128, -1)]
+    eval_y = [y2[128:,...].reshape(128, -1)]
+    source_shape = y0[128:,...].shape
+
+    cigp = DC_CIGP_MODULE(module_config, [train_x, train_y, eval_x, eval_y])
+    for epoch in range(300):
+        print('epoch {}/{}'.format(epoch+1, 300), end='\r')
+        cigp.train()
+    print('\n')
+    cigp.eval()
+
+    from plot_field import plot_container
+    data_list = [cigp.outputs_eval[0].numpy(), cigp.predict_y.numpy()]
+    data_list.append(abs(data_list[0] - data_list[1]))
+    data_list = [_d.reshape(source_shape) for _d in data_list]
+    label_list = ['groundtruth','predict', 'diff']
+    pc = plot_container(data_list, label_list, sample_dim=0)
+    pc.plot()
+

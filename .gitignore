@@ -4,3 +4,5 @@ exp/
 data/
 .vscode/
 __pycache__
+*.txt
+*.csv

@@ -107,7 +107,7 @@ default_module_config = {
 
 class DeepMFnet:
     # def __init__(self, grid_params_list, kernel_list, target_list, normalize=True, restrict_method= 'exp') -> None:
-    def __init__(self, module_config) -> None:
+    def __init__(self, module_config, data=None) -> None:
         default_module_config.update(module_config)
         self.module_config = deepcopy(default_module_config)
         module_config = deepcopy(default_module_config)
@@ -116,7 +116,17 @@ class DeepMFnet:
         assert module_config['optimizer'] in ['adam'], 'now optimizer only support adam, but get {}'.format(module_config['optimizer'])
 
         # load_data
-        self._load_data(module_config['dataset'])
+        if data == None:
+            # load_data
+            data_register.data_regist(self, module_config['dataset'], module_config['cuda'])
+        else:
+            mlgp_log.i("Data is given, directly using input data. Notice data should be given as list, order is [input_x, output_y, eval_input_x, eval_input_y]")
+            self.module_config['dataset'] = 'custom asigned, tracking source failed'
+            self.inputs_tr = data[0]
+            self.outputs_tr = data[1]
+            self.inputs_eval = data[2]
+            self.outputs_eval = data[3]
+
         self.init_model_params()
 
         # X - normalize
@@ -379,12 +389,42 @@ class DeepMFnet:
     def eval(self):
         print('---> start eval')
         predict_y = self.predict(self.M-1, self.inputs_eval[1])
-        # self.predict_y = predict_y
+        self.predict_y = predict_y
         result = high_level_evaluator([predict_y], self.outputs_eval[1], self.module_config['evaluate_method'])
         print(result)
         return result
 
 
 if __name__ == '__main__':
-    model = DeepMFnet({})
-    model.train()
+    module_config = {}
+
+    x = np.load('./data/sample/input.npy')
+    y0 = np.load('./data/sample/output_fidelity_1.npy')
+    y2 = np.load('./data/sample/output_fidelity_2.npy')
+
+    x = torch.tensor(x).float()
+    y0 = torch.tensor(y0).float()
+    y2 = torch.tensor(y2).float()
+
+    train_x = [x[:128,:], x[:128,:]]
+    train_y = [y0[:128,...].reshape(128, -1), y2[:128,...].reshape(128, -1)]
+    
+    eval_x = [x[128:,:], x[128:,:]]
+    eval_y = [y0[128:,...].reshape(128, -1), y2[128:,...].reshape(128, -1)]
+    source_shape = y0[128:,...].shape
+
+    dmfal = DeepMFnet(module_config, [train_x, train_y, eval_x, eval_y])
+    for epoch in range(300):
+        print('epoch {}/{}'.format(epoch+1, 300), end='\r')
+        dmfal.train()
+    print('\n')
+    dmfal.eval()
+
+    from plot_field import plot_container
+    # data_list = [dmfal.outputs_eval[1].detach().numpy(), dmfal.predict_y.detach().numpy()]
+    data_list = [y2[128:,...].reshape(128, -1).numpy(), dmfal.predict_y.detach().numpy()]
+    data_list.append(abs(data_list[0] - data_list[1]))
+    data_list = [_d.reshape(source_shape) for _d in data_list]
+    label_list = ['groundtruth','predict', 'diff']
+    pc = plot_container(data_list, label_list, sample_dim=0)
+    pc.plot()

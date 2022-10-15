@@ -1,4 +1,0 @@
-forward error on: <built-in method cholesky of type object at 0x00007FFC00CA0620>
-reason: cholesky_cpu: U(10,10) is zero, singular U.
-epoch: Get Failed
-iter: 199

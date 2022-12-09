@@ -5,41 +5,44 @@ class mlgp_log:
         self.log_level = 1
 
     @staticmethod
-    def error(*args):
+    def error(*args, **kargs):
         meg = ' '.join(args)
-        print('\033[1;41m' + 'ERROR: ' + meg + '\033[0m')
+        print('\033[1;41m' + 'ERROR: ' + meg + '\033[0m', **kargs)
 
     @staticmethod
-    def e(*args):
+    def e(*args, **kargs):
         meg = ' '.join(args)
-        print('\033[1;41m' + 'ERROR: ' + meg + '\033[0m')   
+        print('\033[1;41m' + 'ERROR: ' + meg + '\033[0m', **kargs) 
 
     @staticmethod
-    def info(*args):
+    def info(*args, **kargs):
         meg = ' '.join(args)
-        print('\033[1;40m' + 'INFO: ' + meg + '\033[0m')
-
-    def i(*args):
-        meg = ' '.join(args)
-        print('\033[1;40m' + 'INFO: ' + meg + '\033[0m')
+        print('\033[1;40m' + 'INFO: ' + meg + '\033[0m', **kargs)
 
     @staticmethod
-    def warning(*args):
+    def i(*args, **kargs):
         meg = ' '.join(args)
-        print('\033[1;33m' + 'WARNING: ' + meg + '\033[0m')
-
-    def w(*args):
-        meg = ' '.join(args)
-        print('\033[1;33m' + 'WARNING: ' + meg + '\033[0m')
+        print('\033[1;40m' + 'INFO: ' + meg + '\033[0m', **kargs)
 
     @staticmethod
-    def debug(*args):
+    def warning(*args, **kargs):
         meg = ' '.join(args)
-        print('\033[1;45m' + 'DEBUG: ' + meg + '\033[0m')
+        print('\033[1;33m' + 'WARNING: ' + meg + '\033[0m',  **kargs)
 
-    def d(*args):
+    @staticmethod
+    def w(*args, **kargs):
         meg = ' '.join(args)
-        print('\033[1;45m' + 'DEBUG: ' + meg + '\033[0m')
+        print('\033[1;33m' + 'WARNING: ' + meg + '\033[0m',  **kargs)
+
+    @staticmethod
+    def debug(*args, **kargs):
+        meg = ' '.join(args)
+        print('\033[1;45m' + 'DEBUG: ' + meg + '\033[0m', **kargs)
+
+    @staticmethod
+    def d(*args, **kargs):
+        meg = ' '.join(args)
+        print('\033[1;45m' + 'DEBUG: ' + meg + '\033[0m', **kargs)
 
 
 if __name__ == '__main__':

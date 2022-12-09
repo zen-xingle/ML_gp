@@ -409,7 +409,7 @@ if __name__ == '__main__':
     print('\n')
     cigp.eval()
 
-    from plot_field import plot_container
+    from result_visualize.plot_field import plot_container
     data_list = [cigp.outputs_eval[0].numpy(), cigp.predict_y.numpy()]
     data_list.append(abs(data_list[0] - data_list[1]))
     label_list = ['groundtruth','predict', 'diff']

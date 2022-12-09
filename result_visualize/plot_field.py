@@ -1,6 +1,17 @@
+import os
+import sys
+
 import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 import numpy as np
+
+realpath=os.path.abspath(__file__)
+_sep = os.path.sep
+realpath = realpath.split(_sep)
+realpath = _sep.join(realpath[:realpath.index('ML_gp')+1])
+sys.path.append(realpath)
+
+from utils.mlgp_log import mlgp_log
 
 
 class plot_container:
@@ -50,11 +61,11 @@ class plot_container:
 
     
     def plot(self):
-
-
+        # plot for each sample
+        mlgp_log.i('Data get shape {}. Dim-{} is regarded as sample and the others are field.'.format(self.data_list[0].shape, self.sample_number))
         for j in range(self.sample_number):
+            mlgp_log.i('now plot {}/{}'.format(j+1, self.sample_number), end='\r')
             fig, axs = plt.subplots(nrows=1, ncols=self.data_number, figsize = (10, 5.5))
-            # 一次只能画一个平面图，多个样本依次绘出    
 
             for i in range(self.data_number):
                 _d = self.data_list[i]

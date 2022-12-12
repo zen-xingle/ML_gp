@@ -274,7 +274,7 @@ if __name__ == '__main__':
     print('\n')
     cigp.eval()
 
-    from result_visualize.plot_field import plot_container
+    from visualize_tools.plot_field import plot_container
     data_list = [cigp.outputs_eval[0].numpy(), cigp.predict_y.numpy()]
     data_list.append(abs(data_list[0] - data_list[1]))
     data_list = [_d.reshape(source_shape) for _d in data_list]

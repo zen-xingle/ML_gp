@@ -1,7 +1,7 @@
 import os
 import sys
 import torch
-from copy import deepcopy
+
 realpath=os.path.abspath(__file__)
 _sep = os.path.sep
 realpath = realpath.split(_sep)
@@ -10,9 +10,9 @@ sys.path.append(realpath)
 
 from utils.main_controller import controller
 from module.cigp import CIGP_MODULE
-from module.cigp_multi_fidelity import CIGP_MODULE_Multi_Fidelity
 
-interp_data = True
+interp_data=True
+
 real_dataset = ['FlowMix3D_MF',
                 'MolecularDynamic_MF', 
                 'plasmonic2_MF', 
@@ -26,6 +26,7 @@ gen_dataset = ['poisson_v4_02',
                 'Piosson_mfGent_v5',
                 'Schroed2D_mfGent_v1',
                 'TopOP_mfGent_v5',]
+
 
 def non_subset(first_module, second_module):
     from copy import deepcopy
@@ -51,23 +52,20 @@ def non_subset(first_module, second_module):
     # update non-subset
     non_subset_input = s_input[subset_number:, :f_input.shape[-1]]
     predict_u, _ = first_module.predict([non_subset_input])
-    if second_module.module_config['output_normalize'] is True:
-        predict_u = second_module.Y_normalizer.normalize(predict_u)
-    new_input_0 = torch.cat([s_subset_input, non_subset_input], dim=0)
-    new_input_1 = torch.cat([second_module.inputs_tr[1][:subset_number,:], predict_u], dim=0)
-    second_module.inputs_tr[0] = deepcopy(new_input_0)
-    second_module.inputs_tr[1] = deepcopy(new_input_1)
+    new_input = torch.cat([non_subset_input, predict_u], dim=1)
+    new_input = torch.cat([s_subset_input, new_input], dim=0)
+    second_module.inputs_tr[0] = deepcopy(new_input)
     if second_module.module_config['input_normalize'] is True:
         second_module.inputs_tr[0] = second_module.X_normalizer.normalize(second_module.inputs_tr[0])
 
 
 if __name__ == '__main__':
     # for _dataset in real_dataset + gen_dataset:
-    for _dataset in ['poisson_v4_02']:
-        for _seed in [None, 0, 1, 2, 3, 4]:
+    for _dataset in ['poisson_v4_02','burger_v4_02', 'Heat_mfGent_v5']:
+        for _seed in [0, 1, 2, 3, 4]:
             first_fidelity_sample = 32
-
-            controller_config = {'max_epoch': 1000,} # use defualt config
+            controller_config = {'max_epoch': 1000,
+                                 'record_file_path': 'NonSubset_NAR.txt'} # use defualt config
             module_config = {
                 'dataset': {'name': _dataset,
                             'interp_data': interp_data,
@@ -86,15 +84,15 @@ if __name__ == '__main__':
                             'y_sample_to_last_dim': False,
                             'slice_param': [0.6, 0.4], #only available for dataset, which not seperate train and test before
                             },
-                'cuda': True,
+                'cuda': False,
+                'noise_init' : 100.0,
+                'evaluate_method': ['mae', 'rmse', 'r2', 'gaussian_loss'],
             } # only change dataset config, others use default config
             ct = controller(CIGP_MODULE, controller_config, module_config)
             ct.start_train()
 
-            # ================================================================
-            # Training x,yl -> yh part
-            second_fidelity_sample = 32
-            for subset in [1, 2, 4, 8, 16, 32]:
+            for second_fidelity_sample in [4, 8, 16, 32]:
+                subset = 0.5 * second_fidelity_sample
                 second_controller_config = {
                     'max_epoch': 1000,
                 }
@@ -108,7 +106,7 @@ if __name__ == '__main__':
                                 'eval_start_index': 0,
                                 'eval_sample': 128,
 
-                                'inputs_format': ['x[0]', 'y[0]'],
+                                'inputs_format': ['np.concatenate([x[0],y[0]], axis=1)'],
                                 'outputs_format': ['y[-1]'],
 
                                 'force_2d': True,
@@ -116,25 +114,22 @@ if __name__ == '__main__':
                                 'y_sample_to_last_dim': False,
                                 'slice_param': [0.6, 0.4], #only available for dataset, which not seperate train and test before
                                 },
-
-                    'res_cigp': {'type_name': 'res_standard'},
-                    'lr': {'kernel':0.01, 
-                            'optional_param':0.01, 
-                            'noise':0.01},
-                    'cuda': True,
+                    'cuda': False,
+                    'noise_init' : 100.0,
+                    'evaluate_method': ['mae', 'rmse', 'r2', 'gaussian_loss'],
                 }
-                second_ct = controller(CIGP_MODULE_Multi_Fidelity, second_controller_config, second_module_config)
-
+                second_ct = controller(CIGP_MODULE, controller_config, second_module_config)
                 # replace ground truth eval data with low fidelity predict
-                # check inputs x, this should be 0
-                torch.dist(second_ct.module.inputs_eval[0], ct.module.inputs_eval[0])
-                # check inputs yl, this should be 0
-                torch.dist(second_ct.module.inputs_eval[1], ct.module.outputs_eval[0])
-                # check predict yh, as lower as better.
-                torch.dist(second_ct.module.inputs_eval[1], ct.module.predict_y)
-                second_ct.module.inputs_eval[1] = deepcopy(ct.module.predict_y)
+                # check inputs x
+                x_dim = ct.module.inputs_eval[0].shape[1]
+                torch.dist(second_ct.module.inputs_eval[0][:,0:x_dim], ct.module.inputs_eval[0])
+                # check inputs y
+                torch.dist(second_ct.module.inputs_eval[0][:,x_dim:], ct.module.outputs_eval[0])
+                # check predict y
+                torch.dist(second_ct.module.inputs_eval[0][:,x_dim:], ct.module.predict_y)
+                second_ct.module.inputs_eval[0] = torch.cat([ct.module.inputs_eval[0], ct.module.predict_y],dim=1)
                 non_subset(ct.module, second_ct.module)
 
                 second_ct.start_train()
 
-    second_ct.clear_record()
+    # second_ct.clear_record()

@@ -8,7 +8,7 @@ realpath = _sep.join(realpath[:realpath.index('ML_gp')+1])
 sys.path.append(realpath)
 
 from utils.main_controller import controller
-from nn_net.nn_shibo import DeepMFnet
+from nn_net.MF_BNN import DeepMFnet
 
 
 real_dataset = ['FlowMix3D_MF',
@@ -29,7 +29,7 @@ interp_data=False
 
 if __name__ == '__main__':
     # for _dataset in real_dataset + gen_dataset:
-    for _dataset in ['SOFC_MF']:
+    for _dataset in ['poisson_v4_02']:
         for _seed in [None, 0, 1, 2, 3, 4]:
             for _sample in [4, 8, 16, 32]:
                 with open('record.txt', 'a') as _temp_file:

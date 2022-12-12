@@ -82,7 +82,7 @@ def _first_dim_to_last(_tensor):
     return _tensor.permute(*_dim)
 
 
-class HOGP_MF_MODULE(torch.nn.Module):
+class GAR(torch.nn.Module):
     # def __init__(self, grid_params_list, kernel_list, target_list, normalize=True, restrict_method= 'exp') -> None:
     def __init__(self, module_config, data=None) -> None:
         super().__init__()
@@ -402,15 +402,15 @@ if __name__ == '__main__':
     eval_y = [y2[128:,...].permute(1,2,0)]
     source_shape = y0[128:,...].shape
 
-    cigp = HOGP_MF_MODULE(module_config, [train_x, train_y, eval_x, eval_y])
+    gar = GAR(module_config, [train_x, train_y, eval_x, eval_y])
     for epoch in range(300):
         print('epoch {}/{}'.format(epoch+1, 300), end='\r')
-        cigp.train()
+        gar.train()
     print('\n')
-    cigp.eval()
+    gar.eval()
 
-    from result_visualize.plot_field import plot_container
-    data_list = [cigp.outputs_eval[0].numpy(), cigp.predict_y.numpy()]
+    from visualize_tools.plot_field import plot_container
+    data_list = [gar.outputs_eval[0].numpy(), gar.predict_y.numpy()]
     data_list.append(abs(data_list[0] - data_list[1]))
     label_list = ['groundtruth','predict', 'diff']
     pc = plot_container(data_list, label_list, sample_dim=2)

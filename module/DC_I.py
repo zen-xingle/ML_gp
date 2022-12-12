@@ -64,7 +64,7 @@ default_module_config = {
 pca_map = {'listPCA': listPCA, 'resPCA_mf': resPCA_mf}
 
 
-class DC_CIGP_MODULE(torch.nn.Module):
+class DC_I(torch.nn.Module):
     # def __init__(self, grid_params_list, kernel_list, target_list, normalize=True, restrict_method= 'exp') -> None:
     def __init__(self, module_config, data=None) -> None:
         super().__init__()
@@ -266,14 +266,14 @@ if __name__ == '__main__':
     eval_y = [y2[128:,...].reshape(128, -1)]
     source_shape = y0[128:,...].shape
 
-    cigp = DC_CIGP_MODULE(module_config, [train_x, train_y, eval_x, eval_y])
+    cigp = DC_I(module_config, [train_x, train_y, eval_x, eval_y])
     for epoch in range(300):
         print('epoch {}/{}'.format(epoch+1, 300), end='\r')
         cigp.train()
     print('\n')
     cigp.eval()
 
-    from result_visualize.plot_field import plot_container
+    from visualize_tools.plot_field import plot_container
     data_list = [cigp.outputs_eval[0].numpy(), cigp.predict_y.numpy()]
     data_list.append(abs(data_list[0] - data_list[1]))
     data_list = [_d.reshape(source_shape) for _d in data_list]

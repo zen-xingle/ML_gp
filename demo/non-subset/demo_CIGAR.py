@@ -11,9 +11,9 @@ sys.path.append(realpath)
 
 from utils.main_controller import controller
 from module.ind_hogp import HOGP_MODULE
-from module.ind_hogp_multi_fidelity import HOGP_MF_MODULE
+from module.CIGAR import CIGAR
 
-interp_data=True
+interp_data=False
 
 real_dataset = ['FlowMix3D_MF',
                 'MolecularDynamic_MF', 
@@ -61,15 +61,18 @@ def non_subset(first_module, second_module):
     second_module.inputs_tr[1] = deepcopy(new_input_1)
     if second_module.module_config['input_normalize'] is True:
         second_module.inputs_tr[0] = second_module.X_normalizer.normalize(second_module.inputs_tr[0])
+    _, eval_var = first_module.predict([second_module.inputs_eval[0]])
+    second_module.base_var = eval_var
 
 
 if __name__ == '__main__':
     # for _dataset in real_dataset + gen_dataset:
-    for _dataset in ['burger_v4_02']:
+    for _dataset in ['poisson_v4_02','burger_v4_02','Heat_mfGent_v5',]:
         for _seed in [0, 1, 2, 3, 4]:
             first_fidelity_sample = 32
             controller_config = {
-                'max_epoch': 1000
+                'max_epoch': 1000,
+                'record_file_path': 'NonSubset_CIGAR.txt'
             } # use defualt config
 
             ct_module_config = {
@@ -91,7 +94,9 @@ if __name__ == '__main__':
                             'slice_param': [0.6, 0.4], #only available for dataset, which not seperate train and test before
                             },
                 'cuda': True,
-            } # only change dataset config, others use default config
+                'evaluate_method': ['mae', 'rmse', 'r2', 'gaussian_loss'],
+                'noise_init' : 10.,
+                } # only change dataset config, others use default config
             ct = controller(HOGP_MODULE, controller_config, ct_module_config)
             ct.start_train()
 
@@ -118,9 +123,11 @@ if __name__ == '__main__':
                                 'slice_param': [0.6, 0.4], #only available for dataset, which not seperate train and test before
                                 },
                     'cuda': True,
+                    'evaluate_method': ['mae', 'rmse', 'r2', 'gaussian_loss'],
+                    'noise_init' : 10.,
                 } # only change dataset config, others use default config
 
-                mfct = controller(HOGP_MF_MODULE, controller_config, mfct_module_config)
+                mfct = controller(CIGAR, controller_config, mfct_module_config)
                 
                 with torch.no_grad():
                     # use x->yl_predict for test x+yl -> yh
@@ -129,4 +136,4 @@ if __name__ == '__main__':
 
                 mfct.start_train()
 
-    mfct.clear_record()
+    # mfct.clear_record()

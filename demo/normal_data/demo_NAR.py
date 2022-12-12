@@ -24,11 +24,11 @@ gen_dataset = ['poisson_v4_02',
                 'Piosson_mfGent_v5',
                 'Schroed2D_mfGent_v1',
                 'TopOP_mfGent_v5',]
-interp_data=True
+interp_data=False
 
 if __name__ == '__main__':
-    for _dataset in gen_dataset:
-        for _seed in [None, 0, 1, 2, 3, 4]:
+    for _dataset in ['TopOP_mfGent_v5',]:
+        for _seed in [4]:
 
             controller_config = {'max_epoch': 1000,
                                  'record_file_path': 'NAR.txt'} # use defualt config
@@ -38,22 +38,24 @@ if __name__ == '__main__':
 
                             'seed': _seed,
                             'train_start_index': 0, 
-                            'train_sample': 32, 
+                            'train_sample': 16, 
                             'eval_start_index': 0,
                             'eval_sample': 128,
 
-                            'inputs_format': ['x[0]'],
-                            'outputs_format': ['y[0]'],
+                            # 'inputs_format': ['x[0]'],
+                            # 'outputs_format': ['y[0]'],
+                            'inputs_format': ['(x[0] - x[0].mean()) / x[0].std()'],
+                            'outputs_format': ['(y[0] - y[0].mean()) / y[0].std()'],
 
                             'force_2d': True,
                             'x_sample_to_last_dim': False,
                             'y_sample_to_last_dim': False,
                             'slice_param': [0.6, 0.4], #only available for dataset, which not seperate train and test before
                             },
-                'cuda': True,
+                'cuda': False,
                 'evaluate_method': ['mae', 'rmse', 'r2', 'gaussian_loss'],
-                'noise_init' : 100.0,
-
+                'noise_init' : 10.,
+                'exp_restrict': True,
             } # only change dataset config, others use default config
             ct = controller(CIGP_MODULE, controller_config, module_config)
             ct.start_train()
@@ -69,17 +71,23 @@ if __name__ == '__main__':
                                 'eval_start_index': 0,
                                 'eval_sample': 128,
 
-                                'inputs_format': ['np.concatenate([x[0],y[0]], axis=1)'],
-                                'outputs_format': ['y[-1]'],
+                                # 'inputs_format': ['np.concatenate([x[0],y[0]], axis=1)'],
+                                # 'outputs_format': ['y[-1]'],
+
+                                # 'inputs_format': ['np.concatenate([(x[0] - x[0].mean()) / x[0].std(),y[0]], axis=1)'],
+                                # 'outputs_format': ['y[-1]'],
+
+                                'inputs_format': ['np.concatenate([(x[0] - x[0].mean()) / x[0].std(), (y[0] - y[0].mean()) / y[0].std()], axis=1)'],
+                                'outputs_format': ['(y[-1] - y[-1].mean()) / y[-1].std()'],
 
                                 'force_2d': True,
                                 'x_sample_to_last_dim': False,
                                 'y_sample_to_last_dim': False,
                                 'slice_param': [0.6, 0.4], #only available for dataset, which not seperate train and test before
                                 },
-                    'cuda': True,
+                    'cuda': False,
                     'evaluate_method': ['mae', 'rmse', 'r2', 'gaussian_loss'],
-                    'noise_init' : 100.0,
+                    'noise_init' : 10.0,
                 }
                 second_ct = controller(CIGP_MODULE, controller_config, second_module_config)
                 # replace ground truth eval data with low fidelity predict
@@ -91,6 +99,8 @@ if __name__ == '__main__':
                 # check predict y
                 torch.dist(second_ct.module.inputs_eval[0][:,x_dim:], ct.module.predict_y)
                 second_ct.module.inputs_eval[0] = torch.cat([ct.module.inputs_eval[0], ct.module.predict_y],dim=1)
+                if hasattr(ct.module, 'predict_var'):
+                    second_ct.module.base_cigp = ct.module
 
                 second_ct.start_train()
 

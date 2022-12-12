@@ -94,9 +94,9 @@ default_module_config = {
     # h_w, h_d determine laten dim
     # net_param
     'nn_param': {
-        'hlayers_w': [40, 40],
-        'hlayers_d': [2, 2],
-        'base_dim': [32, 32], # ?
+        'hlayers_w': [40, 40, 40],
+        'hlayers_d': [2, 2, 2],
+        'base_dim': [32, 32, 32], # ?
         'activation': 'relu', # ['tanh','relu','sigmoid']
     },
     # 'input_dim': auto
@@ -227,10 +227,14 @@ class DeepMFnet:
         dp = Data_preprocess(dataset_config)
         _inputs_tr, _outputs_tr, _inputs_eval, _outputs_eval = dp.do_preprocess(deepcopy(_data), numpy_to_tensor=True)
         if self.module_config['non_subset'] is False:
-            self.inputs_tr = [_inputs_tr[0], _inputs_tr[0][0:self.module_config['second_fidelity_sample'],...]]
-            self.outputs_tr = [_outputs_tr[0], _outputs_tr[1][0:self.module_config['second_fidelity_sample'],...]]
-            self.inputs_eval = [_inputs_eval[0], _inputs_eval[0]]
-            self.outputs_eval = [_outputs_eval[0], _outputs_eval[1]]
+            # self.inputs_tr = [_inputs_tr[0], _inputs_tr[0]]
+            # self.outputs_tr = [_outputs_tr[0], _outputs_tr[1]]
+            # self.inputs_eval = [_inputs_eval[0], _inputs_eval[0]]
+            # self.outputs_eval = [_outputs_eval[0], _outputs_eval[1]]
+            self.inputs_tr = [_inputs_tr[0], _inputs_tr[0], _inputs_tr[0]]
+            self.outputs_tr = [_outputs_tr[0], _outputs_tr[1], _outputs_tr[1]]
+            self.inputs_eval = [_inputs_eval[0], _inputs_eval[0],  _inputs_eval[0]]
+            self.outputs_eval = [_outputs_eval[0], _outputs_eval[1], _outputs_eval[1]]
         else:
             second_dataset_config = deepcopy(dataset_config)
             second_dataset_config['train_sample'] = self.module_config['second_fidelity_sample']

@@ -97,8 +97,8 @@ class HOGP_MODULE(torch.nn.Module):
 
         # load_data
         if data == None:
-        # load_data
-        data_register.data_regist(self, module_config['dataset'], module_config['cuda'])
+            # load_data
+            data_register.data_regist(self, module_config['dataset'], module_config['cuda'])
         else:
             mlgp_log.i("Data is given, directly using input data. Notice data should be given as list, order is [input_x, output_y, eval_input_x, eval_input_y]")
             self.module_config['dataset'] = 'custom asigned, tracking source failed'
@@ -119,6 +119,11 @@ class HOGP_MODULE(torch.nn.Module):
             self.inputs_tr[0] = self.X_normalizer.normalize(self.inputs_tr[0])
         else:
             self.X_normalizer = None
+        self.latent_input = []
+        if self.module_config['BayeSTA']:
+            self.latent_num = 3
+            for i in range(self.latent_num):
+                self.latent_input.append(torch.nn.Parameter(torch.tensor(i).float()*400, requires_grad=True))
 
         # Y - normalize
         # TODO normalize according to dims
@@ -197,7 +202,7 @@ class HOGP_MODULE(torch.nn.Module):
         # module_config['lr'] = {'kernel':0.01, 'optional_param':0.01, 'noise':0.01}
         self.optimizer = torch.optim.Adam([{'params': optional_params, 'lr': self.module_config['lr']['optional_param']}, 
                                            {'params': [self.noise], 'lr': self.module_config['lr']['noise']},
-                                           {'params': kernel_learnable_param , 'lr': self.module_config['lr']['kernel']}],
+                                           {'params': kernel_learnable_param + self.latent_input, 'lr': self.module_config['lr']['kernel']}],
                                            weight_decay = self.module_config['weight_decay']) # 改了lr从0.01 改成0.0001
 
     def compute_var(self):
@@ -220,8 +225,20 @@ class HOGP_MODULE(torch.nn.Module):
         # update x
         _index = len(self.grid)
         # for i in range(len(self.inputs_tr)):
-        self.K.append(self.kernel_list[_index](self.inputs_tr[0], self.inputs_tr[0]))
-        self.K_eigen.append(eigen_pairs(self.K[-1]))
+        if not self.module_config['BayeSTA']:
+            self.K.append(self.kernel_list[_index](self.inputs_tr[0], self.inputs_tr[0]))
+            self.K_eigen.append(eigen_pairs(self.K[-1]))
+        else:
+            latent_space = self._get_latent_space(self.inputs_tr[1])
+            _in = torch.concat([self.inputs_tr[0], latent_space], dim=1)
+            self.K.append(self.kernel_list[_index](_in, _in))
+            self.K_eigen.append(eigen_pairs(self.K[-1]))
+
+    def _get_latent_space(self, inputs):
+        latent_space = torch.zeros_like(inputs)
+        for i in range(self.latent_num):
+            latent_space += self.latent_input[i]* (inputs==i)
+        return latent_space
 
     '''
     def compute_Kstar(self, new_param):
@@ -271,14 +288,23 @@ class HOGP_MODULE(torch.nn.Module):
         with torch.no_grad():
             if self.module_config['input_normalize'] is True:
                 input_param[0] = self.X_normalizer.normalize(input_param[0])
-            
+                if self.module_config['BayeSTA']:
+                    latent_space = self._get_latent_space(input_param[1])
+                    _in = torch.concat([input_param[0], latent_space], dim=1)
+                    input_param[0] = _in
+
             #! may needn't?
             # self.update_product()
 
             # /*** Get predict mean***/
             if len(input_param[0].shape) != len(self.inputs_tr[0].shape):
                 input_param[0] = input_param[0].reshape(1, *input_param[0].shape)
-            K_star = self.kernel_list[-1](input_param[0], self.inputs_tr[0])
+            if self.module_config['BayeSTA']:
+                latent_space = self._get_latent_space(self.inputs_tr[1])
+                src_in = torch.concat([self.inputs_tr[0], latent_space], dim=1)
+                K_star = self.kernel_list[-1](input_param[0], src_in)
+            else:
+                K_star = self.kernel_list[-1](input_param[0], self.inputs_tr[0])
 
             K_predict = self.K[:-1] + [K_star]
 
@@ -348,7 +374,16 @@ class HOGP_MODULE(torch.nn.Module):
                 mask_number_per_sample = 0.1
                 sample_size = self.outputs_eval[0][...,0].numel()
                 for i in range(self.outputs_eval[0].shape[-1]):
-                    self.random_mask.append(torch.randint(sample_size, (int(mask_number_per_sample* sample_size),)).tolist())
+                    if (i+1)%5 != 0:
+                        self.random_mask.append([True]* self.outputs_eval[0].shape[0])
+                    else:
+                        self.random_mask.append([False]* self.outputs_eval[0].shape[0])
+                    # For STA mask
+                    # mask = [i for i in range(sample_size)]
+                    # pop_item = np.array([i for i in range(sample_size)]).reshape(5,3)[2:,2].tolist()
+                    # for _v in pop_item:
+                    #     mask.remove(_v)
+                    # self.random_mask.append(mask)
 
             pod = posterior_output_decorator(self, 'hogp', self.random_mask, lr=0.001)
             for i in range(100):
@@ -360,6 +395,7 @@ class HOGP_MODULE(torch.nn.Module):
                 result[_k + '_STA'] = _v
 
         return result
+
 
 if __name__ == '__main__':
     module_config = {}
@@ -386,7 +422,7 @@ if __name__ == '__main__':
     print('\n')
     cigp.eval()
 
-    from result_visualize.plot_field import plot_container
+    from visualize_tools.plot_field import plot_container
     data_list = [cigp.outputs_eval[0].numpy(), cigp.predict_y.numpy()]
     data_list.append(abs(data_list[0] - data_list[1]))
     label_list = ['groundtruth','predict', 'diff']

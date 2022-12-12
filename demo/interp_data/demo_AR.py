@@ -10,8 +10,8 @@ realpath = _sep.join(realpath[:realpath.index('ML_gp')+1])
 sys.path.append(realpath)
 
 from utils.main_controller import controller
-from module.cigp import CIGP_MODULE
-from module.cigp_multi_fidelity import CIGP_MODULE_Multi_Fidelity
+from gp_module.cigp import CIGP_MODULE
+from gp_module.cigp_multi_fidelity import CIGP_MODULE_Multi_Fidelity
 
 real_dataset = ['FlowMix3D_MF',
                 'MolecularDynamic_MF', 

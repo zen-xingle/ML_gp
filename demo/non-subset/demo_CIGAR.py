@@ -11,8 +11,8 @@ realpath = _sep.join(realpath[:realpath.index('ML_gp')+1])
 sys.path.append(realpath)
 
 from utils.main_controller import controller
-from module.ind_hogp import HOGP_MODULE
-from module.CIGAR import CIGAR
+from gp_module.ind_hogp import HOGP_MODULE
+from gp_module.CIGAR import CIGAR
 
 interp_data=False
 

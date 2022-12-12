@@ -29,11 +29,12 @@ default_controller_config = {
 
 
 class controller(object):
-    def __init__(self, module, controller_config, module_config) -> None:
+    def __init__(self, module, controller_config, module_config, demo_name=None) -> None:
         self.module_config = module_config
         self.controller_config = smart_update(default_controller_config, controller_config)
+        exp_name = demo_name if demo_name is not None else module.__name__
         if self.controller_config['record_file_dir'] == default_controller_config['record_file_dir']:
-            self.controller_config['record_file_dir'] = os.path.join(self.controller_config['record_file_dir'], module.__name__, module_config['dataset']['name'], datetime.datetime.now().strftime('%Y-%m-%d'))
+            self.controller_config['record_file_dir'] = os.path.join(self.controller_config['record_file_dir'], exp_name, module_config['dataset']['name'], datetime.datetime.now().strftime('%Y-%m-%d'))
         deep_mkdir(self.controller_config['record_file_dir'])
         self.controller_config['record_file_path'] = get_available_name(self.controller_config['record_file_dir'], 'txt')
 
@@ -69,13 +70,13 @@ class controller(object):
 
             print('train {}/{}'.format(i, self.controller_config['max_epoch']), end='\r')
 
-            # 每达到record_step步数时, 暂存模型状态
+            # when reach record step, store model
             # if i%self.controller_config['record_step'] == 0 and i!= 0:
                 # self.record_state()
                 # print('step: {} record state'.format(i))
                 # _result = self.start_eval()
 
-            # 达到check_point时, 在验证集上测试效果
+            # when reach check_point, evaluation
             if (i+1) in self.controller_config['check_point']:
                 print("\nepoch: {}".format(i+1))
                 _result = self.start_eval()

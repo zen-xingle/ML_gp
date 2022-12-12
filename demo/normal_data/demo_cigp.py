@@ -17,17 +17,18 @@ real_dataset = ['FlowMix3D_MF',
 gen_dataset = ['poisson_v4_02',
                 'burger_v4_02',
                 'Burget_mfGent_v5',
+                
                 'Burget_mfGent_v5_02',
                 # 'Heat_mfGent_v5',
                 'Piosson_mfGent_v5',
                 'Schroed2D_mfGent_v1',
                 'TopOP_mfGent_v5',]
 
-interp_data = True
+interp_data = False
 
 if __name__ == '__main__':
     # for _dataset in real_dataset + gen_dataset:
-    for _dataset in gen_dataset:
+    for _dataset in ['poisson_v4_02']:
         for _seed in [None, 0, 1, 2, 3, 4]:
 
             module_config = {

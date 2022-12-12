@@ -4,6 +4,7 @@ import sys
 realpath=os.path.abspath(__file__)
 _sep = os.path.sep
 realpath = realpath.split(_sep)
+demo_name = realpath[-1].rstrip('.py')
 realpath = _sep.join(realpath[:realpath.index('ML_gp')+1])
 sys.path.append(realpath)
 
@@ -46,7 +47,7 @@ if __name__ == '__main__':
                     'eval_start_index': 0,
                     'eval_sample': 128,
 
-                    'inputs_format': ['x[0]'],
+                    'inputs_format': ['x[0]', 'x[0]'],
                     'outputs_format': ['y[0]','y[-1]'],
 
                     'force_2d': True,
@@ -58,7 +59,7 @@ if __name__ == '__main__':
                     'second_fidelity_start_index': int(first_fidelity_sample - subset),
                     'non_subset': True
                 }
-                ct = controller(DeepMFnet, {}, module_config)
+                ct = controller(DeepMFnet, {}, module_config, demo_name)
                 ct.start_train()
 
     ct.clear_record()

@@ -2,7 +2,6 @@ from copy import deepcopy
 from utils.mlgp_log import mlgp_log
 
 def smart_update(dst, src):
-    # 目前最多支持两级dict
     dst = deepcopy(dst)
     src = deepcopy(src)
 

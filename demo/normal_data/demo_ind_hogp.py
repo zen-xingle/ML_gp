@@ -5,6 +5,7 @@ import sys
 realpath=os.path.abspath(__file__)
 _sep = os.path.sep
 realpath = realpath.split(_sep)
+demo_name = realpath[-1].rstrip('.py')
 realpath = _sep.join(realpath[:realpath.index('ML_gp')+1])
 sys.path.append(realpath)
 
@@ -54,7 +55,7 @@ if __name__ == '__main__':
                 'cuda': True,
                 'evaluate_method': ['mae', 'rmse', 'r2', 'gaussian_loss'],
             }
-            ct = controller(HOGP_MODULE, {}, module_config)
+            ct = controller(HOGP_MODULE, {}, module_config, demo_name)
             ct.start_train()
 
     ct.clear_record()

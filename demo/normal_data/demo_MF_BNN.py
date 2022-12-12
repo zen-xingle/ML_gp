@@ -4,6 +4,7 @@ import sys
 realpath=os.path.abspath(__file__)
 _sep = os.path.sep
 realpath = realpath.split(_sep)
+demo_name = realpath[-1].rstrip('.py')
 realpath = _sep.join(realpath[:realpath.index('ML_gp')+1])
 sys.path.append(realpath)
 
@@ -52,7 +53,7 @@ if __name__ == '__main__':
                     'eval_start_index': 0,
                     'eval_sample': 128,
 
-                    'inputs_format': ['x[0]'],
+                    'inputs_format': ['x[0]', 'x[0]'],
                     'outputs_format': ['y[0]','y[-1]'],
 
                     'force_2d': True,
@@ -63,15 +64,7 @@ if __name__ == '__main__':
                     'second_fidelity_sample': _sample,
                 }
 
-                ct = controller(DeepMFnet, {'record_file_path': 'dmfal.txt'}, module_config)
+                ct = controller(DeepMFnet, {'record_file_path': 'dmfal.txt'}, module_config, demo_name)
                 ct.start_train()
-                ct.smart_restore_state(-1)
-                ct.rc_file.write('---> final result\n')
-                ct.rc_file.flush()
-                ct.start_eval({'eval state':'final',
-                            'module_name':'dmfal',
-                            'cp_record_file': True})
-                ct.rc_file.write('---> end\n\n')
-                ct.rc_file.flush()
 
     ct.clear_record()

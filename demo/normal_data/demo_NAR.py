@@ -5,6 +5,7 @@ import torch
 realpath=os.path.abspath(__file__)
 _sep = os.path.sep
 realpath = realpath.split(_sep)
+demo_name = realpath[-1].rstrip('.py')
 realpath = _sep.join(realpath[:realpath.index('ML_gp')+1])
 sys.path.append(realpath)
 
@@ -57,7 +58,7 @@ if __name__ == '__main__':
                 'noise_init' : 10.,
                 'exp_restrict': True,
             } # only change dataset config, others use default config
-            ct = controller(CIGP_MODULE, controller_config, module_config)
+            ct = controller(CIGP_MODULE, controller_config, module_config, demo_name)
             ct.start_train()
 
             for _sample in [4,8,16,32]:
@@ -89,7 +90,7 @@ if __name__ == '__main__':
                     'evaluate_method': ['mae', 'rmse', 'r2', 'gaussian_loss'],
                     'noise_init' : 10.0,
                 }
-                second_ct = controller(CIGP_MODULE, controller_config, second_module_config)
+                second_ct = controller(CIGP_MODULE, controller_config, second_module_config, demo_name)
                 # replace ground truth eval data with low fidelity predict
                 # check inputs x
                 x_dim = ct.module.inputs_eval[0].shape[1]

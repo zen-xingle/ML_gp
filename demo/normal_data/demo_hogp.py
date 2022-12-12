@@ -4,6 +4,7 @@ import sys
 realpath=os.path.abspath(__file__)
 _sep = os.path.sep
 realpath = realpath.split(_sep)
+demo_name = realpath[-1].rstrip('.py')
 realpath = _sep.join(realpath[:realpath.index('ML_gp')+1])
 sys.path.append(realpath)
 
@@ -26,6 +27,11 @@ gen_dataset = ['poisson_v4_02',
                 'Schroed2D_mfGent_v1',
                 'TopOP_mfGent_v5',]
 
+BayeSTA = ['b17_VTL1x5',
+           'b17_VTL2x5',
+           'b17_VTL3x5',
+           'b17_merge']
+
 if __name__ == '__main__':
     # for _dataset in real_dataset + gen_dataset:
     for _dataset in ['poisson_v4_02']:
@@ -38,7 +44,7 @@ if __name__ == '__main__':
 
                             'seed': _seed,
                             'train_start_index': 0, 
-                            'train_sample': 32, 
+                            'train_sample': 16, 
                             'eval_start_index': 0,
                             'eval_sample': 128,
 
@@ -50,17 +56,17 @@ if __name__ == '__main__':
                             'y_sample_to_last_dim': True,
                             'slice_param': [0.6, 0.4], #only available for dataset, which not seperate train and test before
                             },
-                    'cuda': True,
+                    'cuda': False,
                     'evaluate_method': ['mae', 'rmse', 'r2', 'gaussian_loss'],
                     'noise_init' : 10.0,
 
                     'lr': {'kernel':0.01, 
                     'optional_param':0.01, 
                     'noise':0.01},
-                    'BayeSTA': True,
+                    'BayeSTA': False,
                 }
 
-            ct = controller(HOGP_MODULE, {'max_epoch': 1000, 'record_file_path': 'hogp.txt'}, module_config)
+            ct = controller(HOGP_MODULE, {'max_epoch': 1000, 'record_file_path': 'hogp.txt'}, module_config, demo_name)
             # print(ct.module.module_config['dataset']['seed'])
             ct.start_train()
 

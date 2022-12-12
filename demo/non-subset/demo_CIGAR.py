@@ -6,6 +6,7 @@ import torch
 realpath=os.path.abspath(__file__)
 _sep = os.path.sep
 realpath = realpath.split(_sep)
+demo_name = realpath[-1].rstrip('.py')
 realpath = _sep.join(realpath[:realpath.index('ML_gp')+1])
 sys.path.append(realpath)
 
@@ -97,7 +98,7 @@ if __name__ == '__main__':
                 'evaluate_method': ['mae', 'rmse', 'r2', 'gaussian_loss'],
                 'noise_init' : 10.,
                 } # only change dataset config, others use default config
-            ct = controller(HOGP_MODULE, controller_config, ct_module_config)
+            ct = controller(HOGP_MODULE, controller_config, ct_module_config, demo_name)
             ct.start_train()
 
             # second_fidelity_sample = 32
@@ -127,7 +128,7 @@ if __name__ == '__main__':
                     'noise_init' : 10.,
                 } # only change dataset config, others use default config
 
-                mfct = controller(CIGAR, controller_config, mfct_module_config)
+                mfct = controller(CIGAR, controller_config, mfct_module_config, demo_name)
                 
                 with torch.no_grad():
                     # use x->yl_predict for test x+yl -> yh

@@ -52,6 +52,11 @@ class rho_connection(torch.nn.Module):
         yh = yl*self.rho + res
         return yh
 
+    def low_2_high_double_mapping(self, yl_var, res):
+        yh = yl_var*self.rho + res
+        return yh
+
+
     def high_2_low(self, yh, res):
         yl = (yh - res)/self.rho
         return yl

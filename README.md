@@ -82,37 +82,37 @@ default_module_config = {
 }
 </pre>
 &#160;&#160;&bull;&#160; 'dataset': record hyperparam of dataset.
-&#160;&#160;&bull;&#160; 'lr': : Learning rate. Learning rate is defined as dict. You can use it to set different params with their specific learning rate.
-&#160;&#160;&bull;&#160; 'weight_decay': Params penalty coefficient. Set higher to avoid overfitting.
-&#160;&#160;&bull;&#160; 'kernel': Define what kernel is use. It also support multi-kernel. For multi-kernel, it can be define as
+<br>&#160;&#160;&bull;&#160; 'lr': : Learning rate. Learning rate is defined as dict. You can use it to set different params with their specific learning rate.
+<br>&#160;&#160;&bull;&#160; 'weight_decay': Params penalty coefficient. Set higher to avoid overfitting.
+<br>&#160;&#160;&bull;&#160; 'kernel': Define what kernel is use. It also support multi-kernel. For multi-kernel, it can be define as
 <pre style="background-color:WhiteSmoke;">
 'kernel': {
             'K1': {'SE': {'exp_restrict':True, 'length_scale':1., 'scale': 1.}},
             'K2': {'Linear': {'exp_restrict':True, 'length_scale':1., 'scale': 1.}},
               },
 </pre>
-&#160;&#160;&bull;&#160; 'evaluate_method': Define how to evaluate the inference result.
-&#160;&#160;&bull;&#160; 'optimizer': Pytorch optimizer.
-&#160;&#160;&bull;&#160; 'exp_restrict': If set true, the noise will be compute in torch.exp(noise).
-&#160;&#160;&bull;&#160; 'input_normalize': If set true, the intput data will be preprocess by normalization.
-&#160;&#160;&bull;&#160; 'output_normalize': If set true, the output data will be preprocess by normalization.
-&#160;&#160;&bull;&#160; 'noise_init': Noise initialize value. It should be float, not int.
-&#160;&#160;&bull;&#160; 'cuda': Set True to enable gpu acclerating.
+<br>&#160;&#160;&bull;&#160; 'evaluate_method': Define how to evaluate the inference result.
+<br>&#160;&#160;&bull;&#160; 'optimizer': Pytorch optimizer.
+<br>&#160;&#160;&bull;&#160; 'exp_restrict': If set true, the noise will be compute in torch.exp(noise).
+<br>&#160;&#160;&bull;&#160; 'input_normalize': If set true, the intput data will be preprocess by normalization.
+<br>&#160;&#160;&bull;&#160; 'output_normalize': If set true, the output data will be preprocess by normalization.
+<br>&#160;&#160;&bull;&#160; 'noise_init': Noise initialize value. It should be float, not int.
+<br>&#160;&#160;&bull;&#160; 'cuda': Set True to enable gpu acclerating.
 </details>
 <br>
 
 <details>
 <summary>&#160;Training setting</summary>
-&#160;&#160;&#160;Training controller using to record result, save module training status. The setting was defined in the head of <a href="utils/main_controller.py">main_controller</a> as shown as followed.
+<br>&#160;&#160;&#160;Training controller using to record result, save module training status. The setting was defined in the head of <a href="utils/main_controller.py">main_controller</a> as shown as followed.
 <pre style="background-color:WhiteSmoke;">
 default_controller_config = {
     'check_point': [1, 10, 100, 300, 500, 1000],
     'max_epoch': 1000,
     'record_file_dir': './exp/'}
 </pre>
-&#160;&#160;&bull;&#160; 'check_point': when reach check_point epoch, eval the module<br>
-&#160;&#160;&bull;&#160; 'max_epoch': max training epoch<br>
-&#160;&#160;&bull;&#160; 'record_file_dir': path to save result
+&#160;&#160;&bull;&#160; 'check_point': when reach check_point epoch, eval the module
+<br>&#160;&#160;&bull;&#160; 'max_epoch': max training epoch
+<br>&#160;&#160;&bull;&#160; 'record_file_dir': path to save result
 </details>
 <br>
 
@@ -164,12 +164,12 @@ preprocess_default_config_dict = {
     'outputs_format': ['y[0]', 'y[2]']}
 </pre>
 &#160;&#160;&bull;&#160; 'seed': Seed use for shuffling on x_train, y_train. Notice: shuffling only work on x_train,y_train, not work on x_eval, y_eval.
-&#160;&#160;&bull;&#160; 'slice_param': Only valid when x_eval, y_eval is None. Slice x_train, y_train into two parts, the first one is train_sample, the second one is eval sample.
-&#160;&#160;&bull;&#160; 'train_start_index', 'train_sample': Meaning the output x_tr = x_tr[train_start_index: train_start_index+train_sample].
-&#160;&#160;&bull;&#160; 'eval_start_index', 'eval_sample': Meaning the output x_eval = x_eval[eval_start_index: eval_start_index+eval_sample].
-&#160;&#160;&bull;&#160; 'force_2d': If true, then the x, y will be reshape to 2D.
-&#160;&#160;&bull;&#160; 'x_sample_to_last_dim', 'y_sample_to_last_dim': It's supposed that the first dim determine sample. If true, put the first dim to last dim.
-&#160;&#160;&bull;&#160; 'inputs_format', 'outputs_format': This is the last step of preprocess. It work as "eval(cmd)". Meaning that the strings in the list is supposed to be 'code'(for example, if x = a+b, then the code is 'a+b'). And the list means multi input/output. We use more code to explain how it works. This may be difficult to understand at first, but it work well for tracking how the preprocess was made on specific dataset. 
+<br>&#160;&#160;&bull;&#160; 'slice_param': Only valid when x_eval, y_eval is None. Slice x_train, y_train into two parts, the first one is train_sample, the second one is eval sample.
+<br>&#160;&#160;&bull;&#160; 'train_start_index', 'train_sample': Meaning the output x_tr = x_tr[train_start_index: train_start_index+train_sample].
+<br>&#160;&#160;&bull;&#160; 'eval_start_index', 'eval_sample': Meaning the output x_eval = x_eval[eval_start_index: eval_start_index+eval_sample].
+<br>&#160;&#160;&bull;&#160; 'force_2d': If true, then the x, y will be reshape to 2D.
+<br>&#160;&#160;&bull;&#160; 'x_sample_to_last_dim', 'y_sample_to_last_dim': It's supposed that the first dim determine sample. If true, put the first dim to last dim.
+<br>&#160;&#160;&bull;&#160; 'inputs_format', 'outputs_format': This is the last step of preprocess. It work as "eval(cmd)". Meaning that the strings in the list is supposed to be 'code'(for example, if x = a+b, then the code is 'a+b'). And the list means multi input/output. We use more code to explain how it works. This may be difficult to understand at first, but it work well for tracking how the preprocess was made on specific dataset. 
 
 <pre style="background-color:WhiteSmoke;">
 #Here, after the previous step, we got x, y.(actually got two pairs, x_tr, y_tr; x_te, y_te. This function will process data in the sample way for this two pairs). All of them are list. 

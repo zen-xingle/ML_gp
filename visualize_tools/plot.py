@@ -26,10 +26,16 @@ if __name__ == '__main__':
         epoch_index = result[0].index('epoch')
         epoch = [_l[epoch_index] for _l in result[1:]]
 
-        rmse_index = result[0].index('rmse')
+        rmse_index = result[0].index('mae')
         rmse = [_l[rmse_index] for _l in result[1:]]
 
+        _module = data[i]['@append_info@']['module']
+        _seed = data[i]['@append_info@']['module_config']['dataset']['seed']
+
         plt.plot(epoch, rmse)
+        plt.xlabel('epoch')
+        plt.ylabel('mae')
+        plt.title(_module+'\n'+ 'seed:{}'.format(_seed))
         plt.show()
 
 

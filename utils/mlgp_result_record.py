@@ -246,4 +246,5 @@ if __name__ == '__main__':
     rc.record({'epoch': 1, 'result': 0.6})
     rc.record({'result': 0.7, 'epoch': 2})
 
-    # MLGP_record_parser('./record.txt')
+    paser = MLGP_record_parser('./record_test.txt')
+    print(paser.get_data())

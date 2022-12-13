@@ -424,7 +424,7 @@ if __name__ == '__main__':
     print('\n')
     dmfal.eval()
 
-    from plot_field import plot_container
+    from visualize_tools.plot_field import plot_container
     # data_list = [dmfal.outputs_eval[1].detach().numpy(), dmfal.predict_y.detach().numpy()]
     data_list = [y2[128:,...].reshape(128, -1).numpy(), dmfal.predict_y.detach().numpy()]
     data_list.append(abs(data_list[0] - data_list[1]))

@@ -52,7 +52,7 @@ After running the demo, the result will be saved in ["../exp"](../exp) folder.
 #### 1.GAR
 
 ```
-python demo/normal_data/demo_multi-fidelity_hogp.py
+python demo/normal_data/demo_GAR.py
 ```
 
 
@@ -60,7 +60,7 @@ python demo/normal_data/demo_multi-fidelity_hogp.py
 #### 2.CIGAR
 
 ```
-python demo/normal_data/demo_ind_multi_fidelity_hogp.py
+python demo/normal_data/demo_CIGAR.py
 ```
 
 
@@ -68,7 +68,7 @@ python demo/normal_data/demo_ind_multi_fidelity_hogp.py
 #### 3.NAR
 
 ```
-python demo/normal_data/demo_nar_cigp.py
+python demo/normal_data/demo_NAR.py
 ```
 
 
@@ -76,7 +76,7 @@ python demo/normal_data/demo_nar_cigp.py
 #### 4.MF-BNN
 
 ```
-python demo/normal_data/demo_dmfal.py
+python demo/normal_data/demo_MF_BNN.py
 ```
 
 
@@ -84,7 +84,7 @@ python demo/normal_data/demo_dmfal.py
 #### 5.DC
 
 ```
-python demo/normal_data/demo_dc_cigp.py
+python demo/normal_data/demo_DC.py
 ```
 
 
@@ -92,7 +92,7 @@ python demo/normal_data/demo_dc_cigp.py
 #### 6.ResGP
 
 ```
-python demo/interp_data/demo_res_gp.py
+python demo/interp_data/demo_ResGP.py
 ```
 
 
@@ -100,6 +100,6 @@ python demo/interp_data/demo_res_gp.py
 #### 7.AR
 
 ```
-python demo/interp_data/demo_lar_gp.py
+python demo/interp_data/demo_AR.py
 ```
 

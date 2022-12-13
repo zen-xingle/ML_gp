@@ -29,12 +29,17 @@ python gp_module/GAR.py
 python gp_module/DC_I.py
 python nn_net/MF_BNN.py
 ```
-These demo show you how to feed the data and get the predict result.
-<br> 
+These demo show you how to feed the data and get the predict result. Then it will plot filed result as follow:
+
+![demo result](./data/doc/Figure_1.png)
+
+<br>
+<br>
 
 ## Demo
 
 [see here](./demo/README.md)
+<br>
 <br>
 
 ## Appendix
@@ -48,7 +53,7 @@ These demo show you how to feed the data and get the predict result.
 default_module_config = {
     'dataset' : {'name': 'Piosson_mfGent_v5',
                  'interp_data': False,
-                 
+
                  # preprocess
                  'seed': None,
                  'train_start_index': 0,
@@ -58,18 +63,18 @@ default_module_config = {
                 
                  'inputs_format': ['x[0]'],
                  'outputs_format': ['y[2]'],
-
+    
                  'force_2d': True,
                  'x_sample_to_last_dim': False,
                  'y_sample_to_last_dim': True,
                  'slice_param': [0.6, 0.4], #only available for dataset, which not seperate train and test before
                  },
-
+    
     'lr': {'kernel':0.01, 
            'optional_param':0.01, 
            'noise':0.01},
     'weight_decay': 1e-3,
-
+    
     'kernel': {
             'K1': {'SE': {'exp_restrict':True, 'length_scale':1., 'scale': 1.}},
               },
@@ -148,7 +153,7 @@ preprocess_default_config_dict = {
 
     # now only available for dataset, which not seperate train and test before
     'slice_param': [0.6, 0.4],
-
+    
     # define sample select
     'train_start_index': 0, 
     'train_sample': 8, 
@@ -220,4 +225,7 @@ python gp_module/CIGAR.py
 </pre>
 </details>
 <br>
+<br>
 
+## Acknowledgement
+1. https://github.com/shib0li/DMFAL

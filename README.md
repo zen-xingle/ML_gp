@@ -37,7 +37,7 @@ These demo show you how to feed the data and get the predict result.
 [see here](./demo/README.md)
 <br>
 
-##Appendix
+## Appendix
 
 <details>
 <summary>&#160;Hyperparameters - GP module</summary>

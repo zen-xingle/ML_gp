@@ -38,6 +38,7 @@ These demo show you how to feed the data and get the predict result.
 <br>
 
 ##Appendix
+
 <details>
 <summary>&#160;Hyperparameters - GP module</summary>
 &#160;&#160;&#160;Almost all the hyperparameters can be set via a Python "Dictionary". Defining in this way can help us store the hyperparameters, which is convenient for reproducing results.<br>

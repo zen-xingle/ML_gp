@@ -38,9 +38,9 @@ default_module_config = {
                  'inputs_format': ['x[0]', 'y[0]'],
                  'outputs_format': ['y[2]'],
 
-                 'force_2d': False,
+                 'force_2d': True,
                  'x_sample_to_last_dim': False,
-                 'y_sample_to_last_dim': True,
+                 'y_sample_to_last_dim': False,
                  'slice_param': [0.6, 0.4], #only available for dataset, which not seperate train and test before
                  },
 
@@ -58,7 +58,7 @@ default_module_config = {
     'auto_broadcast_kernel': True,
     'evaluate_method': ['mae', 'rmse', 'r2'],
     'optimizer': 'adam',
-    'exp_restrict': False,
+    'exp_restrict': True,
     'input_normalize': True,
     'output_normalize': True,
     'noise_init' : 1.,
@@ -147,6 +147,10 @@ class CIGAR(torch.nn.Module):
         # init optimizer
         self._optimizer_setup()
 
+    def set_up_unknown_yl_var(self, yl_var_unknow, k_star_l, k_l_inv):
+        self.yl_var_unknow = yl_var_unknow
+        self.k_star_l = k_star_l
+        self.k_l_inv = k_l_inv
 
     def _grid_setup(self, grid_config):
         if grid_config['auto_broadcast_grid_size'] is True and len(grid_config['grid_size'])==1:
@@ -184,9 +188,9 @@ class CIGAR(torch.nn.Module):
         if type_name in ['res_rho']:
             self.target_connection = rho_connection()
         elif type_name in ['res_mapping']:
-            self.target_connection = mapping_connection(self.inputs_tr[1][...,0].shape, 
-                                                        self.outputs_tr[0][...,0].shape,
-                                                        )
+            self.target_connection = mapping_connection(self.inputs_tr[1][0,...].shape, 
+                                                        self.outputs_tr[0][0,...].shape,
+                                                        sample_last_dim=False)
 
     def _optimizer_setup(self):
         optional_params = []
@@ -211,7 +215,7 @@ class CIGAR(torch.nn.Module):
                                            {'params': kernel_learnable_param , 'lr': self.module_config['lr']['kernel']}],
                                            weight_decay = self.module_config['weight_decay']) # 改了lr从0.01 改成0.0001
 
-    def compute_var(self):
+    def update_kernel_result(self):
         # init in first time
         if not hasattr(self, 'K'):
             self.K = []
@@ -235,37 +239,27 @@ class CIGAR(torch.nn.Module):
         return self.Kstar
     '''
 
-    def update_product(self):
+    def compute_loss(self):
         # during training, due to the change of params in Kernel, recalculate K again.
-        self.compute_var()
-
-        # Kruskal operator
-        # compute log(|S|) = sum over the logarithm of all the elements in A. O(nd) complexity.
-        _init_value = torch.tensor([1.0],  device=list(self.parameters())[0].device).reshape(*[1 for i in self.K])
-        lambda_list = [eigen.value.reshape(-1, 1) for eigen in self.K_eigen]
-        A = tucker_to_tensor((_init_value, lambda_list))
-        A = A.expand_as(self.outputs_tr[0])
+        self.update_kernel_result()
+        train_num, ydim = self.outputs_tr[0].shape
 
         if self.module_config['exp_restrict'] is True:
             _noise = self.noise.exp()
         else:
             _noise = self.noise
-        # A = A + _noise * tensorly.ones(A.shape)
-        A = A + _noise.pow(-1)* tensorly.ones(A.shape, device=list(self.parameters())[0].device)
-        # TODO: add jitter limite here?
+        Sigma = self.K[0] + _noise.pow(-1)* torch.eye(train_num,  device=list(self.parameters())[0].device) + JITTER* torch.eye(train_num,  device=list(self.parameters())[0].device)
         
+        if hasattr(self, 'yl_var_unknow'):
+            Sigma += torch.diag_embed(self.yl_var_unknow)
+
+        L = torch.linalg.cholesky(Sigma)
         _res = self.target_connection(self.inputs_tr[-1], self.outputs_tr[0])
-        T_1 = tensorly.tenalg.mode_dot(_res, self.K_eigen[-1].vector.T, -1)
-        T_2 = T_1 * A.pow(-1/2)
-        T_3 = tensorly.tenalg.mode_dot(T_2, self.K_eigen[-1].vector, -1)
-        b = tensorly.tensor_to_vec(T_3)
+        gamma,_ = torch.triangular_solve(_res, L, upper = False)
 
-        g = tensorly.tenalg.mode_dot(T_1 * A.pow(-1), self.K_eigen[-1].vector, -1)
-
-        self.b = b
-        self.A = A
-        self.g = g
-        # self.g_vec = g_vec
+        nll =  0.5 * (gamma ** 2).sum() +  L.diag().log().sum() * ydim \
+          + 0.5 * train_num * torch.log(2 * torch.tensor(PI)) * ydim
+        return nll
 
 
     def predict(self, input_param):
@@ -274,23 +268,22 @@ class CIGAR(torch.nn.Module):
             if self.module_config['input_normalize'] is True:
                 input_param[0] = self.X_normalizer.normalize(input_param[0])
             
-            #! may needn't?
-            self.update_product()
+            self.update_kernel_result() 
+
+            if self.module_config['exp_restrict'] is True:
+                _noise = self.noise.exp()
+            else:
+                _noise = self.noise
+            Sigma = self.K[0] + _noise.pow(-1)* tensorly.ones(self.K[0].size(0),  device=list(self.parameters())[0].device) + JITTER
+            L = torch.cholesky(Sigma)
 
             # /*** Get predict mean***/
             if len(input_param[0].shape) != len(self.inputs_tr[0].shape):
                 input_param[0] = input_param[0].reshape(1, *input_param[0].shape)
-            K_star = self.kernel_list[-1](input_param[0], self.inputs_tr[0])
+            K_star = self.kernel_list[-1](self.inputs_tr[0], input_param[0])
 
-            # K_predict = self.K[:-1] + [K_star]
+            predict_u = K_star.T @ torch.cholesky_solve(self.outputs_tr[0], L)  # torch.linalg.cholesky()
 
-            '''
-            predict_u = tensorly.tenalg.kronecker(K_predict)@self.g_vec #-> memory error
-            so we use tensor.tenalg.multi_mode_dot instead
-            '''
-            # predict_u = tensorly.tenalg.multi_mode_dot(self.g, K_predict)
-            predict_u = tensorly.tenalg.mode_dot(self.g, K_star, -1)
-            # predict_u = predict_u.reshape_as(self.outputs_eval[:,:,0])
             if self.module_config['output_normalize'] is True:
                 base_yl = self.Y_normalizer.normalize(input_param[1])
                 predict_u = self.target_connection.low_2_high(base_yl, predict_u)
@@ -299,40 +292,22 @@ class CIGAR(torch.nn.Module):
                 predict_u = self.target_connection.low_2_high(input_param[1], predict_u)
 
             # /*** Get predict var***/
-            if len(input_param) > 2:
-                # NOTE: now only work for the normal predict
-                _init_value = torch.tensor([1.0],  device=list(self.parameters())[0].device).reshape(*[1 for i in self.K])
-                diag_K = tucker_to_tensor(( _init_value, [K.diag().reshape(-1,1) for K in self.K[:-1]]))
-                diag_K = self.kernel_list[-1](input_param[0], input_param[0]).diag()* diag_K
+            LinvKx,_ = torch.triangular_solve(K_star, L, upper = False)
+            pred_var = self.kernel_list[-1](input_param[0], input_param[0]).diag().view(-1,1) - (LinvKx.t() @ LinvKx).diag().view(-1, 1)
+            pred_var += _noise.pow(-1)
 
-                S = self.A * self.A.pow(-1/2)
-                S_2 = S.pow(2)
-                S_product = tensorly.tenalg.mode_dot(S_2, (K_star@self.K[-1].inverse()@self.K_eigen[-1].vector).pow(2), -1)
-                M = diag_K + S_product
+            if hasattr(self, 'yl_var_unknow') and len(input_param)>2:
+                k_r_inv = torch.inverse(self.K[0]) + _noise.pow(-1)* tensorly.ones(self.K[0].size(0),  device=list(self.parameters())[0].device) + JITTER
+                gamma = K_star.T@k_r_inv - self.k_star_l.T@self.k_l_inv
+                pred_uncertainty = gamma @ torch.diag_embed(self.yl_var_unknow) @ gamma.T
+                pred_var = input_param[2] + pred_var + pred_uncertainty.diag().reshape(-1, 1)
                 if self.module_config['output_normalize'] is True:
-                    base_var = input_param[2]/(self.Y_normalizer.std ** 2 + JITTER)
-                    M = self.target_connection.low_2_high_double_mapping(base_var, M)
-                    M = M * (self.Y_normalizer.std ** 2)
-                else:
-                    M = self.target_connection.low_2_high_double_mapping(input_param[2], M)
-                M = torch.clip(M, JITTER)
-            else:
-                M = None
+                    pred_var = pred_var* self.Y_normalizer.std
 
-        return predict_u, M
+        return predict_u, pred_var
 
     def train(self):
-        self.update_product()
-        #! loss = -1/2* torch.log(abs(self.A)).mean()
-        nd = torch.prod(torch.tensor([value for value in self.A.shape]))
-        loss = -1/2* nd * torch.log(torch.tensor(2 * math.pi,  device=list(self.parameters())[0].device))
-        loss += -1/2* torch.log(self.A).sum()
-        loss += -1/2* self.b.t() @ self.b
-
-        loss = -loss/nd
-        # loss = -loss
-        # print('loss:', loss)
-
+        loss = self.compute_loss()
         self.optimizer.zero_grad()
         loss.backward()
         self.optimizer.step()
@@ -348,44 +323,41 @@ class CIGAR(torch.nn.Module):
         else:
             predict_y, predict_var = self.predict(self.inputs_eval)
         self.predict_y = deepcopy(predict_y)
-        predict_y = _last_dim_to_fist(predict_y)
-        if predict_var is not None:
-            predict_var = _last_dim_to_fist(predict_var)
         self.predict_var = deepcopy(predict_var)
-        target = _last_dim_to_fist(self.outputs_eval[0])
-        result = high_level_evaluator([predict_y, self.predict_var], target, self.module_config['evaluate_method'])
+        target = self.outputs_eval[0]
+        result = high_level_evaluator([predict_y, self.predict_var.expand_as(predict_y)], target, self.module_config['evaluate_method'])
         print(result)
         return result
 
 
 if __name__ == '__main__':
-    module_config = {'noise_init' : 10.,}
+    module_config = {'noise_init' : 1.,}
 
     x = np.load('./data/sample/input.npy')
     y0 = np.load('./data/sample/output_fidelity_1.npy')
     y2 = np.load('./data/sample/output_fidelity_2.npy')
 
     x = torch.tensor(x).float()
-    y0 = torch.tensor(y0).float()
-    y2 = torch.tensor(y2).float()
-
-    train_x = [x[:128,:], y0[:128,...].permute(1,2,0)]      # permute for sample to last dim
-    train_y = [y2[:128,...].permute(1,2,0)]
-    
-    eval_x = [x[128:,:], y0[128:,...].permute(1,2,0)]
-    eval_y = [y2[128:,...].permute(1,2,0)]
     source_shape = y0[128:,...].shape
+    y0 = torch.tensor(y0).float().reshape(y0.shape[0], -1)
+    y2 = torch.tensor(y2).float().reshape(y2.shape[0], -1)
+
+    train_x = [x[:128,:], y0[:128,...]]      # permute for sample to last dim
+    train_y = [y2[:128,...]]
+    
+    eval_x = [x[128:,:], y0[128:,...]]
+    eval_y = [y2[128:,...]]
 
     cigp = CIGAR(module_config, [train_x, train_y, eval_x, eval_y])
-    for epoch in range(300):
+    for epoch in range(1000):
         print('epoch {}/{}'.format(epoch+1, 300), end='\r')
         cigp.train()
     print('\n')
     cigp.eval()
 
     from visualize_tools.plot_field import plot_container
-    data_list = [cigp.outputs_eval[0].numpy(), cigp.predict_y.numpy()]
+    data_list = [cigp.outputs_eval[0].numpy().reshape(source_shape), cigp.predict_y.numpy().reshape(source_shape)]
     data_list.append(abs(data_list[0] - data_list[1]))
     label_list = ['groundtruth','predict', 'diff']
-    pc = plot_container(data_list, label_list, sample_dim=2)
+    pc = plot_container(data_list, label_list, sample_dim=0)
     pc.plot()

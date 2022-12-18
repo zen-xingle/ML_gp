@@ -170,8 +170,10 @@ class CIGP_MODULE(torch.nn.Module):
             else:
                 _noise = self.noise
             Sigma = Sigma + _noise.pow(-1) * torch.eye(self.inputs_tr[0].size(0), device=list(self.parameters())[0].device)
+            self.k_l_inv = Sigma
 
             kx = self.kernel_list[0](self.inputs_tr[0], input_param[0])
+            self.kstar = kx
             L = torch.linalg.cholesky(Sigma)
             LinvKx,_ = torch.triangular_solve(kx, L, upper = False)
 

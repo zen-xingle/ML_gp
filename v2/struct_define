@@ -1,0 +1,46 @@
+STRUCT ALL:
+  dataset_block
+    - load_data
+    - parse
+    - sample select
+    - shuffle
+    - subset
+
+  model_input_set_1
+  model_block_1
+    - pre process(normalize x, y)
+    - gp_model (has strong condition with "single input, single output"), extra x_var, y_var
+    - post process (always matching with pre process)
+    - opimizer()
+
+  model_input_set_2, non-subset process
+  model_block_2
+    - pre process(normalize x, y)
+    - gp_model (has strong condition with "single input, single output"), extra x_var, y_var
+    - post process (always matching with pre process)
+    - opimizer()
+
+  eval_block
+    - eval method. (y_pred, y_ground)
+
+TRANING:
+  
+
+gp_model
+  - compute_loss()
+  - predict()
+  - kernel_regist()
+  - get_train_params
+    {type, name, [data]}
+    type: noise, kernel, others
+    name: xxx
+ 
+optimizer:
+  include: 
+    + pre process.get_train_params()
+    + gp_model.get_train_params()
+  full_step
+  learning rate - {'step':{int / float(0<x<1)},
+                   'gp_model':{}, 
+                   'pre_process':{},
+                   }

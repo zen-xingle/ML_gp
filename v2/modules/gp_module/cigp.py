@@ -83,19 +83,19 @@ class CIGP_MODULE(BASE_GP_MODEL):
             self.outputs_tr = outputs
             self.already_set_train_data = True
 
-        Sigma = self.kernel_list[0](self.inputs_tr[0], self.inputs_tr[0]) + JITTER * torch.eye(self.inputs_tr[0].size(0), device=list(self.parameters())[0].device)
+        Sigma = self.kernel_list[0](inputs[0], inputs[0]) + JITTER * torch.eye(inputs[0].size(0), device=list(self.parameters())[0].device)
         _noise = self._get_noise_according_exp_restriction()
 
-        Sigma = Sigma + _noise.pow(-1) * torch.eye(self.inputs_tr[0].size(0), device=list(self.parameters())[0].device)
+        Sigma = Sigma + _noise.pow(-1) * torch.eye(inputs[0].size(0), device=list(self.parameters())[0].device)
 
         L = torch.linalg.cholesky(Sigma)
         #option 1 (use this if torch supports)
         # Gamma,_ = torch.triangular_solve(self.Y, L, upper = False)
         #option 2
 
-        gamma = L.inverse() @ self.outputs_tr[0]       # we can use this as an alternative because L is a lower triangular matrix.
+        gamma = L.inverse() @ outputs[0]       # we can use this as an alternative because L is a lower triangular matrix.
 
-        y_num, y_dimension = self.outputs_tr[0].shape
+        y_num, y_dimension = outputs[0].shape
         nll =  0.5 * (gamma ** 2).sum() +  L.diag().log().sum() * y_dimension  \
             + 0.5 * y_num * torch.log(2 * torch.tensor(PI, device=list(self.parameters())[0].device)) * y_dimension
         return nll

@@ -48,13 +48,17 @@ class GP_model_block(torch.nn.Module):
     def predict(self, inputs):
         inputs = self.dnm.normalize_inputs(inputs)
 
-        if self.pre_process_block is not None and self.pre_process_block.active_at_predict:
-            inputs = self.pre_process_block.pre_process(inputs)
+        if self.pre_process_block is not None:
+            gp_inputs, _ = self.pre_process_block.pre_process_at_predict(inputs, None)
+        else:
+            gp_inputs = inputs
 
-        outputs = self.gp_model.predict(inputs)
+        gp_outputs = self.gp_model.predict(gp_inputs)
 
-        if self.post_process_block is not None and self.post_process_block.active_at_predict:
-            outputs = self.post_process_block.post_process(outputs)
+        if self.post_process_block is not None:
+            _, outputs = self.post_process_block.post_process_at_predict(inputs, gp_outputs)
+        else:
+            outputs = gp_outputs
 
         # outputs = self.dnm.denormalize_outputs(outputs)
         outputs = [self.dnm.denormalize_output(outputs[0], 0), outputs[1]]
@@ -69,7 +73,7 @@ class GP_model_block(torch.nn.Module):
         inputs, outputs = self.dnm.normalize_all(inputs, outputs)
 
         if self.pre_process_block is not None:
-            inputs, outputs = self.pre_process_block.pre_process(inputs, outputs)
+            inputs, outputs = self.pre_process_block.pre_process_at_train(inputs, outputs)
         
         loss = self.gp_model.compute_loss(inputs, outputs)
         return loss
@@ -94,6 +98,7 @@ class GP_model_block(torch.nn.Module):
         if self.post_process_block is not None:
             params_dict.update(self.post_process_block.get_train_params())
         return params_dict
+
 
 
 if __name__ == '__main__':

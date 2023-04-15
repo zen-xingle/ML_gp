@@ -21,9 +21,9 @@ from modules.gp_module.basic_gp_model import BASE_GP_MODEL
 
 default_config = {
     'noise': 1.,
-    'exp_restrict': False,
+    'noise_exp_format': False,
     'kernel': {
-                'K1': {'SE': {'exp_restrict':True, 'length_scale':1., 'scale': 1.}},
+                'K1': {'SE': {'noise_exp_format':True, 'length_scale':1., 'scale': 1.}},
               },
 }
 
@@ -33,7 +33,7 @@ class CIGP_MODULE(BASE_GP_MODEL):
         _final_config = smart_update(gp_model_config, default_config)
         self.gp_model_config = _final_config
 
-        if self.gp_model_config['exp_restrict'] is True:
+        if self.gp_model_config['noise_exp_format'] is True:
             self.noise = torch.nn.Parameter(torch.log(torch.tensor(self.gp_model_config['noise'], dtype=torch.float32)))
         else:
             self.noise = torch.nn.Parameter(torch.tensor(self.gp_model_config['noise'], dtype=torch.float32))
@@ -44,8 +44,8 @@ class CIGP_MODULE(BASE_GP_MODEL):
         self.kernel_list = None
         kernel_utils.register_kernel(self, self.gp_model_config['kernel'])
 
-    def _get_noise_according_exp_restriction(self):
-        if self.gp_model_config['exp_restrict'] is True:
+    def _get_noise_according_exp_format(self):
+        if self.gp_model_config['noise_exp_format'] is True:
             return torch.exp(self.noise)
         else:
             return self.noise
@@ -53,25 +53,22 @@ class CIGP_MODULE(BASE_GP_MODEL):
     def predict(self, inputs):
         if self.already_set_train_data is False:
             assert False, "gp model model hasn't been trained. predict failed"
-
-        # avoid changing the original input
-        inputs_copy = deepcopy(inputs)
     
         with torch.no_grad():
             Sigma = self.kernel_list[0](self.inputs_tr[0], self.inputs_tr[0]) + JITTER * torch.eye(self.inputs_tr[0].size(0), device=list(self.parameters())[0].device)
-            _noise = self._get_noise_according_exp_restriction()
+            _noise = self._get_noise_according_exp_format()
             Sigma = Sigma + _noise.pow(-1) * torch.eye(self.inputs_tr[0].size(0), device=list(self.parameters())[0].device)
             self.k_l_inv = Sigma
 
-            kx = self.kernel_list[0](self.inputs_tr[0], inputs_copy[0])
+            kx = self.kernel_list[0](self.inputs_tr[0], inputs[0])
             self.kstar = kx
             L = torch.linalg.cholesky(Sigma)
             LinvKx,_ = torch.triangular_solve(kx, L, upper = False)
 
             u = kx.t() @ torch.cholesky_solve(self.outputs_tr[0], L)
 
-            var_diag = self.kernel_list[0](inputs_copy[0], inputs_copy[0]).diag().view(-1, 1) - (LinvKx**2).sum(dim = 0).view(-1, 1)
-            _noise = self._get_noise_according_exp_restriction()
+            var_diag = self.kernel_list[0](inputs[0], inputs[0]).diag().view(-1, 1) - (LinvKx**2).sum(dim = 0).view(-1, 1)
+            _noise = self._get_noise_according_exp_format()
             var_diag = var_diag + _noise.pow(-1)
             var_diag = var_diag.expand_as(u)
         return u, var_diag
@@ -84,7 +81,7 @@ class CIGP_MODULE(BASE_GP_MODEL):
             self.already_set_train_data = True
 
         Sigma = self.kernel_list[0](inputs[0], inputs[0]) + JITTER * torch.eye(inputs[0].size(0), device=list(self.parameters())[0].device)
-        _noise = self._get_noise_according_exp_restriction()
+        _noise = self._get_noise_according_exp_format()
 
         Sigma = Sigma + _noise.pow(-1) * torch.eye(inputs[0].size(0), device=list(self.parameters())[0].device)
 

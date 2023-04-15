@@ -80,7 +80,7 @@ class BASE_GP_MODEL(torch.nn.Module):
             inputs = [item.get_mean() for item in inputs]
             return self.predict_with_var(inputs, vars)
         else:
-            return self.predict_with_var(inputs, None)
+            return self.predict_with_var(inputs)
 
     def predict_with_var(self, inputs, vars=None):
         pass
@@ -99,7 +99,7 @@ class BASE_GP_MODEL(torch.nn.Module):
             outputs = [item.get_mean() for item in outputs]
             return self.compute_loss_with_var(inputs, outputs, input_vars, output_vars)
         else:
-            return self.compute_loss_with_var(inputs, outputs, None, None)
+            return self.compute_loss_with_var(inputs, outputs)
 
     def compute_loss_with_var(self, inputs, outputs, input_vars=None, output_vars=None):
         pass

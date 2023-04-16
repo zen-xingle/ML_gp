@@ -1,5 +1,5 @@
 # AR for auto regression
-# (high - 
+# (high - low*rho) = res
 
 import os
 import sys

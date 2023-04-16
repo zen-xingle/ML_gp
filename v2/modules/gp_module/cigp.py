@@ -50,7 +50,7 @@ class CIGP_MODULE(BASE_GP_MODEL):
         else:
             return self.noise
 
-    def predict(self, inputs):
+    def predict_with_var(self, inputs, vars=None):
         if self.already_set_train_data is False:
             assert False, "gp model model hasn't been trained. predict failed"
     
@@ -73,7 +73,7 @@ class CIGP_MODULE(BASE_GP_MODEL):
             var_diag = var_diag.expand_as(u)
         return u, var_diag
 
-    def compute_loss(self, inputs, outputs):
+    def compute_loss(self, inputs, outputs, inputs_var, outputs_var):
         # TODO checking if inputs/outputs was changed
         if self.already_set_train_data is False:
             self.inputs_tr = inputs

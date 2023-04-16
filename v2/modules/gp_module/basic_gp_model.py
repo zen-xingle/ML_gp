@@ -50,6 +50,14 @@ def check_no_fuse_type(list):
                 if 0 not in set(define_type_count):
                     assert False, "Multi type can't be fused"
 
+def merge_gp_output_mean_vars(gp_output):
+    # gp model is supposed to single input and single output
+    assert len(gp_output) <= 2, "output should be [mean] or [mean, var]"
+    if len(gp_output) == 1:
+        return [GP_val_with_bar(gp_output[0], None)]
+    else:
+        return [GP_val_with_bar(gp_output[0], gp_output[1])]
+
 class BASE_GP_MODEL(torch.nn.Module):
     '''
         A gp model is supposed to have at least 3 api functions
@@ -78,12 +86,15 @@ class BASE_GP_MODEL(torch.nn.Module):
         if check_list_contain_val_with_bar(inputs):
             vars = [item.get_var() for item in inputs]
             inputs = [item.get_mean() for item in inputs]
-            return self.predict_with_var(inputs, vars)
+            gp_output = self.predict_with_var(inputs, vars)
         else:
-            return self.predict_with_var(inputs)
+            gp_output = self.predict_with_var(inputs)
+        return merge_gp_output_mean_vars(gp_output)
 
     def predict_with_var(self, inputs, vars=None):
-        pass
+        fake_mean = 0
+        fake_var = 0
+        return fake_mean, fake_var
 
     def compute_loss(self, inputs, outputs):
         check_no_fuse_type(inputs)
@@ -102,7 +113,8 @@ class BASE_GP_MODEL(torch.nn.Module):
             return self.compute_loss_with_var(inputs, outputs)
 
     def compute_loss_with_var(self, inputs, outputs, input_vars=None, output_vars=None):
-        pass
+        fake_loss = 0
+        return fake_loss
 
     def get_train_params(self):
         pass

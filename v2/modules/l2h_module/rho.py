@@ -1,6 +1,7 @@
 import torch
 from modules.l2h_module.base_l2h_module import Basic_l2h
 from utils import smart_update
+from utils.type_define import *
 
 default_config = {
     'rho_value_init': 1.,
@@ -48,6 +49,9 @@ class Res_rho_l2h(Basic_l2h):
 
         res = outputs[0]
 
+        # TODO: support res with var
+        if isinstance(res, GP_val_with_bar):
+            res = res.get_mean()
         re_present_outputs = [y_low*self.rho + res]
         return inputs, re_present_outputs
     

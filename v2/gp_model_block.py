@@ -60,8 +60,7 @@ class GP_model_block(torch.nn.Module):
         else:
             outputs = gp_outputs
 
-        # outputs = self.dnm.denormalize_outputs(outputs)
-        outputs = [self.dnm.denormalize_output(outputs[0], 0), outputs[1]]
+        outputs = self.dnm.denormalize_outputs(outputs)
         return outputs
 
     def predict_with_detecing_subset(self, inputs):

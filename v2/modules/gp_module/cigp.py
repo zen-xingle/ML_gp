@@ -30,7 +30,7 @@ default_config = {
 class CIGP_MODULE(BASE_GP_MODEL):
     def __init__(self, gp_model_config=None) -> None:
         super().__init__(gp_model_config)
-        _final_config = smart_update(gp_model_config, default_config)
+        _final_config = smart_update(default_config, gp_model_config)
         self.gp_model_config = _final_config
 
         if self.gp_model_config['noise_exp_format'] is True:
@@ -73,7 +73,7 @@ class CIGP_MODULE(BASE_GP_MODEL):
             var_diag = var_diag.expand_as(u)
         return u, var_diag
 
-    def compute_loss(self, inputs, outputs, inputs_var, outputs_var):
+    def compute_loss(self, inputs, outputs, inputs_var=None, outputs_var=None):
         # TODO checking if inputs/outputs was changed
         if self.already_set_train_data is False:
             self.inputs_tr = inputs

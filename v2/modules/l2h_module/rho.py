@@ -12,7 +12,7 @@ default_config = {
 class Res_rho_l2h(Basic_l2h):
     def __init__(self, config=None) -> None:
         super().__init__()
-        self.config = smart_update(config, default_config)
+        self.config = smart_update(default_config, config)
 
         self.rho = torch.nn.Parameter(torch.tensor(self.config['rho_value_init'], dtype=torch.float32))
         if self.config['trainable']:

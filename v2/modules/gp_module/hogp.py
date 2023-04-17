@@ -120,16 +120,14 @@ class HOGP_MODULE(BASE_GP_MODEL):
 
     def compute_loss(self, inputs, outputs, inputs_var=None, outputs_var=None):
         # TODO checking if inputs/outputs was changed
-        if self.already_set_train_data is False:
-            self.inputs_tr = inputs
-            self.outputs_tr = outputs
-            self.already_set_train_data = True
+        self.inputs_tr = inputs
+        self.outputs_tr = outputs
 
         # compute kernel
         self.K.clear()
         self.K_eigen.clear()
 
-        self.K.append(self.kernel_list[0](self.inputs_tr[0], self.inputs_tr[0]))
+        self.K.append(self.kernel_list[0](inputs[0], inputs[0]))
         self.K_eigen.append(eigen_pairs(self.K[-1]))
 
         for i in range(0, len(self.kernel_list)-1):

@@ -75,10 +75,8 @@ class CIGP_MODULE(BASE_GP_MODEL):
 
     def compute_loss(self, inputs, outputs, inputs_var=None, outputs_var=None):
         # TODO checking if inputs/outputs was changed
-        if self.already_set_train_data is False:
-            self.inputs_tr = inputs
-            self.outputs_tr = outputs
-            self.already_set_train_data = True
+        self.inputs_tr = inputs
+        self.outputs_tr = outputs
 
         Sigma = self.kernel_list[0](inputs[0], inputs[0]) + JITTER * torch.eye(inputs[0].size(0), device=list(self.parameters())[0].device)
         _noise = self._get_noise_according_exp_format()

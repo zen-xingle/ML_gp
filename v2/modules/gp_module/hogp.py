@@ -85,6 +85,9 @@ class HOGP_MODULE(BASE_GP_MODEL):
             return self.noise
 
     def predict_with_var(self, inputs, vars=None):
+        if self.already_set_train_data is False:
+            assert False, "gp model model hasn't been trained. predict failed"
+
         with torch.no_grad():
             # Get predict mean
             K_star = self.kernel_list[0](inputs[0], self.inputs_tr[0])
@@ -122,6 +125,7 @@ class HOGP_MODULE(BASE_GP_MODEL):
         # TODO checking if inputs/outputs was changed
         self.inputs_tr = inputs
         self.outputs_tr = outputs
+        self.already_set_train_data = True
 
         # compute kernel
         self.K.clear()

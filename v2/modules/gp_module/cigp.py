@@ -77,6 +77,7 @@ class CIGP_MODULE(BASE_GP_MODEL):
         # TODO checking if inputs/outputs was changed
         self.inputs_tr = inputs
         self.outputs_tr = outputs
+        self.already_set_train_data = True
 
         Sigma = self.kernel_list[0](inputs[0], inputs[0]) + JITTER * torch.eye(inputs[0].size(0), device=list(self.parameters())[0].device)
         _noise = self._get_noise_according_exp_format()

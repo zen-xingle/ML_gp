@@ -1,5 +1,5 @@
-# AR for auto regression
-# (high - low*rho) = res
+# AR for auto regression. Base on cigp. Train on x,y_res.
+# y_res = (y_high - y_low*rho)
 
 import os
 import sys

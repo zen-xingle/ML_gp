@@ -13,14 +13,14 @@ from utils.mlgp_decorator import *
 @class_init_param_check
 class SE_kernel(torch.nn.Module):
     # Squared Exponential Kernel
-    def __init__(self, exp_restrict, length_scale=1., scale=1.) -> None:
+    def __init__(self, noise_exp_format, length_scale=1., scale=1.) -> None:
         super().__init__()
-        self.exp_restrict = exp_restrict
+        self.noise_exp_format = noise_exp_format
 
         length_scale = torch.tensor(length_scale)
         scale = torch.tensor(scale)
 
-        if exp_restrict is True:
+        if noise_exp_format is True:
             self.length_scale = torch.nn.Parameter(torch.log(length_scale))
             self.scale = torch.nn.Parameter(torch.log(scale))
         else:
@@ -30,7 +30,7 @@ class SE_kernel(torch.nn.Module):
         # TODO should we add noise here?
 
     def forward(self, X, X2):
-        if self.exp_restrict is True:
+        if self.noise_exp_format is True:
             length_scale = torch.exp(self.length_scale).view(1, -1)
             scale = torch.exp(self.scale).view(1, -1)
         else:

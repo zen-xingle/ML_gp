@@ -4,6 +4,7 @@ import sys
 import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 import numpy as np
+import torch
 
 realpath=os.path.abspath(__file__)
 _sep = os.path.sep
@@ -32,6 +33,11 @@ class plot_container:
         self.data_list = data_list
         self.label_list = label_list
         self.sample_dim = sample_dim
+
+        # compatability for torch tensor
+        for i,_d in enumerate(self.data_list):
+            if isinstance(_d, torch.Tensor):
+                self.data_list[i] = _d.detach().cpu().numpy()
 
         self.sample_number = data_list[0].shape[sample_dim]
         self.data_number = len(data_list)

@@ -41,7 +41,10 @@ class Matern_kernel(torch.nn.Module):
         X = X / length_scale.expand(X.size(0), length_scale.size(1))
         X2 = X2 / length_scale.expand(X2.size(0), length_scale.size(1))
 
-        distance = self.const_item* torch.dist(X, X2, p=2)
+        #! error on torch.dist, shape not match
+        # distance = self.const_item* torch.dist(X, X2, p=2)
+        distance = self.const_item*(X @ X2.t())
+
         k_matern3 = scale * (1. + distance) * torch.exp(-distance)
         return k_matern3
 

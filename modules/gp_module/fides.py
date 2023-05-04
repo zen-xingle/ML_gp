@@ -28,6 +28,8 @@ default_config = {
 class FIDES_MODULE(BASE_GP_MODEL):
     def __init__(self, gp_model_config) -> None:
         super().__init__(gp_model_config)
+        _final_config = smart_update(default_config, gp_model_config)
+        self.gp_model_config = _final_config
 
         if self.gp_model_config['noise_exp_format'] is True:
             self.noise = torch.nn.Parameter(torch.log(torch.tensor(self.gp_model_config['noise'], dtype=torch.float32)))

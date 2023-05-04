@@ -31,6 +31,9 @@ class Kernel_res(torch.nn.Module):
             self.scale = torch.nn.Parameter(scale)
             self.length_scale_z = torch.nn.Parameter(length_scale_z)
 
+        # add exp format?
+        self.b = torch.nn.Parameter(torch.tensor(1.))
+
         # TODO should we add noise here?
         self.seed = 1024
 
@@ -38,7 +41,7 @@ class Kernel_res(torch.nn.Module):
         lf1, hf1, lf2, hf2 = l1, h1, l2, h2
         return lf1, hf1, lf2, hf2
 
-    def kernel_res(self, X1, X2, l1, h1, l2, h2):
+    def forward(self, X1, X2, l1, h1, l2, h2):
         if self.noise_exp_format is True:
             length_scale = torch.exp(self.length_scale).view(1, -1)
             scale = torch.exp(self.scale).view(1, -1)

@@ -42,6 +42,15 @@ class FIDES_MODULE(BASE_GP_MODEL):
         self.kernel_list = None
         kernel_utils.register_kernel(self, self.gp_model_config['kernel'])
 
+        self.fi_define=False
+
+    def set_fidelity(self, l1, h1, l2, h2):
+        self.l1 = l1
+        self.h1 = h1
+        self.l2 = l2
+        self.h2 = h2
+        self.fi_define=True
+
 
     def _get_noise_according_exp_format(self):
         if self.gp_model_config['noise_exp_format'] is True:
@@ -51,13 +60,12 @@ class FIDES_MODULE(BASE_GP_MODEL):
         
 
     def predict_with_var(self, inputs, vars=None):
-        assert inputs[1:5] == self.inputs_tr[1:5], "l1, h1, l2, h2 should be same as training data"
         x_test = inputs[0]
-        l1, h1, l2, h2 = inputs[1:5]
+        l1, h1, l2, h2 = self.l1, self.h1, self.l2, self.h2
         _noise = self._get_noise_according_exp_format()
 
-        sigma = self.kernel_list[0](self.inputs_tr[0], self.inputs_tr[0], l1, h1, l2, h2) + _noise.pow(-1) * torch.eye(self.inputs_tr.size(0), device=list(self.parameters())[0].device)
-        sigma = sigma + JITTER * torch.eye(self.inputs_tr.size(0), device=list(self.parameters())[0].device)
+        sigma = self.kernel_list[0](self.inputs_tr[0], self.inputs_tr[0], l1, h1, l2, h2) + _noise.pow(-1) * torch.eye(self.inputs_tr[0].size(0), device=list(self.parameters())[0].device)
+        sigma = sigma + JITTER * torch.eye(self.inputs_tr[0].size(0), device=list(self.parameters())[0].device)
 
         kx = self.kernel_list[0](self.inputs_tr[0], x_test, l1, h1, l2, h2)
         L = torch.cholesky(sigma)
@@ -65,7 +73,7 @@ class FIDES_MODULE(BASE_GP_MODEL):
 
         mean = kx.t() @ torch.cholesky_solve(self.outputs_tr[0], L)  # torch.linalg.cholesky()
         
-        var_diag = self.kernel_res(x_test, x_test, l1, h1, l2, h2).diag().view(-1, 1) \
+        var_diag = self.kernel_list[0](x_test, x_test, l1, h1, l2, h2).diag().view(-1, 1) \
             - (LinvKx**2).sum(dim = 0).view(-1, 1)
         # add the noise uncertainty
         var_diag = var_diag + _noise.pow(-1)
@@ -78,11 +86,10 @@ class FIDES_MODULE(BASE_GP_MODEL):
         self.outputs_tr = outputs
         self.already_set_train_data = True
 
-        assert len(inputs)==5, "inputs should be [x, l1, h1, l2, h2]"
         _noise = self._get_noise_according_exp_format()
         x = inputs[0]
         y = outputs[0]
-        l1, h1, l2, h2 = inputs[1:5]
+        l1, h1, l2, h2 = self.l1, self.h1, self.l2, self.h2
 
         sigma = self.kernel_list[0](x, x, l1, h1, l2, h2) + _noise.pow(-1) * torch.eye(x.size(0), device=list(self.parameters())[0].device)
         sigma = sigma + JITTER * torch.eye(x.size(0), device=list(self.parameters())[0].device)

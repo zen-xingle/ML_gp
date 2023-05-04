@@ -37,7 +37,11 @@ def prepare_data():
 def plot_result(ground_true_y, predict_y, src_shape):
     # plot result
     from visualize_tools.plot_field import plot_container
-    data_list = [ground_true_y, predict_y[0].get_mean(), (ground_true_y - predict_y[0].get_mean()).abs()]
+    from utils.type_define import GP_val_with_bar
+    if isinstance(predict_y[0], GP_val_with_bar):
+        data_list = [ground_true_y, predict_y[0].get_mean(), (ground_true_y - predict_y[0].get_mean()).abs()]
+    else:
+        data_list = [ground_true_y, predict_y, (ground_true_y - predict_y).abs()]
     data_list = [_d.reshape(src_shape) for _d in data_list]
     label_list = ['groundtruth', 'predict', 'diff']
     pc = plot_container(data_list, label_list, sample_dim=0)
@@ -121,18 +125,33 @@ def gp_model_block_test():
     max_epoch=100
     for _fi in range(1, fidelity_num):
         # reset normalizer
-        data_norm_manager = Dateset_normalize_manager(train_inputs, train_outputs[_fi-1:_fi+1])
+        data_norm_manager = Dateset_normalize_manager([train_inputs[0], train_outputs[_fi-1]], [train_outputs[_fi]])
         fides_block.dnm = data_norm_manager
+        fides_block.gp_model.set_fidelity(_fi-1, _fi, _fi-1, _fi)
         for epoch in range(max_epoch):
             optimizer.zero_grad()
-            loss = fides_block.compute_loss(train_inputs, train_outputs[_fi-1:_fi+1])
+            loss = fides_block.compute_loss([train_inputs[0], train_outputs[_fi-1]], [train_outputs[_fi]])
             print('epoch {}/{}, loss_nll: {}'.format(epoch+1, max_epoch, loss.item()), end='\r')
             loss.backward()
             optimizer.step()
 
 
+    # predict
+    gp_model_block.eval()
+    predict_y = gp_model_block.predict(eval_inputs)
+    # plot_result(eval_outputs[0], predict_y, source_shape)
+    predict_y_mean = predict_y[0].mean
 
+    # predict with high fidelity
+    for _fi in range(1, fidelity_num):
+        fides_block.gp_model.set_fidelity(_fi-1, _fi, _fi-1, _fi)
+        data_norm_manager = Dateset_normalize_manager([train_inputs[0], train_outputs[_fi-1]], [train_outputs[_fi]])
+        fides_block.dnm = data_norm_manager
+        fides_block.eval()
+        predict_y = fides_block.predict([eval_inputs[0], predict_y_mean])
+        predict_y_mean = predict_y[0]
 
+    plot_result(eval_outputs[2], predict_y_mean, source_shape)
 
 
 if __name__ == '__main__':

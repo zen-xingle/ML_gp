@@ -40,6 +40,11 @@ class MLGP_recorder:
         self._key = None
         self._record_list = []
 
+        # create folder
+        _folder = os.path.dirname(save_path)
+        if not os.path.exists(_folder):
+            os.makedirs(_folder)
+
         if os.path.exists(save_path) and overlap is False:
             mlgp_log.e("[{}] is already exists, create failed, set overlap=True to avoid this check".format(save_path))
             raise RuntimeError()

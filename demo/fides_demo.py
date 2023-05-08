@@ -171,9 +171,6 @@ def gp_model_block_test(dataset, exp_config):
 
 if __name__ == '__main__':
     exp_name = os.path.join('exp', 'fides', 'toy_data', str(datetime.date.today()), 'result.txt')
-    record_dir_name = os.path.dirname(exp_name)
-    if not os.path.exists(record_dir_name):
-        os.makedirs(record_dir_name)
     recorder = MLGP_recorder(exp_name, overlap=True)
     recorder.register(['train_sample_num','rmse', 'r2', 'time'])
     exp_config = {

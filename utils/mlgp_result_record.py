@@ -195,7 +195,7 @@ class MLGP_record_parser:
     def _resolve_sub_dict(self, _dict):
         new_dict = {}
         def _resolve_dict(_dict, father, _nd):
-            father = father + '.' if father is not '' else father
+            father = father + '.' if father != '' else father
             for key, item in _dict.items():
                 if isinstance(item, dict):
                     _resolve_dict(item, father + key, _nd)
@@ -230,17 +230,31 @@ class MLGP_record_parser:
 
     def get_data(self):
         return self.reformat_list
+    
+    def record_to_csv(self, csv_path):
+        import csv
+        with open(csv_path, 'w', newline='') as f:
+            writer = csv.writer(f)
+
+            for _l in self.reformat_list:
+                record_result = _l['@record_result@']
+                # for line in record_result:
+                writer.writerow([_l['@append_info@']])
+                writer.writerows(record_result)
+                writer.writerow(" ")
+        return
 
 
 if __name__ == '__main__':
     import datetime
-    rc = MLGP_recorder('./record_test.txt', {'Function': 'A', 
-                                             'Purpose': 'Test',
-                                             'time': {
-                                                'now': datetime.datetime.today(),
-                                                'weekdata': datetime.datetime.today().isoweekday(),
-                                             }
-                                             })
+    txt_path = './record_test.txt'
+    append_info = {'Function': 'A', 
+                    'Purpose': 'Test',
+                    'time': {
+                    'now': datetime.datetime.today(),
+                    'weekdata': datetime.datetime.today().isoweekday()}
+                    }
+    rc = MLGP_recorder(txt_path, append_info, overlap=True)
     rc.register(['epoch','result'])
     rc.record([0, 0.5])
     rc.record({'epoch': 1, 'result': 0.6})
@@ -248,3 +262,4 @@ if __name__ == '__main__':
 
     paser = MLGP_record_parser('./record_test.txt')
     print(paser.get_data())
+    paser.record_to_csv('./record_test.csv')

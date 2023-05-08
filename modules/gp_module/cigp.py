@@ -21,7 +21,7 @@ from modules.gp_module.basic_gp_model import BASE_GP_MODEL
 
 default_config = {
     'noise': 1.,
-    'noise_exp_format': False,
+    'noise_exp_format': True,
     'kernel': {
                 'K1': {'SE': {'noise_exp_format':True, 'length_scale':1., 'scale': 1.}},
               },

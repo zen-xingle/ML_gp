@@ -34,3 +34,22 @@ def smart_update(dict_base, dict_update):
     mlgp_log.i("\n")
 
     return dict_base
+
+
+def Dict_to_class(dict):
+    class _class:
+        def __init__(self, dict):
+            for _key, _value in dict.items():
+                if isinstance(_value, dict):
+                    setattr(self, _key, Dict_to_class(_value))
+                else:
+                    setattr(self, _key, _value)
+    return _class(dict)
+
+
+def Class_to_dict(_class):
+    tmp_vars = vars(_class)
+    for _key, _value in tmp_vars.items():
+        if isinstance(_value, _class):
+            tmp_vars[_key] = Class_to_dict(_value)
+    return tmp_vars

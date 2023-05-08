@@ -1,7 +1,7 @@
 import re
 import torch
 import numpy as np
-# from sklearn.metrics import mean_squared_error, r2_score, mean_absolute_error
+from sklearn.metrics import mean_squared_error, r2_score, mean_absolute_error
 
 
 def _reshape_as_2D(A, sample_last_dim):

@@ -1,6 +1,8 @@
 import os
 import sys
 
+import datetime
+import time
 import torch
 import numpy as np
 
@@ -12,6 +14,7 @@ sys.path.append(realpath)
 
 from modules.gp_module.fides import FIDES_MODULE
 from modules.gp_module.cigp import CIGP_MODULE
+from utils.mlgp_result_record import MLGP_recorder, MLGP_record_parser
 
 
 def prepare_data():
@@ -25,6 +28,7 @@ def prepare_data():
 
     x = torch.tensor(x).float()
     outputs = [torch.tensor(y0).float(), torch.tensor(y1).float(), torch.tensor(y2).float()]
+    # outputs = [torch.tensor(y0).float(), torch.tensor(y2).float()]
     outputs = [y.reshape(data_len, -1) for y in outputs]
 
     train_inputs = [x[:128,:]]
@@ -48,9 +52,13 @@ def plot_result(ground_true_y, predict_y, src_shape):
     pc.plot()
 
 
-def gp_model_block_test():
+def gp_model_block_test(dataset, exp_config):
+    # setting record
+    recorder = exp_config['recorder']
+    start_time = time.time()
+
     # get dataset
-    train_inputs, train_outputs, eval_inputs, eval_outputs, source_shape = prepare_data()
+    train_inputs, train_outputs, eval_inputs, eval_outputs, source_shape = dataset
 
     # normalizer now is outsider of the model
     from utils.normalizer import Dateset_normalize_manager
@@ -80,7 +88,7 @@ def gp_model_block_test():
     optimizer = torch.optim.Adam(optimizer_dict)
     
     # start training
-    max_epoch=100
+    max_epoch=exp_config['max_epoch']
     for epoch in range(max_epoch):
         optimizer.zero_grad()
         loss = gp_model_block.compute_loss(train_inputs, [train_outputs[0]])
@@ -122,7 +130,7 @@ def gp_model_block_test():
     optimizer = torch.optim.Adam(optimizer_dict)
 
     # start training
-    max_epoch=100
+    max_epoch=exp_config['max_epoch']
     for _fi in range(1, fidelity_num):
         # reset normalizer
         data_norm_manager = Dateset_normalize_manager([train_inputs[0], train_outputs[_fi-1]], [train_outputs[_fi]])
@@ -139,20 +147,52 @@ def gp_model_block_test():
     # predict
     gp_model_block.eval()
     predict_y = gp_model_block.predict(eval_inputs)
-    # plot_result(eval_outputs[0], predict_y, source_shape)
     predict_y_mean = predict_y[0].mean
+    # plot_result(eval_outputs[0], predict_y_mean, source_shape)
 
     # predict with high fidelity
     for _fi in range(1, fidelity_num):
-        fides_block.gp_model.set_fidelity(_fi-1, _fi, _fi-1, _fi)
+        fides_block.gp_model.set_fidelity(_fi-1, _fi, _fi-1, _fi) 
         data_norm_manager = Dateset_normalize_manager([train_inputs[0], train_outputs[_fi-1]], [train_outputs[_fi]])
         fides_block.dnm = data_norm_manager
+
         fides_block.eval()
         predict_y = fides_block.predict([eval_inputs[0], predict_y_mean])
         predict_y_mean = predict_y[0]
 
-    plot_result(eval_outputs[2], predict_y_mean, source_shape)
+    # plot_result(eval_outputs[len(train_outputs)-1], predict_y_mean, source_shape)
+
+    from utils.performance_evaluator import performance_evaluator
+    eval_result = performance_evaluator(eval_outputs[len(train_outputs)-1], predict_y_mean, ['rmse', 'r2'])
+    eval_result['time'] = time.time()-start_time
+    eval_result['train_sample_num'] = train_inputs[0].shape[0]
+    recorder.record(eval_result)
 
 
 if __name__ == '__main__':
-    gp_model_block_test()
+    exp_name = os.path.join('exp', 'fides', 'toy_data', str(datetime.date.today()), 'result.txt')
+    record_dir_name = os.path.dirname(exp_name)
+    if not os.path.exists(record_dir_name):
+        os.makedirs(record_dir_name)
+    recorder = MLGP_recorder(exp_name, overlap=True)
+    recorder.register(['train_sample_num','rmse', 'r2', 'time'])
+    exp_config = {
+        'max_epoch': 100,
+        'recorder': recorder,
+    }
+    
+    dataset = prepare_data()
+    train_sample_num = [16,32,64,128]
+    for _num in train_sample_num:
+        sub_dataset = []
+        for _data in dataset[:-1]:
+            data_list = []
+            for _d in _data:
+                data_list.append(_d[:_num])
+            sub_dataset.append(data_list)
+        sub_dataset.append(dataset[-1])         # last one is shape
+        gp_model_block_test(sub_dataset, exp_config)
+
+    # paser = MLGP_record_parser('./record_test.txt')
+    # print(paser.get_data())
+    # paser.record_to_csv(exp_name.replace('.txt', '.csv'))

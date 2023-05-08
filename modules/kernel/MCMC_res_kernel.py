@@ -82,6 +82,7 @@ class Kernel_res(torch.nn.Module):
         optimize_param_list.append(self.length_scale)
         optimize_param_list.append(self.scale)
         optimize_param_list.append(self.length_scale_z)
+        optimize_param_list.append(self.b)
         return optimize_param_list
 
     def set_param(self, param_list):
@@ -89,6 +90,7 @@ class Kernel_res(torch.nn.Module):
             self.length_scale.copy_(param_list[0])
             self.scale.copy_(param_list[1])
             self.length_scale_z.copy_(param_list[2])
+            self.b.copy_(param_list[3])
 
     def get_params_need_check(self):
         _temp_list = []

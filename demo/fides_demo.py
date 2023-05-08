@@ -193,6 +193,4 @@ if __name__ == '__main__':
         sub_dataset.append(dataset[-1])         # last one is shape
         gp_model_block_test(sub_dataset, exp_config)
 
-    # paser = MLGP_record_parser('./record_test.txt')
-    # print(paser.get_data())
-    # paser.record_to_csv(exp_name.replace('.txt', '.csv'))
+    recorder.to_csv()

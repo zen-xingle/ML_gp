@@ -95,11 +95,23 @@ class MLGP_recorder:
             for _k, _v in _backup.items():
                 _single_record[self._key.index(_k)] = _v
 
+        self._record_list.append(deepcopy(_single_record))
+
         _single_record = [str(_sr) for _sr in _single_record]
         _single_record[-1] = _single_record[-1] + '\n'
 
         self._f.write(','.join(_single_record))
         self._f.flush()
+
+    def to_csv(self, csv_path=None):
+        if csv_path is None:
+            csv_path = self.save_path.replace('.txt', '.csv')
+
+        import csv
+        with open(csv_path, 'w', newline='') as f:
+            writer = csv.writer(f)
+            writer.writerows(self._record_list)
+        return
 
 
 class MLGP_record_parser:

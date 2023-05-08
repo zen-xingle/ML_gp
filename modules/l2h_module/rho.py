@@ -29,8 +29,10 @@ class Res_rho_l2h(Basic_l2h):
 
         y_high = outputs[0]
 
-        re_present_inputs = [x]
-        re_present_outputs = [y_high - y_low*self.rho]
+        re_present_inputs = [x[:y_high.shape[0]]]
+        # re_present_outputs = [y_high - y_low*self.rho]
+
+        re_present_outputs = [y_high - y_low[:y_high.shape[0]] * self.rho]
         return re_present_inputs, re_present_outputs
 
     def pre_process_at_predict(self, inputs, outputs):

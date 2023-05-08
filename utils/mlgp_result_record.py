@@ -108,9 +108,9 @@ class MLGP_recorder:
         self._f.write(','.join(_single_record))
         self._f.flush()
 
-    def to_csv(self, csv_path=None):
+    def to_csv(self, seed, csv_path=None):
         if csv_path is None:
-            csv_path = self.save_path.replace('.txt', '.csv')
+            csv_path = self.save_path.replace('.txt', '_' + str(seed) + '.csv')
 
         import csv
         with open(csv_path, 'w', newline='') as f:

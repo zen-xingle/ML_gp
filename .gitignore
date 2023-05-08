@@ -6,3 +6,5 @@ data/
 __pycache__
 *.txt
 *.csv
+*.DS_Store
+paint/

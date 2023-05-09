@@ -109,38 +109,40 @@ def gp_model_block_test(dataset, exp_config):
     training for high fidelity
     '''
     fidelity_num = len(train_outputs)
-    fides = FIDES_MODULE({})
+    ar = CIGP_MODULE()
 
-    fides_block = GP_model_block()
-    fides_block.dnm = data_norm_manager
-    fides_block.gp_model = fides
+    ar_block = GP_model_block()
+    ar_block.dnm = data_norm_manager
+    ar_block.gp_model = ar
 
     # init l2h modules
     from modules.l2h_module.rho import Res_rho_l2h
-    Res_rho_l2h_config = {
-        'rho_value_init': 1.,
-        'trainable': False,
-    }
-    rho_modules = Res_rho_l2h(Res_rho_l2h_config)
-    fides_block.pre_process_block = rho_modules
-    fides_block.post_process_block = rho_modules
+    # Res_rho_l2h_config = {
+    #     'rho_value_init': 1.,
+    #     'trainable': True,
+    # }
+    rho_modules = Res_rho_l2h()
+    # rho_modules = Res_rho_l2h(Res_rho_l2h_config)
+    ar_block.pre_process_block = rho_modules
+    ar_block.post_process_block = rho_modules
 
     # init optimizer, optimizer is also outsider of the model
-    lr_dict = {'kernel': 0.01, 'noise': 0.01, 'others': 0.01, 'rho': 0.}
-    params_dict = fides_block.get_train_params()
+    lr_dict = {'kernel': 0.01, 'noise': 0.01, 'others': 0.01, 'rho': 0.01}
+    params_dict = ar_block.get_train_params()
     optimizer_dict = [{'params': params_dict[_key], 'lr': lr_dict[_key]} for _key in params_dict.keys()]
     optimizer = torch.optim.Adam(optimizer_dict)
 
     # start training
+    print('rho value(init):', ar_block.pre_process_block.rho.data)
     max_epoch=exp_config['max_epoch']
     for _fi in range(1, fidelity_num):
         # reset normalizer
         data_norm_manager = Dateset_normalize_manager([train_inputs[0], train_outputs[_fi-1]], [train_outputs[_fi]])
-        fides_block.dnm = data_norm_manager
-        fides_block.gp_model.set_fidelity(_fi-1, _fi, _fi-1, _fi)
+        ar_block.dnm = data_norm_manager
+        # ar_block.gp_model.set_fidelity(_fi-1, _fi, _fi-1, _fi)
         for epoch in range(max_epoch):
             optimizer.zero_grad()
-            loss = fides_block.compute_loss([train_inputs[0], train_outputs[_fi-1]], [train_outputs[_fi]])
+            loss = ar_block.compute_loss([train_inputs[0], train_outputs[_fi-1]], [train_outputs[_fi]])
             print('epoch {}/{}, loss_nll: {}'.format(epoch+1, max_epoch, loss.item()), end='\r')
             loss.backward()
             optimizer.step()
@@ -150,16 +152,17 @@ def gp_model_block_test(dataset, exp_config):
     gp_model_block.eval()
     predict_y = gp_model_block.predict(eval_inputs)
     predict_y_mean = predict_y[0].mean
+    print('rho value:', ar_block.pre_process_block.rho.data)
     # plot_result(eval_outputs[0], predict_y_mean, source_shape)
 
     # predict with high fidelity
     for _fi in range(1, fidelity_num):
-        fides_block.gp_model.set_fidelity(_fi-1, _fi, _fi-1, _fi) 
+        # fides_block.gp_model.set_fidelity(_fi-1, _fi, _fi-1, _fi) 
         data_norm_manager = Dateset_normalize_manager([train_inputs[0], train_outputs[_fi-1]], [train_outputs[_fi]])
-        fides_block.dnm = data_norm_manager
+        ar_block.dnm = data_norm_manager
 
-        fides_block.eval()
-        predict_y = fides_block.predict([eval_inputs[0], predict_y_mean])
+        ar_block.eval()
+        predict_y = ar_block.predict([eval_inputs[0], predict_y_mean])
         predict_y_mean = predict_y[0]
 
     # plot_result(eval_outputs[len(train_outputs)-1], predict_y_mean, source_shape)
@@ -180,9 +183,9 @@ if __name__ == '__main__':
     evaluation_num = 128
     dec_rate = 0.5
 
-    for seed in [3,4]:
+    for seed in [0,1,2]:
         # exp_name = os.path.join('exp', 'fides', 'toy_data', str(datetime.date.today()), 'result.txt')
-        exp_name = os.path.join('exp', 'fides', data_name, 'dec_' + str(dec_rate), 'result.txt')
+        exp_name = os.path.join('exp', 'ar', data_name, 'dec_' + str(dec_rate), 'result.txt')
         recorder = MLGP_recorder(exp_name, overlap=True)
         recorder.register(['train_sample_num','rmse', 'r2', 'time'])
         exp_config = {

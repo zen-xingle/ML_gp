@@ -57,6 +57,7 @@ def plot_result(ground_true_y, predict_y, src_shape):
 def gp_model_block_test(dataset, exp_config):
     # setting record
     recorder = exp_config['recorder']
+    fidelity_num = exp_config['fidelity_num']
     start_time = time.time()
 
     # get dataset
@@ -164,6 +165,7 @@ def gp_model_block_test(dataset, exp_config):
         ar_block.eval()
         predict_y = ar_block.predict([eval_inputs[0], predict_y_mean])
         predict_y_mean = predict_y[0]
+        # predict_y_var = predict_y[1]
 
     # plot_result(eval_outputs[len(train_outputs)-1], predict_y_mean, source_shape)
 
@@ -177,46 +179,50 @@ def gp_model_block_test(dataset, exp_config):
 if __name__ == '__main__':
 
     # 'Poisson_mfGent_v5', 'Heat_mfGent_v5', 'Burget_mfGent_v5_15', 'TopOP_mfGent_v6', 'plasmonic2_MF'
-
-    data_name = 'Heat_mfGent_v5'
-    fidelity_num = 5
+    # 'maolin1','maolin5','maolin6','maolin7', 'maolin8'
+    # 'borehole', 'branin', 'currin'
+    data_list = ['borehole', 'branin', 'currin']
+    fidelity_num = 2
     evaluation_num = 128
     dec_rate = 0.5
+    
+    for data_name in data_list:
+        for seed in [1,2,3,4]:
+            # exp_name = os.path.join('exp', 'ar', 'toy_data', str(datetime.date.today()), 'result.txt')
+            # exp_name = os.path.join('exp', 'ar', data_name, 'dec_' + str(dec_rate), 'result.txt')
+            exp_name = os.path.join('exp', 'ar', data_name, 'fidelity_' + str(fidelity_num), 'result.txt')
+            recorder = MLGP_recorder(exp_name, overlap=True)
+            recorder.register(['train_sample_num','rmse', 'r2', 'time'])
+            exp_config = {
+                'max_epoch': 100,
+                'recorder': recorder,
+                'fidelity_num': fidelity_num,
+            }
 
-    for seed in [0,1,2]:
-        # exp_name = os.path.join('exp', 'fides', 'toy_data', str(datetime.date.today()), 'result.txt')
-        exp_name = os.path.join('exp', 'ar', data_name, 'dec_' + str(dec_rate), 'result.txt')
-        recorder = MLGP_recorder(exp_name, overlap=True)
-        recorder.register(['train_sample_num','rmse', 'r2', 'time'])
-        exp_config = {
-            'max_epoch': 100,
-            'recorder': recorder,
-        }
+            # dataset = prepare_data()
+            dataset = list(data_preparation(data_name, fidelity_num, seed, 128))
+            dataset.append([-1, *dataset[1][0].shape[1:]])
 
-        # dataset = prepare_data()
-        dataset = list(data_preparation(data_name, fidelity_num, seed, 128))
-        dataset.append([-1, *dataset[1][0].shape[1:]])
+            dec_rate = 0.5
+            train_sample_num = [32, 64, 96, 128]
+            for _num in train_sample_num:
+                sub_dataset = []
+                tt = 0
+                for _data in dataset[:-1]:
+                    if tt <= 1:
+                        data_list = []
+                        ffid = 0
+                        for _d in _data:
+                            data_list.append(_d[:int(_num * pow(dec_rate, ffid))])
+                            ffid += 1
+                        tt += 1
+                    else: 
+                        data_list = []
+                        for _d in _data:
+                            data_list.append(_d[:evaluation_num])
+                        tt += 1
+                    sub_dataset.append(data_list)
+                sub_dataset.append(dataset[-1])         # last one is shape
+                gp_model_block_test(sub_dataset, exp_config)
 
-        dec_rate = 0.5
-        train_sample_num = [32, 64, 96, 128]
-        for _num in train_sample_num:
-            sub_dataset = []
-            tt = 0
-            for _data in dataset[:-1]:
-                if tt <= 1:
-                    data_list = []
-                    ffid = 0
-                    for _d in _data:
-                        data_list.append(_d[:int(_num * pow(dec_rate, ffid))])
-                        ffid += 1
-                    tt += 1
-                else: 
-                    data_list = []
-                    for _d in _data:
-                        data_list.append(_d[:evaluation_num])
-                    tt += 1
-                sub_dataset.append(data_list)
-            sub_dataset.append(dataset[-1])         # last one is shape
-            gp_model_block_test(sub_dataset, exp_config)
-
-        recorder.to_csv(seed)
+            recorder.to_csv(seed)

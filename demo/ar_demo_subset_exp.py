@@ -128,7 +128,7 @@ def gp_model_block_test(dataset, exp_config):
     ar_block.post_process_block = rho_modules
 
     # init optimizer, optimizer is also outsider of the model
-    lr_dict = {'kernel': 0.01, 'noise': 0.01, 'others': 0.01, 'rho': 0.01}
+    lr_dict = {'kernel': 0.001, 'noise': 0.001, 'others': 0.001, 'rho': 0.001}
     params_dict = ar_block.get_train_params()
     optimizer_dict = [{'params': params_dict[_key], 'lr': lr_dict[_key]} for _key in params_dict.keys()]
     optimizer = torch.optim.Adam(optimizer_dict)
@@ -179,22 +179,21 @@ def gp_model_block_test(dataset, exp_config):
 if __name__ == '__main__':
 
     # 'Poisson_mfGent_v5', 'Heat_mfGent_v5', 'Burget_mfGent_v5_15', 'TopOP_mfGent_v6', 'plasmonic2_MF'
-    # 'maolin1','maolin5','maolin6','maolin7', 'maolin8'
-    # 'borehole', 'branin', 'currin'
-    data_list = ['borehole', 'branin', 'currin']
-    fidelity_num = 2
+    # 'maolin1','maolin5','maolin6','maolin7', 'maolin8', 'borehole', 'branin', 'currin'
+    data_list = ['TopOP_mfGent_v6', 'plasmonic2_MF']
+    fidelity_num = 5
     evaluation_num = 128
     dec_rate = 0.5
     
     for data_name in data_list:
-        for seed in [1,2,3,4]:
+        for seed in [0,1,2,3,4]:
             # exp_name = os.path.join('exp', 'ar', 'toy_data', str(datetime.date.today()), 'result.txt')
-            # exp_name = os.path.join('exp', 'ar', data_name, 'dec_' + str(dec_rate), 'result.txt')
-            exp_name = os.path.join('exp', 'ar', data_name, 'fidelity_' + str(fidelity_num), 'result.txt')
+            exp_name = os.path.join('exp', 'ar', data_name, 'dec_' + str(dec_rate), 'result.txt')
+            # exp_name = os.path.join('exp', 'ar', data_name, 'fidelity_' + str(fidelity_num), 'result.txt')
             recorder = MLGP_recorder(exp_name, overlap=True)
             recorder.register(['train_sample_num','rmse', 'r2', 'time'])
             exp_config = {
-                'max_epoch': 100,
+                'max_epoch': 80,
                 'recorder': recorder,
                 'fidelity_num': fidelity_num,
             }

@@ -57,15 +57,25 @@ def data_preparation(data_name,
         ytr = []
         for i in range(len(xytr)):
             ytr.append(torch.stack([xytr[i][j] for j in ind]))
+            
     elif data_name in SP_DataLoader_available:
         mat_data = SP_DataLoader(data_name, None)
         xxtr, xytr, xte, yte = mat_data.get_data()
+
         random.seed(seed)
         ind = [random.randint(0,train_samples_num-1) for i in range(train_samples_num)] # generating the index of data for training
-        xtr = [torch.stack([xxtr[0][j] for j in ind])]
-        ytr = []
-        for i in range(len(xytr)):
-            ytr.append(torch.stack([xytr[i][j] for j in ind]))
+        if data_name == "TopOP_mfGent_v6":
+            xtr = [torch.stack([torch.tensor(xxtr[0][j]) for j in ind])]
+            ytr = []
+            for i in range(len(xytr)):
+                ytr.append(torch.stack([torch.tensor(xytr[i][j]) for j in ind]))
+        else:
+            xtr = [torch.stack([xxtr[0][j] for j in ind])]
+            ytr = []
+            for i in range(len(xytr)):
+                ytr.append(torch.stack([xytr[i][j] for j in ind]))
+
+        
 
     elif data_name in load_data_certain_fi_available:
         mat_data = loadmat(sys.path[-1] + "/data/gen_mf_data/" + str(data_name) + ".mat")
@@ -81,14 +91,21 @@ def data_preparation(data_name,
         Ytr_h = torch.tensor(mat_data['Ytr_h'])
         Yte_l = torch.tensor(mat_data['Yte_l'])
         Yte_h = torch.tensor(mat_data['Yte_h'])
-        ytr=[Ytr_l]
+        yytr=[Ytr_l]
         yte=[Yte_l]
         for t in fidelity_list:
             ytr_fid=w_l(t)*Ytr_l+w_h(t)*Ytr_h
             yte_fid=w_l(t)*Yte_l+w_h(t)*Yte_h
-            ytr.append(ytr_fid)
+            yytr.append(ytr_fid)
             yte.append(yte_fid)
-        ytr.append(Ytr_h)
+        yytr.append(Ytr_h)
         yte.append(Yte_h)
+
+        random.seed(seed)
+        ind = [random.randint(0,train_samples_num-1) for i in range(train_samples_num)] # generating the index of data for training
+        xtr = [torch.stack([xtr[0][j] for j in ind])]
+        ytr = []
+        for i in range(len(yytr)):
+            ytr.append(torch.stack([yytr[i][j] for j in ind]))
 
     return xtr, ytr, xte, yte

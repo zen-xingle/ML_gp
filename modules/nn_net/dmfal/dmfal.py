@@ -93,6 +93,8 @@ class DeepMFnet:
 
     def eval_llh(self, x, y, m):
         llh_samples_list = []
+        y_shape = y.shape[0]
+        x = x[:y_shape]
         pred_sample, _ = self.forward(x, m, sample=True)
         log_prob_sample = torch.sum(-0.5*torch.square(torch.exp(self.log_tau_list[m]))*torch.square(pred_sample-y) +\
                                 self.log_tau_list[m] - 0.5*np.log(2*np.pi))
@@ -120,6 +122,7 @@ class DeepMFnet:
         # inputs should as [x, y_0, y_1, ..., y_n]
         llh_list = []
         for m in range(self.M):
+            # llh_m = self.eval_llh(x_list[m], y_list[m], m)
             llh_m = self.eval_llh(x_list[0], y_list[m], m)
             llh_list.append(llh_m)
         loss = - sum(llh_list)

@@ -1,6 +1,7 @@
 import numpy as np
 import torch
 import torch.distributions as distributions
+torch.set_default_tensor_type(torch.DoubleTensor)
 
 
 class AdaptiveBaseNet:
@@ -61,10 +62,10 @@ class AdaptiveBaseNet:
     
     def forward(self, X, sample=False):
         
-        H = X
+        H = X.double()
         for l in range(self.num_layers-3):
-            W = self.latent_weights[l]
-            b = self.latent_biases[l]
+            W = self.latent_weights[l].double()
+            b = self.latent_biases[l].double()
             H = torch.add(torch.matmul(H, W), b)
             
             # scale before the nonlinear-op
@@ -75,13 +76,18 @@ class AdaptiveBaseNet:
         # project the latent base to base
         if sample:
             W_sample, b_sample = self._sample_from_posterior()
+            W_sample = W_sample.double()
+            b_sample = b_sample.double()
             H = torch.add(torch.matmul(H, W_sample), b_sample)
         else:
+            self.W_mu = self.W_mu.double()
+            self.b_mu = self.b_mu.double()
             H = torch.add(torch.matmul(H, self.W_mu), self.b_mu)
         #
         
         base = H/np.sqrt(self.latent_dim+1)
-        
+        self.A = self.A.double()
+        self.A_b = self.A_b.double()
         Y = torch.add(torch.matmul(base, self.A), self.A_b)
         Y = Y/np.sqrt(self.base_dim+1)
 

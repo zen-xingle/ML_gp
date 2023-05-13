@@ -94,16 +94,16 @@ if __name__ == '__main__':
     # 'Poisson_mfGent_v5', 'Heat_mfGent_v5', 'Burget_mfGent_v5_15', 'TopOP_mfGent_v6', 'plasmonic2_MF'
     # 'maolin1','maolin5','maolin6','maolin7', 'maolin8'
     # 'borehole', 'branin', 'currin'
-    data_list = ['Poisson_mfGent_v5', 'Heat_mfGent_v5', 'Burget_mfGent_v5_15']
-    fidelity_num = 2
+    data_list = ['maolin1','maolin5','maolin6','maolin7', 'maolin8', 'borehole', 'branin', 'currin']
+    fidelity_num = 5
     evaluation_num = 128
     dec_rate = 0.5
     
     for data_name in data_list:
         for seed in [1,2,3,4]:
             # exp_name = os.path.join('exp', 'fides', 'toy_data', str(datetime.date.today()), 'result.txt')
-            # exp_name = os.path.join('exp', 'fides_wyx', data_name, 'dec_' + str(dec_rate), 'result.txt')
-            exp_name = os.path.join('exp', 'fides_wyx', data_name, 'fidelity_' + str(fidelity_num), 'result.txt')
+            exp_name = os.path.join('exp', 'fides', data_name, 'dec_' + str(dec_rate), 'result.txt')
+            # exp_name = os.path.join('exp', 'fides', data_name, 'fidelity_' + str(fidelity_num), 'result.txt')
             recorder = MLGP_recorder(exp_name, overlap=True)
             recorder.register(['train_sample_num','rmse', 'r2', 'time'])
 

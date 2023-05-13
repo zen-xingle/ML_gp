@@ -1,7 +1,6 @@
 import os
 import sys
 
-import datetime
 import time
 import torch
 import numpy as np
@@ -175,15 +174,14 @@ def gp_model_block_test(dataset, exp_config):
 if __name__ == '__main__':
 
     # 'Poisson_mfGent_v5', 'Heat_mfGent_v5', 'Burget_mfGent_v5_15', 'TopOP_mfGent_v6', 'plasmonic2_MF'
-    # 'maolin1','maolin5','maolin6','maolin7', 'maolin8'
-    # 'borehole', 'branin', 'currin'
-    data_list = ['borehole', 'branin', 'currin', 'Poisson_mfGent_v5', 'Heat_mfGent_v5', 'Burget_mfGent_v5_15']
-    fidelity_num = 2
+    # 'maolin1','maolin5','maolin6','maolin7', 'maolin8', 'borehole', 'branin', 'currin'
+    data_list = ['TopOP_mfGent_v6', 'plasmonic2_MF']
+    fidelity_num = 5
     evaluation_num = 128
     dec_rate = 0.5
     
     for data_name in data_list:
-        for seed in [1,2,3,4]:
+        for seed in [0,1,2,3,4]:
             # exp_name = os.path.join('exp', 'resgp', 'toy_data', str(datetime.date.today()), 'result.txt')
             # exp_name = os.path.join('exp', 'resgp', data_name, 'dec_' + str(dec_rate), 'result.txt')
             exp_name = os.path.join('exp', 'resgp', data_name, 'fidelity_' + str(fidelity_num), 'result.txt')

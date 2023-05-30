@@ -1,5 +1,5 @@
 import torch
-
+from utils.type_define import GP_val_with_bar
 
 '''
 # DOC: 动态注册类的操作, 有利于兼容性, 但是不利于代码可读性, 对初学者不友好, 目前不启用
@@ -64,8 +64,51 @@ class GP_model_block(torch.nn.Module):
         return outputs
 
     def predict_with_detecing_subset(self, inputs):
-        #TODO
-        return 
+        inputs = self.dnm.normalize_inputs(inputs)
+
+        if self.pre_process_block is not None:
+            gp_inputs, _ = self.pre_process_block.pre_process_at_predict(inputs, None)
+        else:
+            gp_inputs = inputs
+
+        from utils.subset_tools import Subset_check
+        src_inputs = self.gp_model.inputs_tr
+        checker = Subset_check(src_inputs[0])
+
+        _, subset_index = checker.get_subset(gp_inputs[0])
+        _, nonsubset_index = checker.get_non_subset(gp_inputs[0])
+
+        subset_outputs = [_v[subset_index] for _v in self.gp_model.outputs_tr]
+        if subset_outputs[0].shape[0] == 0:
+            subset_outputs = None
+
+        nonsubset_inputs = [_v[nonsubset_index] for _v in gp_inputs]
+        if nonsubset_inputs[0].shape[0]!= 0:
+            nonsubset_outputs = self.gp_model.predict(nonsubset_inputs)
+        else:
+            nonsubset_outputs = None
+
+        if subset_outputs is None:
+            outputs = nonsubset_outputs
+        elif nonsubset_outputs is None:
+            outputs = []
+            for _v in subset_outputs:
+                outputs.append(GP_val_with_bar(_v, torch.zeros_like(_v)))
+        else:
+            outputs = []
+            if isinstance(nonsubset_outputs[0], GP_val_with_bar):
+                gp_output_mean = [_v.mean for _v in nonsubset_outputs]
+                gp_output_var = [_v.var for _v in nonsubset_outputs]
+            else:
+                gp_output_mean = [_v for _v in nonsubset_outputs]
+                gp_output_var = [torch.zeros_like(_v) for _v in nonsubset_outputs]
+            for i in range(len(nonsubset_outputs)):
+                mix_mean = torch.cat([subset_outputs[i], gp_output_mean[i]], axis=0)
+                mix_var = torch.cat([torch.zeros_like(subset_outputs[i]), gp_output_var[i]], axis=0)
+                outputs.append(GP_val_with_bar(mix_mean, mix_var))
+
+        outputs = self.dnm.denormalize_outputs(outputs)
+        return outputs
 
     # 当前这种形式会带来额外的内存,计算开销. 优点是自由度高,容易添加新的操作
     def compute_loss(self, inputs, outputs):

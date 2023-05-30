@@ -113,7 +113,7 @@ class HOGP_MODULE(BASE_GP_MODEL):
             S = self.A * self.A.pow(-1/2)
             S_2 = S.pow(2)
             # S_product = tensorly.tenalg.multi_mode_dot(S_2, [(K_star@K_p.inverse()@eigen_vector_p).pow(2), eigen_vector_d1.pow(2), eigen_vector_d2.pow(2)])
-            eigen_vectors_x = K_star@self.K[0] + JITTER*torch.eye(self.K[0].shape[0]).pow(2)
+            eigen_vectors_x = K_star@self.K[0] + JITTER*torch.eye(K_star.shape[0], self.K[0].shape[0]).pow(2)
             eigen_vectors_dims = [self.K_eigen[i+1].vector.pow(2) for i in range(n_dim)]
             
             eigen_vectors = [eigen_vectors_x] + eigen_vectors_dims

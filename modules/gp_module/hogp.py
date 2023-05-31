@@ -84,7 +84,7 @@ class HOGP_MODULE(BASE_GP_MODEL):
         else:
             return self.noise
 
-    def predict_with_var(self, inputs, vars=None):
+    def predict_with_var(self, inputs, inputs_vars=None):
         if self.already_set_train_data is False:
             assert False, "gp model model hasn't been trained. predict failed"
 
@@ -119,6 +119,12 @@ class HOGP_MODULE(BASE_GP_MODEL):
             eigen_vectors = [eigen_vectors_x] + eigen_vectors_dims
             S_product = tensorly.tenalg.multi_mode_dot(S_2, eigen_vectors)
             var_diag = diag_K + S_product
+
+            # /*** Get predict var***/
+            if inputs_vars is not None:
+                diag_K_vars = self.kernel_list[0](inputs_vars[0], inputs_vars[0]).diag()* diag_K_dims
+                var_diag = var_diag + diag_K_vars
+
         return predict_u, var_diag
 
     def compute_loss(self, inputs, outputs, inputs_var=None, outputs_var=None):

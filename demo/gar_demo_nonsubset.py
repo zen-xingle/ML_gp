@@ -121,7 +121,7 @@ def gp_model_block_test():
     optimizer = torch.optim.Adam(optimizer_dict)
     
     # start training
-    max_epoch=10
+    max_epoch=100
     for epoch in range(max_epoch):
         optimizer.zero_grad()
         loss = gp_model_block.compute_loss(train_inputs, train_outputs)
@@ -129,11 +129,10 @@ def gp_model_block_test():
         loss.backward()
         optimizer.step()
 
-    mix_input_x = torch.cat([train_inputs[0][:20], eval_inputs[0][:20]], 0)
-    mix_input_yl = torch.cat([train_inputs[1][:20], eval_inputs[1][:20]], 0)
-    mix_inputs = [mix_input_x, mix_input_yl]
-
-    predict_y = gp_model_block.predict_with_detecing_subset(mix_inputs)
+    # predict
+    predict_yl = cigp_model_block.predict_with_detecing_subset([eval_inputs[0]])
+    predict_yl[0].reg_func(torch.reshape, source_shape)
+    predict_y = gp_model_block.predict_with_detecing_subset([eval_inputs[0], predict_yl[0]])
 
     # eval
     print('\n')

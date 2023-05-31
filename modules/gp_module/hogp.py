@@ -121,16 +121,25 @@ class HOGP_MODULE(BASE_GP_MODEL):
             var_diag = diag_K + S_product
 
             # /*** Get predict var***/
-            if inputs_vars is not None:
-                diag_K_vars = self.kernel_list[0](inputs_vars[0], inputs_vars[0]).diag()* diag_K_dims
-                var_diag = var_diag + diag_K_vars
+            # if inputs_vars is not None:
+            #     diag_K_vars = self.kernel_list[0](inputs_vars[0], inputs_vars[0]).diag()* diag_K_dims
+            #     var_diag = var_diag + diag_K_vars
+            # if getattr(self, 'outputs_tr_var', None) is not None:
+            #     _noise = self._get_noise_according_exp_format()
+            #     k_r_inv = torch.inverse(self.K[0]) + _noise.pow(-1)* tensorly.ones(self.K[0].size(0)) + JITTER
+            #     # gamma = K_star.T@k_r_inv - self.k_star_l.T@self.k_l_inv
+            #     gamma = K_star.T@k_r_inv
+            #     pred_uncertainty = gamma @ self.outputs_tr_var[0] @ gamma.T
+            #     var_diag += pred_uncertainty.diag().reshape(-1, 1)
 
         return predict_u, var_diag
 
-    def compute_loss(self, inputs, outputs, inputs_var=None, outputs_var=None):
+    def compute_loss_with_var(self, inputs, outputs, inputs_var=None, outputs_var=None):
         # TODO checking if inputs/outputs was changed
         self.inputs_tr = inputs
         self.outputs_tr = outputs
+        self.inputs_tr_var = inputs_var
+        self.outputs_tr_var = outputs_var
         self.already_set_train_data = True
 
         # compute kernel
@@ -154,8 +163,10 @@ class HOGP_MODULE(BASE_GP_MODEL):
         _noise = self._get_noise_according_exp_format()
 
         A = A + _noise.pow(-1)* tensorly.ones(A.shape,  device=list(self.parameters())[0].device)
-        # TODO: add jitter limite here?
+        if outputs_var[0] is not None:
+            A += outputs_var[0]
         
+        # TODO: add jitter limite here?
         # vec(z).T@ S.inverse @ vec(z) = b.T @ b,  b = S.pow(-1/2) @ vec(z)
         T_1 = tensorly.tenalg.multi_mode_dot(self.outputs_tr[0], [eigen.vector.T for eigen in self.K_eigen])
         T_2 = T_1 * A.pow(-1/2)

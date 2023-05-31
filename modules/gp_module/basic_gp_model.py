@@ -100,17 +100,29 @@ class BASE_GP_MODEL(torch.nn.Module):
         check_no_fuse_type(inputs)
         check_no_fuse_type(outputs)
 
-        if check_list_contain_val_with_bar(inputs) != check_list_contain_val_with_bar(outputs):
-            assert False, "inputs and outputs should be both GP_val_with_var or not"
-
         if check_list_contain_val_with_bar(inputs):
             input_vars = [item.get_var() for item in inputs]
             inputs = [item.get_mean() for item in inputs]
+        else:
+            input_vars = None
+
+        if check_list_contain_val_with_bar(outputs):
             output_vars = [item.get_var() for item in outputs]
             outputs = [item.get_mean() for item in outputs]
-            return self.compute_loss_with_var(inputs, outputs, input_vars, output_vars)
         else:
-            return self.compute_loss_with_var(inputs, outputs)
+            output_vars = None
+
+        return self.compute_loss_with_var(inputs, outputs, input_vars, output_vars)
+
+
+        # if check_list_contain_val_with_bar(inputs):
+        #     input_vars = [item.get_var() for item in inputs]
+        #     inputs = [item.get_mean() for item in inputs]
+        #     output_vars = [item.get_var() for item in outputs]
+        #     outputs = [item.get_mean() for item in outputs]
+        #     return self.compute_loss_with_var(inputs, outputs, input_vars, output_vars)
+        # else:
+        #     return self.compute_loss_with_var(inputs, outputs)
 
     def compute_loss_with_var(self, inputs, outputs, input_vars=None, output_vars=None):
         fake_loss = 0

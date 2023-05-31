@@ -73,8 +73,26 @@ class Matrix_l2h(Basic_l2h):
     # outputs = [y_high]        ->  [y_res]
     def pre_process_at_train(self, inputs, outputs):
         if isinstance(inputs[1], GP_val_with_var):
-            # TODO: support GP_val_with_var
-            assert False, NotImplemented
+            x = inputs[0]
+            y_low_mean = inputs[1].get_mean()
+            y_low_var = inputs[1].get_var()
+            y_low_var = y_low_var.sqrt()
+            y_high = outputs[0]
+
+            for i in range(len(self.l_shape)):
+                y_low_mean = tensorly.tenalg.mode_dot(y_low_mean, self.vectors[i], i+1)
+                y_low_var = tensorly.tenalg.mode_dot(y_low_var, self.vectors[i], i+1)
+            y_low_var = y_low_var**2
+
+            re_present_inputs = [x]
+            if isinstance(y_high, GP_val_with_var):
+                re_present_outputs_mean = [y_high.get_mean() - y_low*self.rho]
+                re_present_outputs_var = [y_high.get_var() + y_low_var*self.rho]
+            else:
+                re_present_outputs_mean = [y_high - y_low_mean*self.rho]
+                re_present_outputs_var = [torch.zeros_like(y_high) + y_low_var*self.rho]
+            re_present_outputs = [GP_val_with_var(re_present_outputs_mean[0], re_present_outputs_var[0])]
+            
         else:
             x = inputs[0]
             y_low = inputs[1]

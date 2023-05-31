@@ -9,3 +9,7 @@ class GP_val_with_bar:
     
     def get_var(self):
         return self.var
+    
+    def reg_func(self, func, *args, **kwargs):
+        self.mean = func(self.mean, *args, **kwargs)
+        self.var = func(self.var, *args, **kwargs)

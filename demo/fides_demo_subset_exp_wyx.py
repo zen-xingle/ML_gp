@@ -43,8 +43,8 @@ def prepare_data():
 def plot_result(ground_true_y, predict_y, src_shape):
     # plot result
     from visualize_tools.plot_field import plot_container
-    from utils.type_define import GP_val_with_bar
-    if isinstance(predict_y[0], GP_val_with_bar):
+    from utils.type_define import GP_val_with_var
+    if isinstance(predict_y[0], GP_val_with_var):
         data_list = [ground_true_y, predict_y[0].get_mean(), (ground_true_y - predict_y[0].get_mean()).abs()]
     else:
         data_list = [ground_true_y, predict_y, (ground_true_y - predict_y).abs()]
@@ -97,12 +97,12 @@ if __name__ == '__main__':
     data_list = ['maolin1','maolin5','maolin6','maolin7', 'maolin8', 'borehole', 'branin', 'currin']
     fidelity_num = 5
     evaluation_num = 128
-    dec_rate = 0.5
+    mis_rate = 1
     
     for data_name in data_list:
         for seed in [1,2,3,4]:
             # exp_name = os.path.join('exp', 'fides', 'toy_data', str(datetime.date.today()), 'result.txt')
-            exp_name = os.path.join('exp', 'fides', data_name, 'dec_' + str(dec_rate), 'result.txt')
+            exp_name = os.path.join('exp', 'fides', data_name, 'mis_' + str(dec_rate), 'result.txt')
             # exp_name = os.path.join('exp', 'fides', data_name, 'fidelity_' + str(fidelity_num), 'result.txt')
             recorder = MLGP_recorder(exp_name, overlap=True)
             recorder.register(['train_sample_num','rmse', 'r2', 'time'])

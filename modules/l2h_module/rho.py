@@ -52,7 +52,7 @@ class Res_rho_l2h(Basic_l2h):
         res = outputs[0]
 
         # TODO: support res with var
-        if isinstance(res, GP_val_with_bar):
+        if isinstance(res, GP_val_with_var):
             res = res.get_mean()
         re_present_outputs = [y_low*self.rho + res]
         return inputs, re_present_outputs

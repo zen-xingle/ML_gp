@@ -1,5 +1,5 @@
 import torch
-from utils.type_define import GP_val_with_bar
+from utils.type_define import GP_val_with_var
 
 '''
 # DOC: 动态注册类的操作, 有利于兼容性, 但是不利于代码可读性, 对初学者不友好, 目前不启用
@@ -93,10 +93,10 @@ class GP_model_block(torch.nn.Module):
         elif nonsubset_outputs is None:
             outputs = []
             for _v in subset_outputs:
-                outputs.append(GP_val_with_bar(_v, torch.zeros_like(_v)))
+                outputs.append(GP_val_with_var(_v, torch.zeros_like(_v)))
         else:
             outputs = []
-            if isinstance(nonsubset_outputs[0], GP_val_with_bar):
+            if isinstance(nonsubset_outputs[0], GP_val_with_var):
                 gp_output_mean = [_v.mean for _v in nonsubset_outputs]
                 gp_output_var = [_v.var for _v in nonsubset_outputs]
             else:
@@ -105,7 +105,7 @@ class GP_model_block(torch.nn.Module):
             for i in range(len(nonsubset_outputs)):
                 mix_mean = torch.cat([subset_outputs[i], gp_output_mean[i]], axis=0)
                 mix_var = torch.cat([torch.zeros_like(subset_outputs[i]), gp_output_var[i]], axis=0)
-                outputs.append(GP_val_with_bar(mix_mean, mix_var))
+                outputs.append(GP_val_with_var(mix_mean, mix_var))
 
         outputs = self.dnm.denormalize_outputs(outputs)
         return outputs

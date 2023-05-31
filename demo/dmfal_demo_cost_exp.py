@@ -43,8 +43,8 @@ def prepare_data():
 def plot_result(ground_true_y, predict_y, src_shape):
     # plot result
     from visualize_tools.plot_field import plot_container
-    from utils.type_define import GP_val_with_bar
-    if isinstance(predict_y[0], GP_val_with_bar):
+    from utils.type_define import GP_val_with_var
+    if isinstance(predict_y[0], GP_val_with_var):
         data_list = [ground_true_y, predict_y[0].get_mean(), (ground_true_y - predict_y[0].get_mean()).abs()]
     else:
         data_list = [ground_true_y, predict_y, (ground_true_y - predict_y).abs()]

@@ -1,5 +1,5 @@
 
-class GP_val_with_bar:
+class GP_val_with_var:
     def __init__(self, mean, var) -> None:
         self.mean = mean
         self.var = var

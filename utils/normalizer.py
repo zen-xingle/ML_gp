@@ -4,9 +4,9 @@ from utils.type_define import *
 class Normalizer:
     def __init__(self, inputs, dim=0) -> None:
         # default dim is 0, which means the first dim is sample_num dim.
-        if isinstance(inputs, GP_val_with_bar):
+        if isinstance(inputs, GP_val_with_var):
             # TODO should we normalize the mean and var
-            # assert False, "GP_val_with_bar is not supported to init Normalizer"
+            # assert False, "GP_val_with_var is not supported to init Normalizer"
             self.mean = inputs.get_mean().mean(dim=dim, keepdim=True)
             self.std = inputs.get_mean().std(dim=dim, keepdim=True)
             self.dim = dim
@@ -16,14 +16,14 @@ class Normalizer:
             self.dim = dim
 
     def normalize(self, inputs):
-        if isinstance(inputs, GP_val_with_bar):
-            return GP_val_with_bar(self.normalize(inputs.get_mean()), inputs.get_var())
+        if isinstance(inputs, GP_val_with_var):
+            return GP_val_with_var(self.normalize(inputs.get_mean()), inputs.get_var())
         # it should be auto broadcast
         return (inputs - self.mean) / (self.std + 1e-8)
 
     def denormalize(self, inputs):
-        if isinstance(inputs, GP_val_with_bar):
-            return GP_val_with_bar(self.denormalize(inputs.get_mean()), inputs.get_var())
+        if isinstance(inputs, GP_val_with_var):
+            return GP_val_with_var(self.denormalize(inputs.get_mean()), inputs.get_var())
         return inputs * self.std + self.mean
 
 

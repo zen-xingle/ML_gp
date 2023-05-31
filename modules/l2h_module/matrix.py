@@ -72,16 +72,20 @@ class Matrix_l2h(Basic_l2h):
     # inputs = [x, y_low]       ->  [x]
     # outputs = [y_high]        ->  [y_res]
     def pre_process_at_train(self, inputs, outputs):
-        x = inputs[0]
-        y_low = inputs[1]
+        if isinstance(inputs[1], GP_val_with_var):
+            # TODO: support GP_val_with_var
+            assert False, NotImplemented
+        else:
+            x = inputs[0]
+            y_low = inputs[1]
 
-        y_high = outputs[0]
+            y_high = outputs[0]
 
-        for i in range(len(self.l_shape)):
-            y_low = tensorly.tenalg.mode_dot(y_low, self.vectors[i], i+1)
+            for i in range(len(self.l_shape)):
+                y_low = tensorly.tenalg.mode_dot(y_low, self.vectors[i], i+1)
 
-        re_present_inputs = [x]
-        re_present_outputs = [y_high - y_low*self.rho]
+            re_present_inputs = [x]
+            re_present_outputs = [y_high - y_low*self.rho]
         return re_present_inputs, re_present_outputs
 
     def pre_process_at_predict(self, inputs, outputs):
@@ -104,10 +108,10 @@ class Matrix_l2h(Basic_l2h):
         res = outputs[0]
 
         # TODO: support res with var
-        if isinstance(res, GP_val_with_bar):
+        if isinstance(res, GP_val_with_var):
             mean = res.get_mean()
             vars = res.get_var()
-            y_high_predict = GP_val_with_bar(y_low*self.rho + mean, vars)
+            y_high_predict = GP_val_with_var(y_low*self.rho + mean, vars)
         else:
             y_high_predict = y_low*self.rho + res
 

@@ -12,12 +12,12 @@ default_config = {
 
 def check_list_contain_val_with_bar(list):
     for item in list:
-        if isinstance(item, GP_val_with_bar):
+        if isinstance(item, GP_val_with_var):
             return True
     return False
 
 def check_no_fuse_type(list):
-    define_type_list = [GP_val_with_bar]
+    define_type_list = [GP_val_with_var]
     
     others_count = 0
     define_type_count = [0]* len(define_type_list)
@@ -40,7 +40,7 @@ def check_no_fuse_type(list):
         return
     elif any_type_exist is True:
         if others_count > 0:
-            assert False, "GP_val_with_bar can't be fused with other type."
+            assert False, "GP_val_with_var can't be fused with other type."
         elif others_count == 0:
             if len(set(define_type_count)) == 1:
                 return
@@ -54,9 +54,9 @@ def merge_gp_output_mean_vars(gp_output):
     # gp model is supposed to single input and single output
     assert len(gp_output) <= 2, "output should be [mean] or [mean, var]"
     if len(gp_output) == 1:
-        return [GP_val_with_bar(gp_output[0], None)]
+        return [GP_val_with_var(gp_output[0], None)]
     else:
-        return [GP_val_with_bar(gp_output[0], gp_output[1])]
+        return [GP_val_with_var(gp_output[0], gp_output[1])]
 
 class BASE_GP_MODEL(torch.nn.Module):
     '''
@@ -101,7 +101,7 @@ class BASE_GP_MODEL(torch.nn.Module):
         check_no_fuse_type(outputs)
 
         if check_list_contain_val_with_bar(inputs) != check_list_contain_val_with_bar(outputs):
-            assert False, "inputs and outputs should be both GP_val_with_bar or not"
+            assert False, "inputs and outputs should be both GP_val_with_var or not"
 
         if check_list_contain_val_with_bar(inputs):
             input_vars = [item.get_var() for item in inputs]

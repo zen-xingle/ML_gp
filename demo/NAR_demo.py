@@ -91,7 +91,7 @@ def gp_model_block_test():
     predict_y = gp_model_block.predict(eval_inputs)
 
     for i, _v in enumerate(predict_y):
-        if isinstance(_v, GP_val_with_bar):
+        if isinstance(_v, GP_val_with_var):
             predict_y[i] = _v.get_mean()
 
     # plot result

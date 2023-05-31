@@ -6,10 +6,14 @@ class Normalizer:
         # default dim is 0, which means the first dim is sample_num dim.
         if isinstance(inputs, GP_val_with_bar):
             # TODO should we normalize the mean and var
-            assert False, "GP_val_with_bar is not supported to init Normalizer"
-        self.mean = inputs.mean(dim=dim, keepdim=True)
-        self.std = inputs.std(dim=dim, keepdim=True)
-        self.dim = dim
+            # assert False, "GP_val_with_bar is not supported to init Normalizer"
+            self.mean = inputs.get_mean().mean(dim=dim, keepdim=True)
+            self.std = inputs.get_mean().std(dim=dim, keepdim=True)
+            self.dim = dim
+        else:
+            self.mean = inputs.mean(dim=dim, keepdim=True)
+            self.std = inputs.std(dim=dim, keepdim=True)
+            self.dim = dim
 
     def normalize(self, inputs):
         if isinstance(inputs, GP_val_with_bar):
